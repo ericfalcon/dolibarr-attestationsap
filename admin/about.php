@@ -5,7 +5,14 @@
  * \brief       Page À propos / Aide — AttestationSAP v2.1
  */
 
-require_once dirname(__FILE__) . '/../../../main.inc.php';
+// Chargement de main.inc.php (méthode robuste standard Dolibarr)
+$res = 0;
+$dir = dirname(__FILE__);
+$dirs = array($dir.'/../../../main.inc.php', $dir.'/../../../../main.inc.php', $dir.'/../../../../../main.inc.php');
+foreach ($dirs as $f) {
+    if (!$res && @file_exists($f)) { $res = @include $f; }
+}
+if (!$res) die('Include of main fails');
 if (empty($conf->attestationsap->enabled)) accessforbidden();
 if (empty($user->rights->attestationsap->read)) accessforbidden();
 $langs->loadLangs(array('main', 'admin'));

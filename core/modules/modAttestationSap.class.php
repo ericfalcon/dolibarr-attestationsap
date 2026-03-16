@@ -3,9 +3,15 @@
  * \file        htdocs/custom/attestationsap/core/modules/modAttestationSap.class.php
  * \ingroup     attestationsap
  * \brief       Descripteur du module AttestationSAP
- * \version     2.1.0
+ * \version     2.1.1
  *
  * Conforme Dolibarr 14 → 22+ — PHP 7.4+
+ *
+ * Règles URLs Dolibarr pour modules custom :
+ *  - config_page_url : 'setup.php@attestationsap' → htdocs/custom/attestationsap/admin/setup.php
+ *    Dolibarr cherche dans custom/<module>/admin/<fichier> automatiquement
+ *  - Menus 'url' : chemins relatifs à DOL_URL_ROOT, SANS /custom/
+ *    ex: '/attestationsap/index.php' → résolu en DOL_URL_ROOT/custom/attestationsap/index.php
  */
 
 require_once DOL_DOCUMENT_ROOT . '/core/modules/DolibarrModules.class.php';
@@ -26,7 +32,7 @@ class modAttestationSap extends DolibarrModules
         $this->descriptionlong = "Génération de devis, factures et attestations fiscales annuelles conformément aux exigences SAP. Conforme NOVA / agrément.";
         $this->editor_name     = 'AttestationSAP';
         $this->editor_url      = 'https://github.com/ericfalcon/dolibarr-attestationsap';
-        $this->version         = '2.1.0';
+        $this->version         = '2.1.1';
         $this->const_name      = 'MAIN_MODULE_' . strtoupper($this->name);
         $this->picto           = 'object_attestationsap@attestationsap';
 
@@ -44,8 +50,9 @@ class modAttestationSap extends DolibarrModules
 
         $this->dirs = array('/attestationsap', '/attestationsap/temp', '/attestationsap/archive');
 
-        // Page de config dans admin/
-        $this->config_page_url = array('admin/setup.php@attestationsap');
+        // config_page_url : format 'fichier.php@module'
+        // Dolibarr résout vers htdocs/custom/<module>/admin/<fichier>.php
+        $this->config_page_url = array('setup.php@attestationsap');
 
         $this->hidden       = false;
         $this->depends      = array('modFacture', 'modPropale', 'modSociete');
@@ -54,38 +61,109 @@ class modAttestationSap extends DolibarrModules
         $this->langfiles    = array('attestationsap@attestationsap');
         $this->tabs         = array();
 
-        // Droits
+        // --- Droits ---
         $this->rights = array();
         $r = 0;
-
         $r++; $this->rights[$r] = array($this->numero.sprintf('%02d',$r), 'Lire les attestations SAP',             0, 0, 'read');
         $r++; $this->rights[$r] = array($this->numero.sprintf('%02d',$r), 'Générer les attestations SAP',           0, 0, 'generate');
         $r++; $this->rights[$r] = array($this->numero.sprintf('%02d',$r), 'Envoyer les attestations SAP par email', 0, 0, 'send');
         $r++; $this->rights[$r] = array($this->numero.sprintf('%02d',$r), 'Supprimer les attestations SAP',         0, 0, 'delete');
 
-        // Menus
+        // --- Menus ---
+        // RÈGLE : les URLs des menus pour modules custom sont relatives à DOL_URL_ROOT
+        // Dolibarr NE rajoute PAS /custom/ automatiquement dans les menus
+        // → il faut mettre le chemin complet depuis la racine web
+        // Ex: '/custom/attestationsap/index.php' est CORRECT dans 'url'
+        // (c'est différent de config_page_url qui lui résout automatiquement)
         $this->menu = array();
         $m = 0;
 
-        $base = array('langs'=>'attestationsap@attestationsap','target'=>'','user'=>2);
+        $base = array('langs' => 'attestationsap@attestationsap', 'target' => '', 'user' => 2);
+        $left = array('fk_menu' => 'fk_mainmenu=attestationsap', 'type' => 'left', 'mainmenu' => 'attestationsap');
 
+        // TOP
         $this->menu[$m++] = $base + array(
-            'fk_menu'=>'','type'=>'top','titre'=>'SAP',
-            'prefix'  => img_picto('','object_attestationsap@attestationsap','class="paddingright pictofixedwidth valignmiddle"'),
-            'mainmenu'=>'attestationsap','leftmenu'=>'',
-            'url'     =>'/custom/attestationsap/index.php',
-            'position'=>1000,'enabled'=>'$conf->attestationsap->enabled','perms'=>'$user->rights->attestationsap->read',
+            'fk_menu'  => '',
+            'type'     => 'top',
+            'titre'    => 'SAP',
+            'prefix'   => img_picto('', 'object_attestationsap@attestationsap', 'class="paddingright pictofixedwidth valignmiddle"'),
+            'mainmenu' => 'attestationsap',
+            'leftmenu' => '',
+            'url'      => '/custom/attestationsap/index.php',
+            'position' => 1000,
+            'enabled'  => '$conf->attestationsap->enabled',
+            'perms'    => '$user->rights->attestationsap->read',
         );
 
-        $left = array('fk_menu'=>'fk_mainmenu=attestationsap','type'=>'left','mainmenu'=>'attestationsap');
+        $this->menu[$m++] = $base + $left + array(
+            'titre'    => 'Tableau de bord',
+            'prefix'   => img_picto('', 'home', 'class="paddingright pictofixedwidth valignmiddle"'),
+            'leftmenu' => 'attestationsap_dashboard',
+            'url'      => '/custom/attestationsap/index.php?tab=dashboard',
+            'position' => 95,
+            'enabled'  => '$conf->attestationsap->enabled',
+            'perms'    => '$user->rights->attestationsap->read',
+        );
 
-        $this->menu[$m++] = $base+$left+array('titre'=>'Tableau de bord',        'prefix'=>img_picto('','home','class="paddingright pictofixedwidth valignmiddle"'),  'leftmenu'=>'attestationsap_dashboard','url'=>'/custom/attestationsap/index.php?tab=dashboard','position'=>95, 'enabled'=>'$conf->attestationsap->enabled','perms'=>'$user->rights->attestationsap->read');
-        $this->menu[$m++] = $base+$left+array('titre'=>'Nouveau devis SAP',       'prefix'=>img_picto('','propal','class="paddingright pictofixedwidth valignmiddle"'),'leftmenu'=>'attestationsap_devis',     'url'=>'/comm/propal/card.php?action=create&sap_mode=1&model=devis_sap_v2&modelpdf=devis_sap_v2',     'position'=>100,'enabled'=>'$conf->propal->enabled',         'perms'=>'$user->rights->propal->creer');
-        $this->menu[$m++] = $base+$left+array('titre'=>'Nouvelle facture SAP',    'prefix'=>img_picto('','bill', 'class="paddingright pictofixedwidth valignmiddle"'), 'leftmenu'=>'attestationsap_facture',   'url'=>'/compta/facture/card.php?action=create&sap_mode=1&model=facture_sap_v3&modelpdf=facture_sap_v3','position'=>110,'enabled'=>'$conf->facture->enabled',        'perms'=>'$user->rights->facture->creer');
-        $this->menu[$m++] = $base+$left+array('titre'=>'Générer les attestations','prefix'=>img_picto('','pdf',  'class="paddingright pictofixedwidth valignmiddle"'), 'leftmenu'=>'attestationsap_generate',  'url'=>'/custom/attestationsap/index.php?tab=generate',  'position'=>120,'enabled'=>'$conf->attestationsap->enabled','perms'=>'$user->rights->attestationsap->generate');
-        $this->menu[$m++] = $base+$left+array('titre'=>'Attestations existantes', 'prefix'=>img_picto('','folder','class="paddingright pictofixedwidth valignmiddle"'),'leftmenu'=>'attestationsap_list',      'url'=>'/custom/attestationsap/index.php?tab=list',      'position'=>125,'enabled'=>'$conf->attestationsap->enabled','perms'=>'$user->rights->attestationsap->read');
-        $this->menu[$m++] = $base+$left+array('titre'=>'Paramètres SAP',          'prefix'=>img_picto('','setup','class="paddingright pictofixedwidth valignmiddle"'), 'leftmenu'=>'attestationsap_setup',     'url'=>'/custom/attestationsap/admin/setup.php',         'position'=>130,'enabled'=>'$conf->attestationsap->enabled','perms'=>'$user->admin');
-        $this->menu[$m++] = $base+$left+array('titre'=>'À propos / Aide',         'prefix'=>img_picto('','help', 'class="paddingright pictofixedwidth valignmiddle"'), 'leftmenu'=>'attestationsap_about',     'url'=>'/custom/attestationsap/admin/about.php',         'position'=>140,'enabled'=>'$conf->attestationsap->enabled','perms'=>'$user->rights->attestationsap->read');
+        $this->menu[$m++] = $base + $left + array(
+            'titre'    => 'Nouveau devis SAP',
+            'prefix'   => img_picto('', 'propal', 'class="paddingright pictofixedwidth valignmiddle"'),
+            'leftmenu' => 'attestationsap_devis',
+            'url'      => '/comm/propal/card.php?action=create&sap_mode=1&model=devis_sap_v2&modelpdf=devis_sap_v2',
+            'position' => 100,
+            'enabled'  => '$conf->propal->enabled',
+            'perms'    => '$user->rights->propal->creer',
+        );
+
+        $this->menu[$m++] = $base + $left + array(
+            'titre'    => 'Nouvelle facture SAP',
+            'prefix'   => img_picto('', 'bill', 'class="paddingright pictofixedwidth valignmiddle"'),
+            'leftmenu' => 'attestationsap_facture',
+            'url'      => '/compta/facture/card.php?action=create&sap_mode=1&model=facture_sap_v3&modelpdf=facture_sap_v3',
+            'position' => 110,
+            'enabled'  => '$conf->facture->enabled',
+            'perms'    => '$user->rights->facture->creer',
+        );
+
+        $this->menu[$m++] = $base + $left + array(
+            'titre'    => 'Générer les attestations',
+            'prefix'   => img_picto('', 'pdf', 'class="paddingright pictofixedwidth valignmiddle"'),
+            'leftmenu' => 'attestationsap_generate',
+            'url'      => '/custom/attestationsap/index.php?tab=generate',
+            'position' => 120,
+            'enabled'  => '$conf->attestationsap->enabled',
+            'perms'    => '$user->rights->attestationsap->generate',
+        );
+
+        $this->menu[$m++] = $base + $left + array(
+            'titre'    => 'Attestations existantes',
+            'prefix'   => img_picto('', 'folder', 'class="paddingright pictofixedwidth valignmiddle"'),
+            'leftmenu' => 'attestationsap_list',
+            'url'      => '/custom/attestationsap/index.php?tab=list',
+            'position' => 125,
+            'enabled'  => '$conf->attestationsap->enabled',
+            'perms'    => '$user->rights->attestationsap->read',
+        );
+
+        $this->menu[$m++] = $base + $left + array(
+            'titre'    => 'Paramètres SAP',
+            'prefix'   => img_picto('', 'setup', 'class="paddingright pictofixedwidth valignmiddle"'),
+            'leftmenu' => 'attestationsap_setup',
+            'url'      => '/custom/attestationsap/admin/setup.php',
+            'position' => 130,
+            'enabled'  => '$conf->attestationsap->enabled',
+            'perms'    => '$user->admin',
+        );
+
+        $this->menu[$m++] = $base + $left + array(
+            'titre'    => 'À propos / Aide',
+            'prefix'   => img_picto('', 'help', 'class="paddingright pictofixedwidth valignmiddle"'),
+            'leftmenu' => 'attestationsap_about',
+            'url'      => '/custom/attestationsap/admin/about.php',
+            'position' => 140,
+            'enabled'  => '$conf->attestationsap->enabled',
+            'perms'    => '$user->rights->attestationsap->read',
+        );
     }
 
     public function init($options = '')
