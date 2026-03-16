@@ -34,7 +34,7 @@ if (!isset($conf->modules_parts['document']) || !is_array($conf->modules_parts['
 $conf->modules_parts['document']['attestationsap'] = $attDir;
 
 // Module PDF pour attestation
-$attPdf      = DOL_DOCUMENT_ROOT.'/custom/attestationsap/core/modules/pdf/pdf_attestation_sap.modules.php';
+$attPdf      = DOL_DOCUMENT_ROOT.'/custom/attestationsap/core/modules/attestationsap/pdf_attestation_sap.modules.php';
 $attPdfClass = 'pdf_attestation_sap';
 if (file_exists($attPdf)) require_once $attPdf;
 

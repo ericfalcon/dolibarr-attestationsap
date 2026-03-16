@@ -1,14 +1,15 @@
-
 <?php
-// htdocs/custom/attestationsap/core/modules/modAttestationSap.class.php
+/**
+ * \file        htdocs/custom/attestationsap/core/modules/modAttestationSap.class.php
+ * \ingroup     attestationsap
+ * \brief       Descripteur du module AttestationSAP
+ * \version     2.1.0
+ *
+ * Conforme Dolibarr 14 → 22+ — PHP 7.4+
+ */
 
 require_once DOL_DOCUMENT_ROOT . '/core/modules/DolibarrModules.class.php';
 
-/**
- * Descripteur du module "AttestationSap"
- * - Gestion des attestations fiscales SAP (Services à la Personne)
- * - Installe les modèles PDF (devis/facture), menus, hooks, docmodels
- */
 class modAttestationSap extends DolibarrModules
 {
     public function __construct($db)
@@ -16,256 +17,124 @@ class modAttestationSap extends DolibarrModules
         global $conf;
         $this->db = $db;
 
-        // --- Identité du module ---
-        $this->numero          = 500100;  // ID interne (unique)
+        $this->numero          = 500100;
         $this->rights_class    = 'attestationsap';
         $this->family          = 'financial';
         $this->module_position = '90';
-        $this->name            = 'AttestationSap'; // MAIN_MODULE_ATTESTATIONSAP
-        $this->description     = "Module de gestion des attestations fiscales SAP (Services à la Personne)";
-        $this->descriptionlong = "Génération d'attestations fiscales conformément à l'article 199 sexdecies du CGI";
-        $this->version         = '1.0.0';
+        $this->name            = 'AttestationSap';
+        $this->description     = "Module Services à la Personne (SAP) : devis, factures et attestations fiscales conformes art. 199 sexdecies CGI";
+        $this->descriptionlong = "Génération de devis, factures et attestations fiscales annuelles conformément aux exigences SAP. Conforme NOVA / agrément.";
+        $this->editor_name     = 'AttestationSAP';
+        $this->editor_url      = 'https://github.com/ericfalcon/dolibarr-attestationsap';
+        $this->version         = '2.1.0';
         $this->const_name      = 'MAIN_MODULE_' . strtoupper($this->name);
-        $this->picto           = 'generic';
+        $this->picto           = 'object_attestationsap@attestationsap';
 
-        // --- Compatibilité ---
-        $this->phpmin                = array(7, 0);
-        $this->need_dolibarr_version = array(14, 0); // fonctionne 14 → 22+
+        $this->phpmin                = array(7, 4);
+        $this->need_dolibarr_version = array(14, 0);
 
-        // --- Activation de parties du module ---
         $this->module_parts = array(
-            'hooks'     => array('invoicecard', 'propalcard', 'pdfgeneration', 'formbuilddoc'),
-            'models'    => 1, // autorise docmodels
+            'hooks'     => array('invoicecard', 'propalcard', 'pdfgeneration', 'formbuilddoc', 'thirdpartycard'),
+            'models'    => 1,
             'docmodels' => array(
                 'propal'  => array('class' => '/custom/attestationsap/core/modules/propale/doc/'),
                 'invoice' => array('class' => '/custom/attestationsap/core/modules/facture/doc/'),
             ),
         );
 
-        // --- Répertoires de données (créés à l'activation) ---
-        $this->dirs = array(
-            '/attestationsap',
-            '/attestationsap/temp'
-        );
+        $this->dirs = array('/attestationsap', '/attestationsap/temp', '/attestationsap/archive');
 
-        // --- Page de configuration ---
-        $this->config_page_url = array('setup.php@attestationsap');
+        // Page de config dans admin/
+        $this->config_page_url = array('admin/setup.php@attestationsap');
 
-        // --- Dépendances ---
         $this->hidden       = false;
         $this->depends      = array('modFacture', 'modPropale', 'modSociete');
         $this->requiredby   = array();
         $this->conflictwith = array();
+        $this->langfiles    = array('attestationsap@attestationsap');
+        $this->tabs         = array();
 
-        // --- Traductions ---
-        $this->langfiles = array('attestationsap@attestationsap');
-
-        // --- Droits ---
+        // Droits
         $this->rights = array();
         $r = 0;
 
-        $r++;
-        $this->rights[$r][0] = $this->numero . $r;
-        $this->rights[$r][1] = 'Lire les attestations SAP';
-        $this->rights[$r][4] = 'read';
+        $r++; $this->rights[$r] = array($this->numero.sprintf('%02d',$r), 'Lire les attestations SAP',             0, 0, 'read');
+        $r++; $this->rights[$r] = array($this->numero.sprintf('%02d',$r), 'Générer les attestations SAP',           0, 0, 'generate');
+        $r++; $this->rights[$r] = array($this->numero.sprintf('%02d',$r), 'Envoyer les attestations SAP par email', 0, 0, 'send');
+        $r++; $this->rights[$r] = array($this->numero.sprintf('%02d',$r), 'Supprimer les attestations SAP',         0, 0, 'delete');
 
-        $r++;
-        $this->rights[$r][0] = $this->numero . $r;
-        $this->rights[$r][1] = 'Générer les attestations SAP';
-        $this->rights[$r][4] = 'generate';
+        // Menus
+        $this->menu = array();
+        $m = 0;
 
-        // --- Menus ---
-        $this->menu = array(); $m = 0;
+        $base = array('langs'=>'attestationsap@attestationsap','target'=>'','user'=>2);
 
-        // TOP: SAP
-        $this->menu[$m++] = array(
-            'fk_menu'   => '',
-            'type'      => 'top',
-            'titre'     => 'SAP',
-            'prefix'    => img_picto('', 'generic', 'class="paddingright pictofixedwidth valignmiddle"'),
-            'mainmenu'  => 'attestationsap',
-            'leftmenu'  => '',
-            'url'       => '/custom/attestationsap/index.php',
-            'langs'     => 'attestationsap@attestationsap',
-            'position'  => 1000,
-            'enabled'   => '$conf->attestationsap->enabled',
-            'perms'     => '$user->rights->attestationsap->read',
-            'target'    => '',
-            'user'      => 2
+        $this->menu[$m++] = $base + array(
+            'fk_menu'=>'','type'=>'top','titre'=>'SAP',
+            'prefix'  => img_picto('','object_attestationsap@attestationsap','class="paddingright pictofixedwidth valignmiddle"'),
+            'mainmenu'=>'attestationsap','leftmenu'=>'',
+            'url'     =>'/custom/attestationsap/index.php',
+            'position'=>1000,'enabled'=>'$conf->attestationsap->enabled','perms'=>'$user->rights->attestationsap->read',
         );
 
-        // LEFT: Tableau de bord
-        $this->menu[$m++] = array(
-            'fk_menu'   => 'fk_mainmenu=attestationsap',
-            'type'      => 'left',
-            'titre'     => 'Tableau de bord',
-            'prefix'    => img_picto('', 'object_home', 'class="paddingright pictofixedwidth valignmiddle"'),
-            'mainmenu'  => 'attestationsap',
-            'leftmenu'  => 'attestationsap_dashboard',
-            'url'       => '/custom/attestationsap/index.php?tab=dashboard',
-            'langs'     => 'attestationsap@attestationsap',
-            'position'  => 95,
-            'enabled'   => '$conf->attestationsap->enabled',
-            'perms'     => '$user->rights->attestationsap->read',
-            'target'    => '',
-            'user'      => 2
-        );
+        $left = array('fk_menu'=>'fk_mainmenu=attestationsap','type'=>'left','mainmenu'=>'attestationsap');
 
-        // LEFT: Créer un devis SAP
-        $this->menu[$m++] = array(
-            'fk_menu'   => 'fk_mainmenu=attestationsap',
-            'type'      => 'left',
-            'titre'     => 'Créer un devis SAP',
-            'prefix'    => img_picto('', 'object_propal', 'class="paddingright pictofixedwidth valignmiddle"'),
-            'mainmenu'  => 'attestationsap',
-            'leftmenu'  => 'attestationsap_devis',
-            'url'       => '/comm/propal/card.php?action=create'
-                           .'&sap_mode=1'
-                           .'&model=devis_sap_v2'
-                           .'&modelpdf=devis_sap_v2'
-                           .'&doctemplate=',
-            'langs'     => 'attestationsap@attestationsap',
-            'position'  => 100,
-            'enabled'   => '$conf->propal->enabled',
-            'perms'     => '$user->rights->propal->creer',
-            'target'    => '',
-            'user'      => 2
-        );
-
-        // LEFT: Créer une facture SAP
-        $this->menu[$m++] = array(
-            'fk_menu'   => 'fk_mainmenu=attestationsap',
-            'type'      => 'left',
-            'titre'     => 'Créer une facture SAP',
-            'prefix'    => img_picto('', 'object_invoice', 'class="paddingright pictofixedwidth valignmiddle"'),
-            'mainmenu'  => 'attestationsap',
-            'leftmenu'  => 'attestationsap_facture',
-            'url'       => '/compta/facture/card.php?action=create'
-                           .'&sap_mode=1'
-                           .'&model=facture_sap_v3'
-                           .'&modelpdf=facture_sap_v3'
-                           .'&doctemplate=',
-            'langs'     => 'attestationsap@attestationsap',
-            'position'  => 110,
-            'enabled'   => '$conf->facture->enabled',
-            'perms'     => '$user->rights->facture->creer',
-            'target'    => '',
-            'user'      => 2
-        );
-
-        // LEFT: Générer une attestation fiscale
-        $this->menu[$m++] = array(
-            'fk_menu'   => 'fk_mainmenu=attestationsap',
-            'type'      => 'left',
-            'titre'     => 'Générer une attestation fiscale',
-            'prefix'    => img_picto('', 'object_pdf', 'class="paddingright pictofixedwidth valignmiddle"'),
-            'mainmenu'  => 'attestationsap',
-            'leftmenu'  => 'attestationsap_generate',
-            'url'       => '/custom/attestationsap/index.php?tab=generate',
-            'langs'     => 'attestationsap@attestationsap',
-            'position'  => 120,
-            'enabled'   => '$conf->attestationsap->enabled',
-            'perms'     => '$user->rights->attestationsap->generate',
-            'target'    => '',
-            'user'      => 2
-        );
-
-        // LEFT: Paramètres SAP
-        $this->menu[$m++] = array(
-            'fk_menu'   => 'fk_mainmenu=attestationsap',
-            'type'      => 'left',
-            'titre'     => 'Paramètres SAP',
-            'prefix'    => img_picto('', 'setup', 'class="paddingright pictofixedwidth valignmiddle"'),
-            'mainmenu'  => 'attestationsap',
-            'leftmenu'  => 'attestationsap_setup',
-            'url'       => '/custom/attestationsap/setup.php',
-            'langs'     => 'attestationsap@attestationsap',
-            'position'  => 130,
-            'enabled'   => '$conf->attestationsap->enabled',
-            'perms'     => '$user->admin',
-            'target'    => '',
-            'user'      => 2
-        );
-
-        // LEFT: Mode d'emploi
-        $this->menu[$m++] = array(
-            'fk_menu'   => 'fk_mainmenu=attestationsap',
-            'type'      => 'left',
-            'titre'     => 'Mode d\'emploi',
-            'prefix'    => img_picto('', 'help', 'class="paddingright pictofixedwidth valignmiddle"'),
-            'mainmenu'  => 'attestationsap',
-            'leftmenu'  => 'attestationsap_help',
-            'url'       => '/custom/attestationsap/help.php',
-            'langs'     => 'attestationsap@attestationsap',
-            'position'  => 140,
-            'enabled'   => '$conf->attestationsap->enabled',
-            'perms'     => '$user->rights->attestationsap->read',
-            'target'    => '',
-            'user'      => 2
-        );
+        $this->menu[$m++] = $base+$left+array('titre'=>'Tableau de bord',        'prefix'=>img_picto('','home','class="paddingright pictofixedwidth valignmiddle"'),  'leftmenu'=>'attestationsap_dashboard','url'=>'/custom/attestationsap/index.php?tab=dashboard','position'=>95, 'enabled'=>'$conf->attestationsap->enabled','perms'=>'$user->rights->attestationsap->read');
+        $this->menu[$m++] = $base+$left+array('titre'=>'Nouveau devis SAP',       'prefix'=>img_picto('','propal','class="paddingright pictofixedwidth valignmiddle"'),'leftmenu'=>'attestationsap_devis',     'url'=>'/comm/propal/card.php?action=create&sap_mode=1&model=devis_sap_v2&modelpdf=devis_sap_v2',     'position'=>100,'enabled'=>'$conf->propal->enabled',         'perms'=>'$user->rights->propal->creer');
+        $this->menu[$m++] = $base+$left+array('titre'=>'Nouvelle facture SAP',    'prefix'=>img_picto('','bill', 'class="paddingright pictofixedwidth valignmiddle"'), 'leftmenu'=>'attestationsap_facture',   'url'=>'/compta/facture/card.php?action=create&sap_mode=1&model=facture_sap_v3&modelpdf=facture_sap_v3','position'=>110,'enabled'=>'$conf->facture->enabled',        'perms'=>'$user->rights->facture->creer');
+        $this->menu[$m++] = $base+$left+array('titre'=>'Générer les attestations','prefix'=>img_picto('','pdf',  'class="paddingright pictofixedwidth valignmiddle"'), 'leftmenu'=>'attestationsap_generate',  'url'=>'/custom/attestationsap/index.php?tab=generate',  'position'=>120,'enabled'=>'$conf->attestationsap->enabled','perms'=>'$user->rights->attestationsap->generate');
+        $this->menu[$m++] = $base+$left+array('titre'=>'Attestations existantes', 'prefix'=>img_picto('','folder','class="paddingright pictofixedwidth valignmiddle"'),'leftmenu'=>'attestationsap_list',      'url'=>'/custom/attestationsap/index.php?tab=list',      'position'=>125,'enabled'=>'$conf->attestationsap->enabled','perms'=>'$user->rights->attestationsap->read');
+        $this->menu[$m++] = $base+$left+array('titre'=>'Paramètres SAP',          'prefix'=>img_picto('','setup','class="paddingright pictofixedwidth valignmiddle"'), 'leftmenu'=>'attestationsap_setup',     'url'=>'/custom/attestationsap/admin/setup.php',         'position'=>130,'enabled'=>'$conf->attestationsap->enabled','perms'=>'$user->admin');
+        $this->menu[$m++] = $base+$left+array('titre'=>'À propos / Aide',         'prefix'=>img_picto('','help', 'class="paddingright pictofixedwidth valignmiddle"'), 'leftmenu'=>'attestationsap_about',     'url'=>'/custom/attestationsap/admin/about.php',         'position'=>140,'enabled'=>'$conf->attestationsap->enabled','perms'=>'$user->rights->attestationsap->read');
     }
 
-    /**
-     * Installation du module
-     */
     public function init($options = '')
     {
         global $conf;
 
-        // Charger tables SQL si présentes (silencieux si aucun fichier)
         $result = $this->_load_tables('/attestationsap/sql/');
         if ($result < 0) return -1;
 
-        // Répertoires de données (créés automatiquement par le core sur _init)
+        $e   = (int)$conf->entity;
         $sql = array();
 
-        // Enregistrer les modèles doc (idempotent)
-        $e = (int) $conf->entity;
+        $sql[] = "INSERT IGNORE INTO ".MAIN_DB_PREFIX."document_model (nom,entity,type,libelle,description)
+                  VALUES ('devis_sap_v2',$e,'propal','Devis SAP V2','Modèle devis Services à la Personne V2')";
+        $sql[] = "INSERT IGNORE INTO ".MAIN_DB_PREFIX."document_model (nom,entity,type,libelle,description)
+                  VALUES ('facture_sap_v3',$e,'invoice','Facture SAP V3','Modèle facture Services à la Personne V3')";
 
-        // Devis SAP (V1)
-        $sql[] = "INSERT INTO ".MAIN_DB_PREFIX."document_model (nom, entity, type, libelle, description)
-                  SELECT 'devis_sap', ".$e.", 'propal', 'devis_sap', 'Modèle devis SAP'
-                  WHERE NOT EXISTS (
-                    SELECT 1 FROM ".MAIN_DB_PREFIX."document_model
-                    WHERE nom='devis_sap' AND entity=".$e." AND type='propal'
-                  )";
+        $defaults = array(
+            'ATTESTATIONSAP_FACTURE_MODEL_LIST'   => 'facture_sap_v3',
+            'ATTESTATIONSAP_SERVICES'             => '',
+            'ATTESTATIONSAP_CATEGORY_ID'          => '0',
+            'ATTESTATIONSAP_NUMERO_AGREMENT'      => '',
+            'ATTESTATIONSAP_HABILITATION_TYPE'    => 'declaration',
+            'ATTESTATIONSAP_NATURE_SERVICE'       => 'Assistance informatique à domicile',
+            'ATTESTATIONSAP_MODE'                 => 'prestataire',
+            'ATTESTATIONSAP_INTERVENANT_MODE'     => 'user',
+            'ATTESTATIONSAP_INTERVENANT_USER_ID'  => '0',
+            'ATTESTATIONSAP_INTERVENANT_LIBRE'    => '',
+            'ATTESTATIONSAP_SIGN_NAME'            => '',
+            'ATTESTATIONSAP_SIGN_TEXT'            => '',
+            'ATTESTATIONSAP_EMAIL_SUBJECT'        => 'Attestation fiscale SAP {YEAR}',
+            'ATTESTATIONSAP_EMAIL_BODY'           => "Bonjour,\n\nVeuillez trouver ci-joint votre attestation fiscale pour l'année {YEAR}.\n\nCordialement,\n{COMPANY}",
+            'ATTESTATIONSAP_SHOW_CREDIT_IMPOT'    => '1',
+            'ATTESTATIONSAP_MENTION_TVA_EXONEREE' => '1',
+            'ATTESTATIONSAP_LOGO'                 => '',
+        );
 
-        // Devis SAP V2
-        $sql[] = "INSERT INTO ".MAIN_DB_PREFIX."document_model (nom, entity, type, libelle, description)
-                  SELECT 'devis_sap_v2', ".$e.", 'propal', 'devis_sap_v2', 'Modèle devis SAP V2'
-                  WHERE NOT EXISTS (
-                    SELECT 1 FROM ".MAIN_DB_PREFIX."document_model
-                    WHERE nom='devis_sap_v2' AND entity=".$e." AND type='propal'
-                  )";
-
-        // Facture SAP V3
-        $sql[] = "INSERT INTO ".MAIN_DB_PREFIX."document_model (nom, entity, type, libelle, description)
-                  SELECT 'facture_sap_v3', ".$e.", 'invoice', 'facture_sap_v3', 'Modèle facture SAP v3'
-                  WHERE NOT EXISTS (
-                    SELECT 1 FROM ".MAIN_DB_PREFIX."document_model
-                    WHERE nom='facture_sap_v3' AND entity=".$e." AND type='invoice'
-                  )";
-
-        // Constantes de confort (idempotentes)
-        // - Dossier de sortie fallback (si non configuré par setup)
-        // - Modèle de facture utilisé par l’attestation (par défaut facture_sap_v3)
-        $docroot = $conf->dolibarr_main_document_root.'/attestationsap';
-        $sql[] = "INSERT INTO ".MAIN_DB_PREFIX."const (name, value, type, note, visible, entity)
-                  SELECT 'ATTESTATIONSAP_OUTPUTDIR', '".$this->db->escape($docroot)."', 'chaine', 'Répertoire de sortie des attestations', 0, ".$e."
-                  WHERE NOT EXISTS (SELECT 1 FROM ".MAIN_DB_PREFIX."const WHERE name='ATTESTATIONSAP_OUTPUTDIR' AND entity=".$e.")";
-        $sql[] = "INSERT INTO ".MAIN_DB_PREFIX."const (name, value, type, note, visible, entity)
-                  SELECT 'ATTESTATIONSAP_FACTURE_MODEL_NAME', 'facture_sap_v3', 'chaine', 'Modèle de facture SAP utilisé', 0, ".$e."
-                  WHERE NOT EXISTS (SELECT 1 FROM ".MAIN_DB_PREFIX."const WHERE name='ATTESTATIONSAP_FACTURE_MODEL_NAME' AND entity=".$e.")";
+        foreach ($defaults as $key => $val) {
+            $res = $this->db->query("SELECT rowid FROM ".MAIN_DB_PREFIX."const WHERE name='".$this->db->escape($key)."' AND entity=".$e);
+            if ($res && $this->db->num_rows($res) == 0) {
+                dolibarr_set_const($this->db, $key, $val, 'chaine', 0, '', $e);
+            }
+        }
 
         return $this->_init($sql, $options);
     }
 
-    /**
-     * Désinstallation du module
-     */
     public function remove($options = '')
     {
-        // Pas de suppression agressive (on laisse docmodels et constantes)
         return $this->_remove(array(), $options);
     }
 }

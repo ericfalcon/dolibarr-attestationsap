@@ -18,10 +18,10 @@
  * 10. Logo SAP (upload)
  */
 
-require_once dirname(__FILE__) . '/../../main.inc.php';
+require_once dirname(__FILE__) . '/../../../main.inc.php';
 require_once DOL_DOCUMENT_ROOT . '/core/lib/admin.lib.php';
 require_once DOL_DOCUMENT_ROOT . '/core/lib/files.lib.php';
-require_once DOL_DOCUMENT_ROOT . '/custom/attestationsap/class/SapIntervenants.class.php';
+require_once dirname(__FILE__) . '/../class/SapIntervenants.class.php';
 
 if (!$user->admin) accessforbidden();
 $langs->loadLangs(array('admin', 'other', 'bills', 'propal'));

@@ -5,7 +5,7 @@
  * \brief       Page À propos / Aide — AttestationSAP v2.1
  */
 
-require_once dirname(__FILE__) . '/../../main.inc.php';
+require_once dirname(__FILE__) . '/../../../main.inc.php';
 if (empty($conf->attestationsap->enabled)) accessforbidden();
 if (empty($user->rights->attestationsap->read)) accessforbidden();
 $langs->loadLangs(array('main', 'admin'));
