@@ -1,0 +1,42 @@
+# Translation file
+
+#
+# Generic
+#
+
+# Module label 'ModuleAttestationSAPName'
+ModuleAttestationSAPName = AttestationSAP
+# Module description 'ModuleAttestationSAPDesc'
+ModuleAttestationSAPDesc = AttestationSAP description
+
+#
+# Admin page
+#
+AttestationSAPSetup = AttestationSAP setup
+Settings = Settings
+AttestationSAPSetupPage = AttestationSAP setup page
+NewSection=New section
+ATTESTATIONSAP_MYPARAM1 = My param 1
+ATTESTATIONSAP_MYPARAM1Tooltip = My param 1 tooltip
+ATTESTATIONSAP_MYPARAM2=My param 2
+ATTESTATIONSAP_MYPARAM2Tooltip=My param 2 tooltip
+
+
+#
+# About page
+#
+About = About
+AttestationSAPAbout = About AttestationSAP
+AttestationSAPAboutPage = AttestationSAP about page
+
+#
+# Sample page
+#
+AttestationSAPArea = Home AttestationSAP
+MyPageName = My page name
+
+#
+# Sample widget
+#
+MyWidget = My widget
+MyWidgetDescription = My widget description

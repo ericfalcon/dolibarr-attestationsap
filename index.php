@@ -4,14 +4,7 @@
 // Complet : Générer (lot + suivi), Attestations existantes (filtres), Tableau de bord (devis/factures/attestations),
 // et journalisation Agenda (apparait dans “10 derniers événements” du tiers).
 
-// Chargement de main.inc.php (méthode robuste standard Dolibarr)
-$res = 0;
-$dir = dirname(__FILE__);
-$dirs = array($dir.'/../../main.inc.php', $dir.'/../../../main.inc.php', $dir.'/../../../../main.inc.php');
-foreach ($dirs as $f) {
-    if (!$res && @file_exists($f)) { $res = @include $f; }
-}
-if (!$res) die('Include of main fails');
+require_once dirname(__FILE__).'/../../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/societe/class/societe.class.php';
