@@ -14,7 +14,9 @@
  */
 
 require_once DOL_DOCUMENT_ROOT . '/core/modules/facture/doc/pdf_crabe.modules.php';
-require_once DOL_DOCUMENT_ROOT . '/custom/attestationsap/class/SapIntervenants.class.php';
+// Chargement conditionnel pour ne pas bloquer la détection du modèle par Dolibarr
+$_sapInterFile = DOL_DOCUMENT_ROOT . '/custom/attestationsap/class/SapIntervenants.class.php';
+if (file_exists($_sapInterFile)) require_once $_sapInterFile;
 
 class pdf_facture_sap_v3 extends pdf_crabe
 {
@@ -152,9 +154,14 @@ class pdf_facture_sap_v3 extends pdf_crabe
         }
 
         // ---- Intervenant SAP ----
-        $sapInter    = new SapIntervenants($this->db);
-        $intervenants = $sapInter->getIntervenantsForFacture($object->id, $conf->entity);
-        $interStr    = !empty($intervenants) ? implode(', ', $intervenants) : '';
+        $interStr = '';
+        if (class_exists('SapIntervenants')) {
+            $sapInter    = new SapIntervenants($this->db);
+            $intervenants = $sapInter->getIntervenantsForFacture($object->id, $conf->entity);
+            $interStr    = !empty($intervenants) ? implode(', ', $intervenants) : '';
+        } else {
+            $interStr = getDolGlobalString('ATTESTATIONSAP_INTERVENANT_LIBRE', '');
+        }
 
         // ---- Cadre SAP obligatoire ----
         $sap_y     = $current_y + 4;

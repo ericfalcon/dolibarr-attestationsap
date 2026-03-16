@@ -27,7 +27,8 @@ require_once DOL_DOCUMENT_ROOT . '/core/lib/date.lib.php';
 require_once DOL_DOCUMENT_ROOT . '/core/lib/functions.lib.php';
 require_once DOL_DOCUMENT_ROOT . '/core/lib/functions2.lib.php';
 require_once DOL_DOCUMENT_ROOT . '/societe/class/societe.class.php';
-require_once DOL_DOCUMENT_ROOT . '/custom/attestationsap/class/SapIntervenants.class.php';
+$_sapInterFile = DOL_DOCUMENT_ROOT . '/custom/attestationsap/class/SapIntervenants.class.php';
+if (file_exists($_sapInterFile)) require_once $_sapInterFile;
 
 class pdf_attestation_sap
 {
