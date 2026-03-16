@@ -19,9 +19,9 @@ llxHeader('', 'Fix modèles SAP');
 print load_fiche_titre('Correction des modèles PDF SAP', '', 'setup');
 
 // -----------------------------------------------------------------------
-// 1. NETTOYER llx_document_model
+// 1. NETTOYER la table document_model
 // -----------------------------------------------------------------------
-print '<h3>1. Table llx_document_model</h3>';
+print '<h3>1. Table '.MAIN_DB_PREFIX.'document_model</h3>';
 
 // Noms valides attendus
 $valid_invoice = array('facture_sap_v3');
