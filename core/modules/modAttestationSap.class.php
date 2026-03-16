@@ -223,6 +223,19 @@ class modAttestationSap extends DolibarrModules
         $e = (int) $conf->entity;
 
         // Devis SAP (V1)
+        // ---- Nettoyage des entrées avec suffixes ':...' (ex: 'facture_sap_v3:aucun') ----
+        // Ces suffixes apparaissent quand Dolibarr ne trouve pas le fichier PHP au moment du scan
+        $sql[] = "DELETE FROM ".MAIN_DB_PREFIX."document_model
+                  WHERE entity = ".$e."
+                  AND type = 'invoice'
+                  AND nom LIKE 'facture_sap%'
+                  AND nom LIKE '%:%'";
+        $sql[] = "DELETE FROM ".MAIN_DB_PREFIX."document_model
+                  WHERE entity = ".$e."
+                  AND type = 'invoice'
+                  AND nom NOT IN ('facture_sap_v3')
+                  AND nom LIKE 'facture_sap%'";
+
         $sql[] = "INSERT INTO ".MAIN_DB_PREFIX."document_model (nom, entity, type, libelle, description)
                   SELECT 'devis_sap', ".$e.", 'propal', 'devis_sap', 'Modèle devis SAP'
                   WHERE NOT EXISTS (
