@@ -275,23 +275,25 @@ class pdf_facture_sap_v3 extends pdf_crabe
     {
         global $conf;
 
+        // 1. Logo explicitement configuré dans les paramètres SAP
         $rel = getDolGlobalString('ATTESTATIONSAP_LOGO', '');
         if (!empty($rel)) {
             $path = DOL_DATA_ROOT . '/' . ltrim($rel, '/');
             if (is_readable($path)) return $path;
         }
 
-        $logodir = !empty($conf->mycompany->multidir_output[$object->entity])
-            ? $conf->mycompany->multidir_output[$object->entity]
-            : (isset($conf->mycompany->dir_output) ? $conf->mycompany->dir_output : '');
-
-        foreach (array('/logos/logo-sap.jpg', '/logos/logo-sap.png') as $lp) {
-            if (!empty($logodir) && is_readable($logodir . $lp)) return $logodir . $lp;
-        }
-
+        // 2. Logo officiel SAP livré avec le module (priorité haute)
         $moduleDir = DOL_DOCUMENT_ROOT . '/custom/attestationsap/img/';
         foreach (array('logo-sap.jpg', 'logo-sap.png', 'logo_sap.jpg', 'logo_sap.png') as $fn) {
             if (is_readable($moduleDir . $fn)) return $moduleDir . $fn;
+        }
+
+        // 3. Logo personnalisé dans mycompany/logos/
+        $logodir = !empty($conf->mycompany->multidir_output[$object->entity])
+            ? $conf->mycompany->multidir_output[$object->entity]
+            : (isset($conf->mycompany->dir_output) ? $conf->mycompany->dir_output : '');
+        foreach (array('/logos/logo-sap.jpg', '/logos/logo-sap.png') as $lp) {
+            if (!empty($logodir) && is_readable($logodir . $lp)) return $logodir . $lp;
         }
 
         return '';

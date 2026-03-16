@@ -279,6 +279,24 @@ class pdf_attestation_sap
             $textOffX = $logoFound ? $colL + 50 : $colL;
             $textW    = $pageW - ($logoFound ? 50 : 0);
 
+            // ---- LOGO SAP OFFICIEL (coin supérieur droit) ----
+            $logoSapPath = '';
+            $moduleImgDir = DOL_DOCUMENT_ROOT . '/custom/attestationsap/img/';
+            foreach (array('logo-sap.jpg', 'logo-sap.png') as $_fn) {
+                if (is_readable($moduleImgDir . $_fn)) { $logoSapPath = $moduleImgDir . $_fn; break; }
+            }
+            if (empty($logoSapPath)) {
+                $relSap = getDolGlobalString('ATTESTATIONSAP_LOGO', '');
+                if (!empty($relSap) && is_readable(DOL_DATA_ROOT . '/' . $relSap)) {
+                    $logoSapPath = DOL_DATA_ROOT . '/' . $relSap;
+                }
+            }
+            if (!empty($logoSapPath)) {
+                // Positionner le logo SAP en haut à droite (40mm de large)
+                $pdf->Image($logoSapPath, $colL + $pageW - 40, 8, 40, 0, '', '', 'T', false, 150);
+                $textW = $textW - 42; // réduire la zone texte pour ne pas chevaucher
+            }
+
             // ---- TITRE ----
             $pdf->SetFont('helvetica', 'B', 14);
             $pdf->SetXY($textOffX, 12);

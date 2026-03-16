@@ -167,10 +167,12 @@ class pdf_devis_sap_v2 extends pdf_azur
             $entity  = isset($object->entity) ? $object->entity : (isset($conf->entity) ? $conf->entity : 1);
             $logodir = !empty($conf->mycompany->multidir_output[$entity]) ? $conf->mycompany->multidir_output[$entity] : $conf->mycompany->dir_output;
 
-            if (is_readable($logodir.'/logos/logo-sap.jpg'))      $logo_sap = $logodir.'/logos/logo-sap.jpg';
-            elseif (is_readable($logodir.'/logos/logo-sap.png'))  $logo_sap = $logodir.'/logos/logo-sap.png';
-            elseif (is_readable(DOL_DOCUMENT_ROOT.'/custom/attestationsap/img/logo-sap.jpg')) $logo_sap = DOL_DOCUMENT_ROOT.'/custom/attestationsap/img/logo-sap.jpg';
+            // Logo officiel SAP livré avec le module (priorité 1)
+            if (is_readable(DOL_DOCUMENT_ROOT.'/custom/attestationsap/img/logo-sap.jpg'))     $logo_sap = DOL_DOCUMENT_ROOT.'/custom/attestationsap/img/logo-sap.jpg';
             elseif (is_readable(DOL_DOCUMENT_ROOT.'/custom/attestationsap/img/logo-sap.png')) $logo_sap = DOL_DOCUMENT_ROOT.'/custom/attestationsap/img/logo-sap.png';
+            // Logo personnalisé mycompany (priorité 2)
+            elseif (is_readable($logodir.'/logos/logo-sap.jpg'))  $logo_sap = $logodir.'/logos/logo-sap.jpg';
+            elseif (is_readable($logodir.'/logos/logo-sap.png'))  $logo_sap = $logodir.'/logos/logo-sap.png';
         }
 
         $hauteur_cadre = 34;
