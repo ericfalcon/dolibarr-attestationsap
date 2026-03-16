@@ -1,0 +1,28 @@
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# PHP
+*.log
+/vendor/
+
+# Dolibarr données générées (ne jamais versionner)
+/documents/
+/conf/conf.php
+
+# Fichiers temporaires
+/core/modules/pdf/temp/
+*.tmp
+*.bak
+
+# Archives de build
+*.zip
+*.tar.gz

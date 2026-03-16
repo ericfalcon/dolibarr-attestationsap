@@ -1,0 +1,81 @@
+# htdocs/custom/attestationsap/langs/fr_FR/attestationsap.lang
+# Traductions françaises — AttestationSAP v2.1
+
+AttestationSap = AttestationSAP
+AttestationSapDescription = Module Services à la Personne : devis, factures et attestations fiscales
+
+# Menus
+Dashboard = Tableau de bord
+GenerateAttestations = Générer les attestations
+ExistingAttestations = Attestations existantes
+SapSettings = Paramètres SAP
+AboutHelp = À propos / Aide
+NewSapProposal = Nouveau devis SAP
+NewSapInvoice = Nouvelle facture SAP
+
+# Titres
+AttestationsFiscalesSAP = Attestations fiscales SAP
+GenerationAttestations = Génération des attestations fiscales
+ConfigModuleAttestationSap = Configuration du module AttestationSAP
+
+# Labels génériques
+Year = Année
+FiscalYear = Année fiscale
+Client = Client
+Hours = Heures
+AmountTTC = Montant TTC
+TaxCredit = Crédit d'impôt
+Generate = Générer
+Send = Envoyer
+Delete = Supprimer
+Download = Télécharger
+NotSent = Non envoyée
+Sent = Envoyée le
+
+# Statuts
+StatusGenerated = Générée
+StatusSent = Envoyée
+StatusArchived = Archivée
+
+# Configuration
+HabilitationType = Type d'habilitation SAP
+Declaration = Déclaration préalable (NOVA)
+Agrement = Agrément préfectoral
+DeclarationNum = N° de déclaration SAP
+NatureService = Nature du service
+ModeIntervention = Mode d'intervention
+ModePrestataire = Mode prestataire
+ModeMandataire = Mode mandataire
+IntervenantLabel = Intervenant(s)
+SignataireName = Nom du signataire
+SapCategory = Catégorie produit SAP
+SapKeywords = Mots-clés SAP (fallback)
+FactureModels = Modèles de factures SAP
+ShowCreditImpot = Afficher le crédit d'impôt 50 %
+ShowTvaExoneree = Mention TVA non applicable
+EmailSubject = Objet de l'email
+EmailBody = Corps du message
+LogoSap = Logo SAP
+
+# Mentions légales
+MentionCGI199 = Conformément à l'article 199 sexdecies du Code Général des Impôts
+Mention293B = TVA non applicable - Article 293 B du CGI
+MentionCreditImpot50 = 50 % des sommes versées ouvrent droit à crédit d'impôt
+MentionConserver = Conservez ce document pour votre déclaration de revenus
+MentionDomicile = Les prestations ont été réalisées au domicile du bénéficiaire
+MentionIntervenant = Intervenant ayant réalisé les prestations au domicile du bénéficiaire
+
+# Messages
+SettingsSaved = Paramètres enregistrés avec succès.
+SettingsError = Erreur lors de l'enregistrement des paramètres.
+LogoUploaded = Logo uploadé avec succès.
+LogoDeleted = Logo SAP supprimé.
+AttestationGenerated = Attestation générée avec succès.
+AttestationGenerationError = Erreur lors de la génération de l'attestation.
+NoInvoicesFound = Aucune facture SAP trouvée pour l'année %s avec les modèles configurés.
+NoSapLines = Des factures ont été trouvées mais aucune ligne SAP détectée. Vérifiez vos paramètres.
+DeclarationNumRequired = Le numéro de déclaration SAP est obligatoire.
+AgrementNumRequired = Le numéro d'agrément SAP est obligatoire.
+SignaireRequired = Le nom du signataire est obligatoire.
+MissingEmail = Le client n'a pas d'adresse email configurée.
+IntervenantNotConfigured = ⚠ Intervenant non renseigné — Configurez-le dans Paramètres SAP
