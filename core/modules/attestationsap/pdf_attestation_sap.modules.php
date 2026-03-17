@@ -198,7 +198,7 @@ class pdf_attestation_sap
                 ? $conf->attestationsap->dir_output
                 : DOL_DATA_ROOT . '/attestationsap';
         }
-        if (!dol_is_dir($outputdir) && dol_mkdir($outputdir) < 0) return false;
+        if (!is_dir($outputdir) && dol_mkdir($outputdir) < 0) return false;
         if (!is_writable($outputdir)) return false;
 
         // Chargement factures
