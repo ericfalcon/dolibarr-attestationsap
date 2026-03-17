@@ -279,9 +279,24 @@ class pdf_attestation_sap
                 ? $conf->mycompany->multidir_output[$mysoc->entity]
                 : (isset($conf->mycompany->dir_output) ? $conf->mycompany->dir_output : '');
             $logoFound  = false;
-            foreach (array('/logos/thumbs/mycompany_small.jpg', '/logos/thumbs/mycompany_small.png', '/logos/mycompany.jpg', '/logos/mycompany.png') as $lp) {
+            // Priorité 1 : logo configuré dans la fiche société
+            $logoCandidates = array();
+            if (!empty($mysoc->logo)) {
+                $logoExt  = pathinfo($mysoc->logo, PATHINFO_EXTENSION);
+                $logoBase = pathinfo($mysoc->logo, PATHINFO_FILENAME);
+                $logoCandidates[] = '/logos/thumbs/'.$logoBase.'_small.'.$logoExt;
+                $logoCandidates[] = '/logos/'.$mysoc->logo;
+            }
+            // Priorité 2 : noms génériques Dolibarr
+            $logoCandidates = array_merge($logoCandidates, array(
+                '/logos/thumbs/mycompany_small.jpg',
+                '/logos/thumbs/mycompany_small.png',
+                '/logos/mycompany.jpg',
+                '/logos/mycompany.png',
+            ));
+            foreach ($logoCandidates as $lp) {
                 if (!empty($logoDir) && is_readable($logoDir . $lp)) {
-                    $pdf->Image($logoDir . $lp, $colL, 10, 45, 0, '', '', 'T', false, 300);
+                    $pdf->Image($logoDir . $lp, $colL, 8, 50, 0, '', '', 'T', false, 300);
                     $logoFound = true;
                     break;
                 }
