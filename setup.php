@@ -661,48 +661,48 @@ print '<script>
     document.querySelectorAll("input[name=ATTESTATIONSAP_HABILITATION_TYPE]").forEach(function(r){ r.addEventListener("change", toggleActivitesAgrement); });
     toggleActivitesAgrement();
 
-    // Auto-remplir le champ "Nature affichée" avec toutes les activités cochées
+    // Auto-remplir le champ "Nature affichee" avec toutes les activites cochees
     var activitesLabels = {
-        'garde_enfants_domicile':      'Garde d\'enfants à domicile (<3 ans)',
-        'garde_enfants_3ans':          'Garde d\'enfants à domicile (3 ans et +)',
-        'accompagnement_enfants':      'Accompagnement d\'enfants',
-        'assistance_personnes_agees':  'Assistance personnes âgées',
-        'assistance_personnes_hand':   'Assistance personnes handicapées',
-        'aide_mobilite':               'Aide à la mobilité',
-        'conduite_vehicule':           'Conduite du véhicule',
-        'entretien_maison':            'Entretien de la maison',
-        'petits_travaux_jardinage':    'Jardinage (petits travaux)',
-        'prestations_jardinage':       'Jardinage (grandes surfaces)',
-        'prestations_nettoyage':       'Nettoyage de vitres',
-        'cuisine':                     'Préparation de repas',
-        'livraison_repas':             'Livraison de repas',
-        'collecte_livraison_linge':    'Livraison linge repassé',
-        'assistance_informatique':     'Assistance informatique',
-        'assistance_administrative':   'Assistance administrative',
-        'soins_animaux':               'Soins et promenades d\'animaux',
-        'maintenance_residence':       'Maintenance de la résidence',
-        'gardiennage':                 'Gardiennage de résidence',
-        'soutien_scolaire':            'Soutien scolaire / cours particuliers',
-        'cours_informatique':          'Cours informatique',
-        'cours_musique':               'Cours de musique',
-        'cours_autres':                'Autres cours à domicile',
-        'soins_domicile':              'Soins non médicaux à domicile',
-        'aide_sport':                  'Activités sportives à domicile',
-        'assistance_numerique':        'Assistance démarches numériques',
-        'teleassistance':              'Téléassistance',
-        'interpretation_langue':       'Interprète langue des signes'
+        "garde_enfants_domicile":      "Garde d'enfants a domicile (<3 ans)",
+        "garde_enfants_3ans":          "Garde d'enfants a domicile (3 ans et +)",
+        "accompagnement_enfants":      "Accompagnement d'enfants",
+        "assistance_personnes_agees":  "Assistance personnes agees",
+        "assistance_personnes_hand":   "Assistance personnes handicapees",
+        "aide_mobilite":               "Aide a la mobilite",
+        "conduite_vehicule":           "Conduite du vehicule",
+        "entretien_maison":            "Entretien de la maison",
+        "petits_travaux_jardinage":    "Jardinage (petits travaux)",
+        "prestations_jardinage":       "Jardinage (grandes surfaces)",
+        "prestations_nettoyage":       "Nettoyage de vitres",
+        "cuisine":                     "Preparation de repas",
+        "livraison_repas":             "Livraison de repas",
+        "collecte_livraison_linge":    "Livraison linge repasse",
+        "assistance_informatique":     "Assistance informatique",
+        "assistance_administrative":   "Assistance administrative",
+        "soins_animaux":               "Soins et promenades d'animaux",
+        "maintenance_residence":       "Maintenance de la residence",
+        "gardiennage":                 "Gardiennage de residence",
+        "soutien_scolaire":            "Soutien scolaire / cours particuliers",
+        "cours_informatique":          "Cours informatique",
+        "cours_musique":               "Cours de musique",
+        "cours_autres":                "Autres cours a domicile",
+        "soins_domicile":              "Soins non medicaux a domicile",
+        "aide_sport":                  "Activites sportives a domicile",
+        "assistance_numerique":        "Assistance demarches numeriques",
+        "teleassistance":              "Teleassistance",
+        "interpretation_langue":       "Interprete langue des signes"
     };
     function updateNatureService() {
-        var checked = document.querySelectorAll("input[name='ATTESTATIONSAP_ACTIVITES[]']:checked");
+        var checked = document.querySelectorAll("input[name=\"ATTESTATIONSAP_ACTIVITES[]\"]:checked");
         var parts = [];
         checked.forEach(function(cb) {
             if (activitesLabels[cb.value]) parts.push(activitesLabels[cb.value]);
         });
-        var field = document.getElementById('nature_service_field');
-        if (field) field.value = parts.join(' - ');
+        var field = document.getElementById("nature_service_field");
+        if (field) field.value = parts.join(" - ");
     }
-    document.querySelectorAll("input[name='ATTESTATIONSAP_ACTIVITES[]']").forEach(function(cb) {
-        cb.addEventListener('change', updateNatureService);
+    document.querySelectorAll("input[name=\"ATTESTATIONSAP_ACTIVITES[]\"]").forEach(function(cb) {
+        cb.addEventListener("change", updateNatureService);
     });
 })();
 </script>';
