@@ -159,9 +159,52 @@ if ($action === 'save_settings') {
         $ok = $ok && (dolibarr_set_const($db, 'ATTESTATIONSAP_CATEGORY_ID', $sap_cat_id,   'entier', 0, '', $e) !== false);
         $ok = $ok && (dolibarr_set_const($db, 'ATTESTATIONSAP_SERVICES',    $sap_services, 'chaine', 0, '', $e) !== false);
         $ok = $ok && (dolibarr_set_const($db, 'ATTESTATIONSAP_ACTIVITES',  $activites_csv_new, 'chaine', 0, '', $e) !== false);
-        // Mettre à jour NATURE_SERVICE avec les activités cochées (1ère cochée comme nature principale)
+        // Mettre à jour NATURE_SERVICE avec TOUTES les activités cochées (conformité légale)
         if (!empty($activites_arr)) {
-            $ok = $ok && (dolibarr_set_const($db, 'ATTESTATIONSAP_NATURE_SERVICE', $activites_arr[0], 'chaine', 0, '', $e) !== false);
+            // Table de correspondance clé → libellé court
+            $activites_labels = array(
+                'garde_enfants_domicile'      => 'Garde d'enfants à domicile (<3 ans)',
+                'garde_enfants_3ans'          => 'Garde d'enfants à domicile (3 ans et +)',
+                'accompagnement_enfants'      => 'Accompagnement d'enfants',
+                'assistance_personnes_agees'  => 'Assistance personnes âgées',
+                'assistance_personnes_hand'   => 'Assistance personnes handicapées',
+                'aide_mobilite'               => 'Aide à la mobilité',
+                'conduite_vehicule'           => 'Conduite du véhicule',
+                'entretien_maison'            => 'Entretien de la maison',
+                'petits_travaux_jardinage'    => 'Jardinage (petits travaux)',
+                'prestations_jardinage'       => 'Jardinage (grandes surfaces)',
+                'prestations_nettoyage'       => 'Nettoyage de vitres',
+                'cuisine'                     => 'Préparation de repas',
+                'livraison_repas'             => 'Livraison de repas',
+                'collecte_livraison_linge'    => 'Livraison linge repassé',
+                'assistance_informatique'     => 'Assistance informatique',
+                'assistance_administrative'   => 'Assistance administrative',
+                'soins_animaux'               => 'Soins et promenades d'animaux',
+                'maintenance_residence'       => 'Maintenance de la résidence',
+                'gardiennage'                 => 'Gardiennage de résidence',
+                'soutien_scolaire'            => 'Soutien scolaire / cours particuliers',
+                'cours_informatique'          => 'Cours informatique',
+                'cours_musique'               => 'Cours de musique',
+                'cours_autres'                => 'Autres cours à domicile',
+                'soins_domicile'              => 'Soins non médicaux à domicile',
+                'aide_sport'                  => 'Activités sportives à domicile',
+                'assistance_numerique'        => 'Assistance démarches numériques',
+                'teleassistance'              => 'Téléassistance',
+                'interpretation_langue'       => 'Interprète langue des signes',
+            );
+            $nature_parts = array();
+            foreach ($activites_arr as $act) {
+                $act = trim($act);
+                if (isset($activites_labels[$act])) $nature_parts[] = $activites_labels[$act];
+                elseif (!empty($act)) $nature_parts[] = $act;
+            }
+            $nature_auto = implode(' - ', $nature_parts);
+            // Seulement si l'utilisateur n'a pas modifié manuellement le champ nature
+            $nature_post = GETPOST('ATTESTATIONSAP_NATURE_SERVICE', 'alphanohtml');
+            // Si le champ nature a été laissé vide ou correspond à l'ancienne valeur auto, on recalcule
+            if (empty($nature_post) || $nature_post === getDolGlobalString('ATTESTATIONSAP_NATURE_SERVICE')) {
+                $ok = $ok && (dolibarr_set_const($db, 'ATTESTATIONSAP_NATURE_SERVICE', $nature_auto, 'chaine', 0, '', $e) !== false);
+            }
         }
 
         // Modèles
@@ -407,7 +450,7 @@ $activites_sap = array(
     ),
     // Famille F : Soins & bien-être
     'F' => array(
-        'label' => 'Soins &amp; bien-être',
+        'label' => 'Soins & bien-être',
         'items' => array(
             'soins_domicile'         => array('label' => 'Soins à la personne non médicaux à domicile',              'agrement' => true),
             'aide_sport'             => array('label' => 'Activités sportives / de bien-être à domicile',            'agrement' => false),
@@ -617,6 +660,50 @@ print '<script>
     }
     document.querySelectorAll("input[name=ATTESTATIONSAP_HABILITATION_TYPE]").forEach(function(r){ r.addEventListener("change", toggleActivitesAgrement); });
     toggleActivitesAgrement();
+
+    // Auto-remplir le champ "Nature affichée" avec toutes les activités cochées
+    var activitesLabels = {
+        'garde_enfants_domicile':      'Garde d\'enfants à domicile (<3 ans)',
+        'garde_enfants_3ans':          'Garde d\'enfants à domicile (3 ans et +)',
+        'accompagnement_enfants':      'Accompagnement d\'enfants',
+        'assistance_personnes_agees':  'Assistance personnes âgées',
+        'assistance_personnes_hand':   'Assistance personnes handicapées',
+        'aide_mobilite':               'Aide à la mobilité',
+        'conduite_vehicule':           'Conduite du véhicule',
+        'entretien_maison':            'Entretien de la maison',
+        'petits_travaux_jardinage':    'Jardinage (petits travaux)',
+        'prestations_jardinage':       'Jardinage (grandes surfaces)',
+        'prestations_nettoyage':       'Nettoyage de vitres',
+        'cuisine':                     'Préparation de repas',
+        'livraison_repas':             'Livraison de repas',
+        'collecte_livraison_linge':    'Livraison linge repassé',
+        'assistance_informatique':     'Assistance informatique',
+        'assistance_administrative':   'Assistance administrative',
+        'soins_animaux':               'Soins et promenades d\'animaux',
+        'maintenance_residence':       'Maintenance de la résidence',
+        'gardiennage':                 'Gardiennage de résidence',
+        'soutien_scolaire':            'Soutien scolaire / cours particuliers',
+        'cours_informatique':          'Cours informatique',
+        'cours_musique':               'Cours de musique',
+        'cours_autres':                'Autres cours à domicile',
+        'soins_domicile':              'Soins non médicaux à domicile',
+        'aide_sport':                  'Activités sportives à domicile',
+        'assistance_numerique':        'Assistance démarches numériques',
+        'teleassistance':              'Téléassistance',
+        'interpretation_langue':       'Interprète langue des signes'
+    };
+    function updateNatureService() {
+        var checked = document.querySelectorAll("input[name='ATTESTATIONSAP_ACTIVITES[]']:checked");
+        var parts = [];
+        checked.forEach(function(cb) {
+            if (activitesLabels[cb.value]) parts.push(activitesLabels[cb.value]);
+        });
+        var field = document.getElementById('nature_service_field');
+        if (field) field.value = parts.join(' - ');
+    }
+    document.querySelectorAll("input[name='ATTESTATIONSAP_ACTIVITES[]']").forEach(function(cb) {
+        cb.addEventListener('change', updateNatureService);
+    });
 })();
 </script>';
 
