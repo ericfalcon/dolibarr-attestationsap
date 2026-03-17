@@ -521,8 +521,13 @@ class pdf_attestation_sap
                 $pdf->Cell($colW[0], $lineH, dol_string_nospecial($fac->ref),           1, 0, 'L', $fill);
                 $pdf->Cell($colW[1], $lineH, dol_print_date($fac->datef, 'day'),         1, 0, 'C', $fill);
 
-                // Description avec MultiCell — on sauvegarde X/Y et on réaligne
+                // Description avec MultiCell centrée verticalement
                 $xDescr = $pdf->GetX();
+                // Calculer la hauteur réelle du texte pour centrer
+                $nbLines  = max(1, ceil($pdf->GetStringWidth($descr) / ($colW[2] - 4)));
+                $textH    = $nbLines * 4.2;
+                $offsetY  = ($lineH - $textH) / 2;
+                $pdf->SetXY($xDescr, $yRow + max(0, $offsetY));
                 $pdf->MultiCell($colW[2], 4.2, $descr, 0, 'L', $fill);
                 // Bordure manuelle autour de la zone description
                 $pdf->Rect($xDescr, $yRow, $colW[2], $lineH);
