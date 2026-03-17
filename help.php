@@ -1,335 +1,236 @@
-
 <?php
-// htdocs/custom/attestationsap/help.php — Version PRO
+// htdocs/custom/attestationsap/help.php — Mode d'emploi AttestationSAP v2.1
 
-// -----------------------------------------------------------------------------
-// Bootstrap Dolibarr
-// -----------------------------------------------------------------------------
 $res = 0;
-if (!$res && file_exists(__DIR__ . '/../../main.inc.php')) $res = @include __DIR__ . '/../../main.inc.php';
+if (!$res && file_exists(__DIR__ . '/../../main.inc.php'))    $res = @include __DIR__ . '/../../main.inc.php';
 if (!$res && file_exists(__DIR__ . '/../../../main.inc.php')) $res = @include __DIR__ . '/../../../main.inc.php';
-if (!$res) {
-    header('HTTP/1.1 500 Internal Server Error');
-    echo 'Include of main.inc.php fails';
-    exit;
+if (!$res) { header('HTTP/1.1 500 Internal Server Error'); echo 'Include fails'; exit; }
+
+if (empty($user->rights->attestationsap->read) && empty($user->admin)) accessforbidden();
+
+llxHeader('', 'Mode d\'emploi — AttestationSAP');
+
+print load_fiche_titre('Mode d\'emploi — AttestationSAP v2.1', '', 'help');
+
+print '<div style="max-width:900px;line-height:1.7">';
+
+// ---- INTRO ----
+print '<div style="background:#e8f4fd;border-left:4px solid #2196F3;padding:12px 16px;border-radius:4px;margin-bottom:24px">';
+print '<strong>AttestationSAP</strong> gère l\'ensemble du cycle Services à la Personne dans Dolibarr : ';
+print 'devis SAP → factures SAP → attestations fiscales annuelles envoyées aux clients.';
+print '</div>';
+
+// ---- SOMMAIRE ----
+print '<h3>Sommaire</h3>';
+print '<ol style="columns:2;column-gap:40px">';
+$sections = array(
+    'config'       => '1. Configuration initiale',
+    'devis'        => '2. Créer un devis SAP',
+    'facture'      => '3. Créer une facture SAP',
+    'attestation'  => '4. Générer les attestations',
+    'widget'       => '5. Widget tableau de bord',
+    'activites'    => '6. Activités SAP officielles',
+    'intervenant'  => '7. Gestion des intervenants',
+    'legal'        => '8. Conformité légale',
+    'faq'          => '9. FAQ',
+);
+foreach ($sections as $id => $label) {
+    print '<li><a href="#'.$id.'">'.dol_escape_htmltag($label).'</a></li>';
 }
+print '</ol><hr>';
 
-// -----------------------------------------------------------------------------
-// Sécurité : droits lecture du module ou admin
-// -----------------------------------------------------------------------------
-if (empty($user->rights->attestationsap->read) && empty($user->admin)) {
-    accessforbidden();
-}
+// ---- SECTION 1 : CONFIGURATION ----
+print '<h3 id="config">1. Configuration initiale</h3>';
+print '<p>Allez dans <strong>SAP → Paramètres SAP</strong> et renseignez :</p>';
 
-// -----------------------------------------------------------------------------
-// Langue : forcer fr_FR (utile si profil en fr_BE / fr_CA)
-// -----------------------------------------------------------------------------
-if (method_exists($langs, 'setDefaultLang')) {
-    $langs->setDefaultLang('fr_FR');
-}
-
-// -----------------------------------------------------------------------------
-// Chargement des traductions (robuste)
-// Suffixe après @ = nom EXACT du dossier du module (casse incluse)
-// -----------------------------------------------------------------------------
-$moduleDir = basename(dirname(__FILE__)); // ex: 'attestationsap'
-$loaded = $langs->load('attestationsap@' . $moduleDir);
-if (!$loaded) {
-    $langs->load('attestationsap'); // fallback core si présent
-}
-
-// -----------------------------------------------------------------------------
-// Helper de traduction avec fallback FR si la clé n'est pas trouvée
-// -----------------------------------------------------------------------------
-function T($key, $fallback)
-{
-    global $langs;
-    $txt = $langs->trans($key);
-    return ($txt === $key) ? $fallback : $txt;
-}
-
-// -----------------------------------------------------------------------------
-// Fallbacks FR (page lisible même si .lang non chargé)
-// -----------------------------------------------------------------------------
-$f = array(
-    'ModeEmploiSap'           => "Mode d'emploi SAP",
-    'AttestationSAPUserGuide' => "Guide d'utilisation des attestations SAP",
-    'RappelSAPIntro'          => "Les attestations fiscales SAP doivent être générées et remises aux clients en janvier (année N-1).",
-
-    'Vue_d_ensemble'          => "Vue d'ensemble",
-    'Vue_d_ensemble_text'     => "Ce module permet de générer et d'envoyer les attestations fiscales SAP conformément à l'article 199 sexdecies du CGI.",
-
-    'Tableau_de_bord'         => "Tableau de bord",
-    'DashboardKPI'            => "Suivez les indicateurs clés : générées, en attente, envoyées.",
-    'LiensRapides'            => "Accédez aux actions rapides : Générer, Nouveau devis SAP, Nouvelle facture SAP.",
-
-    'Generer_attestations'    => "Générer les attestations",
-    'Choix_annee_fiscale'     => "Choisissez l'année fiscale (N-1 en janvier par défaut).",
-    'Filtrer_clients'         => "Filtrez les clients (tags, tiers, statut).",
-    'Generation_action'       => "Cliquez sur « Générer » pour produire les PDF.",
-    'Envoi_email'             => "Envoyez par e-mail les attestations (PDF en pièce jointe).",
-
-    'Devis_SAP'               => "Devis SAP",
-    'Devis_SAP_desc'          => "Créez vos devis avec le modèle devis_sap_v2 (mentions spécifiques SAP si nécessaire).",
-
-    'Facture_SAP'             => "Facture SAP",
-    'Facture_SAP_desc'        => "Émettez vos factures avec le modèle facture_sap_v3 (TVA adaptée, mentions légales).",
-
-    'Parametres_SAP'          => "Paramètres SAP",
-    'ParamAnnee'              => "Définissez l'année fiscale par défaut (N-1 en janvier).",
-    'ParamMentionsLegales'    => "Renseignez les mentions légales pour les attestations.",
-    'ParamEmailModele'        => "Personnalisez le modèle d'e-mail d'envoi d'attestation.",
-
-    'Bonnes_pratiques'        => "Bonnes pratiques",
-    'CheckTVA'                => "Vérifiez la TVA selon la nature des prestations SAP.",
-    'DataQuality'             => "Assurez la qualité des données clients (e-mails, adresses).",
-    'Archivage'               => "Conservez une copie PDF des attestations envoyées.",
-
-    'FAQ'                     => "FAQ",
-    'Q_annee'                 => "Comment est déterminée l'année des attestations ?",
-    'R_annee'                 => "Par défaut N-1 en janvier ; sinon l'année courante. Paramétrable dans Paramètres SAP.",
-    'Q_envoi_email'           => "Comment envoyer les attestations par e-mail ?",
-    'R_envoi_email'           => "Utilisez l'action d'envoi groupé depuis la liste une fois les attestations générées."
+$config_steps = array(
+    '1 — Habilitation SAP' => array(
+        'Choisissez <strong>Déclaration préalable (NOVA)</strong> ou <strong>Agrément préfectoral</strong>',
+        'Renseignez votre numéro SAP (ex : <code>SAP500484498</code>) — il sera affiché sur tous les documents',
+        'Renseignez la date d\'obtention',
+    ),
+    '2 — Intervenant(s)' => array(
+        'Sélectionnez votre compte utilisateur Dolibarr (auto-entrepreneur)',
+        '⚠ Vérifiez que votre <strong>Prénom</strong> et <strong>Nom</strong> sont renseignés dans votre fiche utilisateur',
+        'Mode "Texte libre" pour les sous-traitants ponctuels',
+    ),
+    '3 — Activités SAP' => array(
+        'Cochez vos activités parmi les <strong>26 activités officielles</strong> (décret D.7231-1)',
+        'Les activités nécessitant un agrément n\'apparaissent qu\'en mode agrément',
+        'Le champ "Nature affichée" se remplit automatiquement avec toutes vos activités cochées',
+    ),
+    '4 — Signataire' => array(
+        'Renseignez votre nom et fonction (affichés en bas des attestations)',
+    ),
+    '5 — Identification des prestations' => array(
+        'Créez une <strong>catégorie Dolibarr</strong> dédiée SAP et affectez-la à vos produits/services',
+        'Ou renseignez des mots-clés (1 par ligne) comme fallback',
+    ),
+    '6 — Modèles de factures' => array(
+        'Sélectionnez <code>facture_sap_v3</code> dans la liste',
+    ),
+    '7 — Modèles PDF par défaut' => array(
+        'Devis : <code>devis_sap_v2</code>',
+        'Facture : <code>facture_sap_v3</code>',
+    ),
+    '8 — Options' => array(
+        'Activez/désactivez l\'affichage du crédit d\'impôt 50% sur les factures',
+        'Personnalisez le template email d\'envoi des attestations',
+    ),
 );
 
-// -----------------------------------------------------------------------------
-// Header + onglet
-// -----------------------------------------------------------------------------
-$title = T('ModeEmploiSap', $f['ModeEmploiSap']);
-llxHeader('', $title);
-
-$head = array();
-$head[0][0] = DOL_URL_ROOT . '/custom/' . $moduleDir . '/help.php';
-$head[0][1] = $title;
-$head[0][2] = 'help';
-
-print dol_get_fiche_head($head, 'help', $title);
-?>
-
-<style>
-/* -------- Styles page d'aide SAP (pro) -------- */
-.sap-help {
-  --sap-blue: #0b5aa2;
-  --sap-gray: #333;
-  --sap-soft: #f6f8fb;
-  --sap-border: #e3e6ea;
-  --sap-soft2: #f8f9fb;
-}
-.sap-help h1, .sap-help h2, .sap-help h3 { color: var(--sap-blue); }
-.sap-help h2 { margin-top: 1.2rem; font-size: 1.4em; }
-.sap-help h3 { margin-top: 1rem; font-size: 1.15em; color: var(--sap-gray); }
-.sap-help p, .sap-help li, .sap-help dd { font-size: 0.95em; line-height: 1.5; }
-
-.sap-help .sap-callout {
-  background: var(--sap-soft);
-  border: 1px solid var(--sap-border);
-  padding: 12px;
-  border-radius: 6px;
-  margin: 0.5rem 0 1rem;
+foreach ($config_steps as $section => $items) {
+    print '<p><strong>'.$section.'</strong></p><ul>';
+    foreach ($items as $item) print '<li>'.$item.'</li>';
+    print '</ul>';
 }
 
-/* ---- Sommaire (2 colonnes) ---- */
-.sap-help .sap-toc {
-  background: var(--sap-soft2);
-  border: 1px solid var(--sap-border);
-  padding: 12px;
-  border-radius: 6px;
-  margin: 0.5rem 0 1rem;
+// ---- SECTION 2 : DEVIS ----
+print '<hr><h3 id="devis">2. Créer un devis SAP</h3>';
+print '<ol>';
+print '<li>Cliquez sur <strong>SAP → Créer un devis SAP</strong></li>';
+print '<li>Sélectionnez votre client, ajoutez les lignes de prestation</li>';
+print '<li>Le modèle <code>devis_sap_v2</code> est automatiquement sélectionné</li>';
+print '<li>Cliquez <strong>Générer</strong> → le PDF inclut :<ul>';
+print '<li>Cadre "Mentions obligatoires SAP" avec votre numéro de déclaration</li>';
+print '<li>Nature du service et mode d\'intervention</li>';
+print '</ul></li>';
+print '</ol>';
+
+// ---- SECTION 3 : FACTURE ----
+print '<hr><h3 id="facture">3. Créer une facture SAP</h3>';
+print '<ol>';
+print '<li>Cliquez sur <strong>SAP → Créer une facture SAP</strong></li>';
+print '<li>Sélectionnez votre client, ajoutez les lignes de prestation</li>';
+print '<li>Le modèle <code>facture_sap_v3</code> est automatiquement sélectionné</li>';
+print '<li>Cliquez <strong>Générer</strong> → le PDF inclut :<ul>';
+print '<li>Ligne <strong>Crédit d\'impôt 50%</strong> dans les totaux (art. 199 sexdecies CGI)</li>';
+print '<li>Cadre mentions obligatoires : numéro SAP, nature du service, intervenant</li>';
+print '<li>Mention TVA non applicable (art. 293 B CGI) si applicable</li>';
+print '</ul></li>';
+print '</ol>';
+print '<div style="background:#fff3cd;border-left:4px solid #ffc107;padding:10px 14px;border-radius:4px">';
+print '💡 <strong>Important :</strong> Pour que la facture soit prise en compte dans l\'attestation, ';
+print 'la ligne de prestation doit correspondre à votre catégorie SAP ou aux mots-clés configurés.';
+print '</div>';
+
+// ---- SECTION 4 : ATTESTATION ----
+print '<hr><h3 id="attestation">4. Générer les attestations fiscales</h3>';
+print '<p>En <strong>janvier de chaque année</strong>, générez et envoyez les attestations de l\'année précédente :</p>';
+print '<ol>';
+print '<li>Allez dans <strong>SAP → Générer les attestations</strong></li>';
+print '<li>Sélectionnez l\'année fiscale (N-1 par défaut en janvier)</li>';
+print '<li>Cliquez <strong>Générer toutes les attestations</strong></li>';
+print '<li>Vérifiez les PDF générés (téléchargeables)</li>';
+print '<li>Sélectionnez les clients et cliquez <strong>Envoyer</strong></li>';
+print '</ol>';
+print '<p>Chaque attestation PDF contient :</p>';
+print '<ul>';
+print '<li>Coordonnées du prestataire et du bénéficiaire</li>';
+print '<li>Liste des factures avec dates, heures et montants</li>';
+print '<li>Total annuel et crédit d\'impôt estimé (50%)</li>';
+print '<li>Mentions légales obligatoires</li>';
+print '<li>Zone de signature</li>';
+print '</ul>';
+
+// ---- SECTION 5 : WIDGET ----
+print '<hr><h3 id="widget">5. Widget tableau de bord</h3>';
+print '<p>Activez le widget depuis <strong>Accueil → ⚙ Configurer les widgets</strong> → "Widget SAP".</p>';
+print '<p>Le widget affiche :</p>';
+print '<ul>';
+print '<li>🔴 <strong>Rappel en janvier</strong> pour générer les attestations</li>';
+print '<li>Les 5 derniers <strong>devis SAP</strong> avec statut</li>';
+print '<li>Les 5 dernières <strong>factures SAP</strong> avec montant et date</li>';
+print '<li>Lien direct vers la génération des attestations</li>';
+print '</ul>';
+
+// ---- SECTION 6 : ACTIVITES ----
+print '<hr><h3 id="activites">6. Activités SAP officielles</h3>';
+print '<p>Le module propose les <strong>26 activités officielles</strong> du décret D.7231-1, réparties en 6 familles :</p>';
+
+$familles = array(
+    'Garde d\'enfants'              => 'Garde à domicile (<3 ans et 3 ans+), accompagnement',
+    'Assistance aux personnes'      => 'Personnes âgées, handicapées, aide à la mobilité — <span style="color:#e67e22">⚠ Agrément requis</span>',
+    'Entretien & vie quotidienne'   => 'Ménage, jardinage, nettoyage vitres, préparation repas',
+    'Assistance technique'          => 'Informatique, administrative, animaux, maintenance résidence',
+    'Soutien scolaire & cours'      => 'Cours particuliers, informatique, musique',
+    'Soins & bien-être'             => 'Soins non médicaux, sport, numérique, téléassistance — <span style="color:#e67e22">⚠ Agrément requis</span>',
+);
+print '<table class="noborder centpercent"><tr class="liste_titre"><th>Famille</th><th>Activités</th></tr>';
+$flip = false;
+foreach ($familles as $f => $desc) {
+    print '<tr class="'.($flip?'even':'oddeven').'"><td><strong>'.dol_escape_htmltag($f).'</strong></td><td>'.$desc.'</td></tr>';
+    $flip = !$flip;
 }
-.sap-help .sap-toc .grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(220px, 1fr));
-  gap: 6px 16px;
+print '</table>';
+print '<p><small class="opacitymedium">Les activités marquées ⚠ Agrément n\'apparaissent dans le formulaire que si vous avez sélectionné "Agrément préfectoral" dans la section Habilitation.</small></p>';
+
+// ---- SECTION 7 : INTERVENANT ----
+print '<hr><h3 id="intervenant">7. Gestion des intervenants</h3>';
+print '<table class="noborder centpercent"><tr class="liste_titre"><th>Structure</th><th>Configuration</th></tr>';
+$intervenants = array(
+    'Auto-entrepreneur'    => 'Sélectionnez votre compte Dolibarr — renseignez Prénom/Nom dans votre fiche utilisateur',
+    'EURL / SASU'          => 'Idem — votre compte utilisateur = l\'intervenant',
+    'Société + salariés'   => 'Chaque salarié = un compte Dolibarr actif — sélectionnez le bon compte sur chaque facture',
+    'Sous-traitant'        => 'Mode "Texte libre" dans Paramètres SAP — saisissez le nom directement',
+);
+$flip = false;
+foreach ($intervenants as $struct => $conf) {
+    print '<tr class="'.($flip?'even':'oddeven').'"><td><strong>'.dol_escape_htmltag($struct).'</strong></td><td>'.dol_escape_htmltag($conf).'</td></tr>';
+    $flip = !$flip;
 }
-.sap-help .sap-toc .sap-link {
-  text-decoration: none;
-  color: var(--sap-blue);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-.sap-help .sap-toc .sap-link:hover { text-decoration: underline; }
+print '</table>';
 
-/* Neutralisation totale de ::before/::after pour éviter attr(href) */
-.sap-help .sap-toc *, .sap-help .sap-toc *::before, .sap-help .sap-toc *::after {
-  content: none !important;
+// ---- SECTION 8 : LÉGAL ----
+print '<hr><h3 id="legal">8. Conformité légale</h3>';
+print '<table class="noborder centpercent"><tr class="liste_titre"><th>Texte</th><th>Objet</th><th>Où dans le module</th></tr>';
+$legal = array(
+    array('Art. 199 sexdecies CGI',      'Crédit d\'impôt 50% services à domicile',        'Ligne crédit d\'impôt sur factures et attestations'),
+    array('Art. D.7231-1 C. travail',    'Liste officielle des 26 activités SAP',           'Cases à cocher dans Paramètres SAP'),
+    array('Art. D.7233-1 C. travail',    'Mentions obligatoires sur documents SAP',         'Cadre bleu en bas des factures et devis'),
+    array('Art. L.7232-1-1 C. travail',  'Délivrance attestation fiscale annuelle',         'Module Générer les attestations'),
+    array('Art. 293 B CGI',              'TVA non applicable (franchise en base)',           'Mention dans le cadre SAP des factures'),
+);
+$flip = false;
+foreach ($legal as $row) {
+    print '<tr class="'.($flip?'even':'oddeven').'">';
+    foreach ($row as $cell) print '<td>'.dol_escape_htmltag($cell).'</td>';
+    print '</tr>';
+    $flip = !$flip;
 }
+print '</table>';
 
-/* ---- Encadrés cartes ---- */
-.sap-help .sap-card {
-  border: 1px solid var(--sap-border);
-  border-radius: 8px;
-  padding: 12px 14px;
-  margin: 12px 0;
-  background: #fff;
-}
-.sap-help .sap-card .title {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: bold;
-  color: var(--sap-blue);
-  margin-bottom: 6px;
-}
-
-/* ---- Badges ---- */
-.sap-help .badge {
-  display: inline-block;
-  font-size: 0.85em;
-  background: #eef3f8;
-  border: 1px solid #d9e2ec;
-  border-radius: 12px;
-  padding: 2px 8px;
-  margin-left: 6px;
-}
-
-/* ---- Astuce ---- */
-.sap-help .kbd {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-  background: #eef3f8;
-  border: 1px solid #d9e2ec;
-  border-radius: 4px;
-  padding: 0 4px;
+// ---- SECTION 9 : FAQ ----
+print '<hr><h3 id="faq">9. FAQ</h3>';
+$faq = array(
+    'Mes factures n\'apparaissent pas dans les attestations'
+        => 'Vérifiez que le modèle PDF de la facture est bien <code>facture_sap_v3</code> et que les lignes correspondent à votre catégorie SAP ou mots-clés.',
+    'Le modèle facture_sap_v3 affiche ":Aucun"'
+        => 'Allez dans <code>tools/fix_description.php</code> pour vider le champ description en base. Ce problème survient après une ré-installation.',
+    'L\'intervenant affiché est vide'
+        => 'Renseignez votre Prénom et Nom dans votre fiche utilisateur Dolibarr (Utilisateurs & Groupes → votre compte → Modifier).',
+    'Comment mettre à jour le module ?'
+        => 'Via Git : <code>cd htdocs/custom/attestationsap && git pull origin main</code>. Puis désactivez/réactivez le module.',
+    'Le widget SAP n\'apparaît pas dans la liste'
+        => 'Désactivez puis réactivez le module AttestationSAP. Le widget est enregistré automatiquement à l\'activation.',
+    'Quelle différence entre déclaration et agrément ?'
+        => 'La déclaration préalable (NOVA) suffit pour la plupart des activités (ménage, informatique, cours). L\'agrément préfectoral est requis pour les activités auprès de personnes vulnérables (âgées, handicapées, enfants <3 ans).',
+);
+foreach ($faq as $q => $r) {
+    print '<details style="margin-bottom:8px;border:1px solid #dee2e6;border-radius:4px">';
+    print '<summary style="padding:10px 14px;cursor:pointer;font-weight:bold">'.dol_escape_htmltag($q).'</summary>';
+    print '<div style="padding:10px 14px;background:#f8f9fa">'.$r.'</div>';
+    print '</details>';
 }
 
-/* ---- Listes ---- */
-.sap-help ul, .sap-help ol { margin-left: 1.2rem; }
-.sap-help dl dt { font-weight: bold; margin-top: 0.5rem; }
-.sap-help .sap-section { margin-bottom: 1.25rem; }
+print '</div>';
 
-/* Responsive sommaire */
-@media (max-width: 960px) {
-  .sap-help .sap-toc .grid { grid-template-columns: 1fr; }
-}
-</style>
+// Lien paramètres
+print '<br><div class="center">';
+print '<a href="'.dol_buildpath('/custom/attestationsap/setup.php', 1).'" class="butAction">⚙ Ouvrir les Paramètres SAP</a>';
+print ' &nbsp; ';
+print '<a href="'.dol_buildpath('/custom/attestationsap/index.php?tab=generate', 1).'" class="butAction">📋 Générer les attestations</a>';
+print '</div><br>';
 
-<!-- Mini JS pour faire défiler vers les sections -->
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  document.querySelectorAll('.sap-toc .sap-link[data-target]').forEach(function(el) {
-    el.addEventListener('click', function(ev) {
-      ev.preventDefault();
-      var id = el.getAttribute('data-target');
-      var target = document.querySelector(id);
-      if (target) target.scrollIntoView({behavior:'smooth', block:'start'});
-    });
-  });
-});
-</script>
-
-<?php
-// Petit utilitaire pour insérer un SVG inline (icônes propres sans dépendance)
-function sap_icon($name, $size = 18, $color = '#0b5aa2') {
-    $icons = array(
-        'overview'  => '<svg width="'.$size.'" height="'.$size.'" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18M3 12h18M3 18h18" stroke="'.$color.'" stroke-width="2" stroke-linecap="round"/></svg>',
-        'dashboard' => '<svg width="'.$size.'" height="'.$size.'" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="8" height="8" stroke="'.$color.'" stroke-width="2"/><rect x="13" y="3" width="8" height="5" stroke="'.$color.'" stroke-width="2"/><rect x="13" y="10" width="8" height="11" stroke="'.$color.'" stroke-width="2"/><rect x="3" y="13" width="8" height="8" stroke="'.$color.'" stroke-width="2"/></svg>',
-        'generate'  => '<svg width="'.$size.'" height="'.$size.'" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 5v14M5 12h14" stroke="'.$color.'" stroke-width="2" stroke-linecap="round"/></svg>',
-        'quote'     => '<svg width="'.$size.'" height="'.$size.'" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 4h9l5 5v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" stroke="'.$color.'" stroke-width="2"/><path d="M14 4v5h5" stroke="'.$color.'" stroke-width="2"/></svg>',
-        'invoice'   => '<svg width="'.$size.'" height="'.$size.'" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="18" height="18" rx="2" stroke="'.$color.'" stroke-width="2"/><path d="M7 8h10M7 12h10M7 16h6" stroke="'.$color.'" stroke-width="2" stroke-linecap="round"/></svg>',
-        'settings'  => '<svg width="'.$size.'" height="'.$size.'" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" stroke="'.$color.'" stroke-width="2"/><path d="M19.4 15a7.98 7.98 0 0 0 .1-2 7.98 7.98 0 0 0-.1-2l2.1-1.6-2-3.4-2.5 1a8.2 8.2 0 0 0-1.7-1l-.4-2.7H11l-.4 2.7a8.2 8.2 0 0 0-1.7 1l-2.5-1-2 3.4L5.5 11a7.98 7.98 0 0 0-.1 2 7.98 7.98 0 0 0 .1 2l-2.1 1.6 2 3.4 2.5-1c.5.4 1.1.7 1.7 1l.4 2.7h4.8l.4-2.7c.6-.3 1.2-.6 1.7-1l2.5 1 2-3.4-2.1-1.6z" stroke="'.$color.'" stroke-width="2"/></svg>',
-        'tips'      => '<svg width="'.$size.'" height="'.$size.'" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2a7 7 0 0 1 7 7c0 2-1 3.8-2.6 5.1L15 16v2H9v-2l-1.4-1.9A6.9 6.9 0 0 1 5 9a7 7 0 0 1 7-7z" stroke="'.$color.'" stroke-width="2"/><path d="M9 22h6" stroke="'.$color.'" stroke-width="2" stroke-linecap="round"/></svg>',
-        'faq'       => '<svg width="'.$size.'" height="'.$size.'" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="'.$color.'" stroke-width="2"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1 1-1 2.2M12 17h.01" stroke="'.$color.'" stroke-width="2" stroke-linecap="round"/></svg>',
-    );
-    return isset($icons[$name]) ? $icons[$name] : '';
-}
-?>
-
-<div class="sap-help">
-  <!-- Bandeau introductif -->
-  <p class="sap-callout"><?php echo T('RappelSAPIntro', $f['RappelSAPIntro']); ?></p>
-
-  <!-- Sommaire (2 colonnes, pseudo-liens) -->
-  <nav class="sap-toc" aria-label="Sommaire SAP">
-    <strong><?php echo T('AttestationSAPUserGuide', $f['AttestationSAPUserGuide']); ?></strong>
-    <div class="grid">
-      <span class="sap-link" data-target="#overview"><?php echo sap_icon('overview'); ?> <?php echo T('Vue_d_ensemble', $f['Vue_d_ensemble']); ?></span>
-      <span class="sap-link" data-target="#dashboard"><?php echo sap_icon('dashboard'); ?> <?php echo T('Tableau_de_bord', $f['Tableau_de_bord']); ?></span>
-      <span class="sap-link" data-target="#generate"><?php echo sap_icon('generate'); ?> <?php echo T('Generer_attestations', $f['Generer_attestations']); ?></span>
-      <span class="sap-link" data-target="#quotes"><?php echo sap_icon('quote'); ?> <?php echo T('Devis_SAP', $f['Devis_SAP']); ?></span>
-      <span class="sap-link" data-target="#invoices"><?php echo sap_icon('invoice'); ?> <?php echo T('Facture_SAP', $f['Facture_SAP']); ?></span>
-      <span class="sap-link" data-target="#settings"><?php echo sap_icon('settings'); ?> <?php echo T('Parametres_SAP', $f['Parametres_SAP']); ?></span>
-      <span class="sap-link" data-target="#bestpractices"><?php echo sap_icon('tips'); ?> <?php echo T('Bonnes_pratiques', $f['Bonnes_pratiques']); ?></span>
-      <span class="sap-link" data-target="#faq"><?php echo sap_icon('faq'); ?> <?php echo T('FAQ', $f['FAQ']); ?></span>
-    </div>
-  </nav>
-
-  <!-- Vue d'ensemble -->
-  <section id="overview" class="sap-section sap-card">
-    <div class="title"><?php echo sap_icon('overview'); ?> <?php echo T('Vue_d_ensemble', $f['Vue_d_ensemble']); ?></div>
-    <p><?php echo T('Vue_d_ensemble_text', $f['Vue_d_ensemble_text']); ?></p>
-  </section>
-
-  <!-- Tableau de bord -->
-  <section id="dashboard" class="sap-section sap-card">
-    <div class="title"><?php echo sap_icon('dashboard'); ?> <?php echo T('Tableau_de_bord', $f['Tableau_de_bord']); ?></div>
-    <ul>
-      <li><?php echo T('DashboardKPI', $f['DashboardKPI']); ?></li>
-      <li><?php echo T('LiensRapides', $f['LiensRapides']); ?></li>
-    </ul>
-  </section>
-
-  <!-- Générer les attestations -->
-  <section id="generate" class="sap-section sap-card">
-    <div class="title"><?php echo sap_icon('generate'); ?> <?php echo T('Generer_attestations', $f['Generer_attestations']); ?>
-      <span class="badge">PDF</span>
-      <span class="badge">E-mail</span>
-    </div>
-    <ol>
-      <li><?php echo T('Choix_annee_fiscale', $f['Choix_annee_fiscale']); ?></li>
-      <li><?php echo T('Filtrer_clients', $f['Filtrer_clients']); ?></li>
-      <li><?php echo T('Generation_action', $f['Generation_action']); ?></li>
-      <li><?php echo T('Envoi_email', $f['Envoi_email']); ?></li>
-    </ol>
-    <p><span class="kbd">Astuce</span> : <?php echo T('Archivage', $f['Archivage']); ?></p>
-  </section>
-
-  <!-- Devis SAP -->
-  <section id="quotes" class="sap-section sap-card">
-    <div class="title"><?php echo sap_icon('quote'); ?> <?php echo T('Devis_SAP', $f['Devis_SAP']); ?></div>
-    <p><?php echo T('Devis_SAP_desc', $f['Devis_SAP_desc']); ?></p>
-  </section>
-
-  <!-- Facture SAP -->
-  <section id="invoices" class="sap-section sap-card">
-    <div class="title"><?php echo sap_icon('invoice'); ?> <?php echo T('Facture_SAP', $f['Facture_SAP']); ?></div>
-    <p><?php echo T('Facture_SAP_desc', $f['Facture_SAP_desc']); ?></p>
-    <p><span class="kbd">TVA</span> : <?php echo T('CheckTVA', $f['CheckTVA']); ?></p>
-  </section>
-
-  <!-- Paramètres SAP -->
-  <section id="settings" class="sap-section sap-card">
-    <div class="title"><?php echo sap_icon('settings'); ?> <?php echo T('Parametres_SAP', $f['Parametres_SAP']); ?></div>
-    <ul>
-      <li><?php echo T('ParamAnnee', $f['ParamAnnee']); ?></li>
-      <li><?php echo T('ParamMentionsLegales', $f['ParamMentionsLegales']); ?></li>
-      <li><?php echo T('ParamEmailModele', $f['ParamEmailModele']); ?></li>
-    </ul>
-  </section>
-
-  <!-- Bonnes pratiques -->
-  <section id="bestpractices" class="sap-section sap-card">
-    <div class="title"><?php echo sap_icon('tips'); ?> <?php echo T('Bonnes_pratiques', $f['Bonnes_pratiques']); ?></div>
-    <ul>
-      <li><?php echo T('CheckTVA', $f['CheckTVA']); ?></li>
-      <li><?php echo T('DataQuality', $f['DataQuality']); ?></li>
-      <li><?php echo T('Archivage', $f['Archivage']); ?></li>
-    </ul>
-  </section>
-
-  <!-- FAQ -->
-  <section id="faq" class="sap-section sap-card">
-    <div class="title"><?php echo sap_icon('faq'); ?> <?php echo T('FAQ', $f['FAQ']); ?></div>
-    <dl>
-      <dt><?php echo T('Q_annee', $f['Q_annee']); ?></dt>
-      <dd><?php echo T('R_annee', $f['R_annee']); ?></dd>
-      <dt><?php echo T('Q_envoi_email', $f['Q_envoi_email']); ?></dt>
-      <dd><?php echo T('R_envoi_email', $f['R_envoi_email']); ?></dd>
-    </dl>
-  </section>
-</div>
-
-<?php
-print dol_get_fiche_end();
 llxFooter();
 $db->close();
