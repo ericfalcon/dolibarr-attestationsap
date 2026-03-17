@@ -348,69 +348,72 @@ print '<td>Utilisé si "Texte libre" est sélectionné</td></tr>';
 print '<tr class="liste_titre"><td colspan="3"><strong>3 — Activités SAP & mode d\'intervention</strong> &nbsp; <small class="opacitymedium">Décret D.7231-1 du Code du travail</small></td></tr>';
 
 // Liste officielle des activités SAP (D.7231-1)
+// Structure : 'clé' => array('label' => ..., 'agrement' => bool)
+// agrement=true = nécessite agrément préfectoral (art. L.7232-1 Code du travail)
+// agrement=false = simple déclaration préalable suffit
 $activites_sap = array(
     // Famille A : Garde d'enfants
     'A' => array(
         'label' => 'Garde d'enfants',
         'items' => array(
-            'garde_enfants_domicile'      => 'Garde d'enfants à domicile (moins de 3 ans)',
-            'garde_enfants_3ans'          => 'Garde d'enfants à domicile (3 ans et plus)',
-            'accompagnement_enfants'      => 'Accompagnement d'enfants dans les déplacements',
+            'garde_enfants_domicile' => array('label' => 'Garde d'enfants à domicile (moins de 3 ans)',       'agrement' => true),
+            'garde_enfants_3ans'     => array('label' => 'Garde d'enfants à domicile (3 ans et plus)',         'agrement' => false),
+            'accompagnement_enfants' => array('label' => 'Accompagnement d'enfants dans les déplacements',     'agrement' => true),
         ),
     ),
     // Famille B : Assistance aux personnes âgées/handicapées
     'B' => array(
         'label' => 'Assistance aux personnes',
         'items' => array(
-            'assistance_personnes_agees'  => 'Assistance aux personnes âgées (hors soins)',
-            'assistance_personnes_hand'   => 'Assistance aux personnes handicapées (hors soins)',
-            'aide_mobilite'               => 'Aide à la mobilité / transport accompagné',
-            'conduite_vehicule'           => 'Conduite du véhicule de la personne',
+            'assistance_personnes_agees' => array('label' => 'Assistance aux personnes âgées (hors soins)',         'agrement' => true),
+            'assistance_personnes_hand'  => array('label' => 'Assistance aux personnes handicapées (hors soins)',    'agrement' => true),
+            'aide_mobilite'              => array('label' => 'Aide à la mobilité / transport accompagné',            'agrement' => true),
+            'conduite_vehicule'          => array('label' => 'Conduite du véhicule de la personne',                  'agrement' => true),
         ),
     ),
     // Famille C : Entretien de la maison
     'C' => array(
         'label' => 'Entretien & vie quotidienne',
         'items' => array(
-            'entretien_maison'            => 'Entretien de la maison et travaux ménagers',
-            'petits_travaux_jardinage'    => 'Petits travaux de jardinage',
-            'prestations_jardinage'       => 'Prestations de jardinage (agrément obligatoire)',
-            'prestations_nettoyage'       => 'Prestations de nettoyage de vitres',
-            'cuisine'                     => 'Préparation de repas / livraison de courses',
-            'livraison_repas'             => 'Livraison de repas à domicile',
-            'collecte_livraison_linge'    => 'Collecte et livraison du linge repassé',
+            'entretien_maison'         => array('label' => 'Entretien de la maison et travaux ménagers',             'agrement' => false),
+            'petits_travaux_jardinage' => array('label' => 'Petits travaux de jardinage',                            'agrement' => false),
+            'prestations_jardinage'    => array('label' => 'Prestations de jardinage (grandes surfaces)',             'agrement' => true),
+            'prestations_nettoyage'    => array('label' => 'Prestations de nettoyage de vitres',                     'agrement' => false),
+            'cuisine'                  => array('label' => 'Préparation de repas / livraison de courses',            'agrement' => false),
+            'livraison_repas'          => array('label' => 'Livraison de repas à domicile (personnes dépendantes)',  'agrement' => true),
+            'collecte_livraison_linge' => array('label' => 'Collecte et livraison du linge repassé',                 'agrement' => false),
         ),
     ),
-    // Famille D : Assistance informatique et administrative
+    // Famille D : Assistance technique et administrative
     'D' => array(
         'label' => 'Assistance technique & administrative',
         'items' => array(
-            'assistance_informatique'     => 'Assistance informatique à domicile',
-            'assistance_administrative'   => 'Assistance administrative à domicile',
-            'soins_esthetique'            => 'Soins et promenades d'animaux (hors vétérinaire)',
-            'maintenance_appareils'       => 'Maintenance, entretien et vigilance de la résidence',
-            'gardiennage'                 => 'Gardiennage et surveillance temporaire de résidence',
+            'assistance_informatique'   => array('label' => 'Assistance informatique à domicile',                   'agrement' => false),
+            'assistance_administrative' => array('label' => 'Assistance administrative à domicile',                  'agrement' => false),
+            'soins_animaux'             => array('label' => 'Soins et promenades d'animaux (hors vétérinaire)',     'agrement' => false),
+            'maintenance_residence'     => array('label' => 'Maintenance et entretien de la résidence',              'agrement' => false),
+            'gardiennage'               => array('label' => 'Gardiennage et surveillance temporaire de résidence',   'agrement' => false),
         ),
     ),
     // Famille E : Soutien scolaire / cours
     'E' => array(
         'label' => 'Soutien scolaire & cours',
         'items' => array(
-            'soutien_scolaire'            => 'Soutien scolaire à domicile / cours particuliers',
-            'cours_informatique'          => 'Cours informatique à domicile',
-            'cours_musique'               => 'Cours de musique à domicile',
-            'cours_autres'                => 'Autres cours à domicile',
+            'soutien_scolaire'   => array('label' => 'Soutien scolaire à domicile / cours particuliers',             'agrement' => false),
+            'cours_informatique' => array('label' => 'Cours informatique à domicile',                                'agrement' => false),
+            'cours_musique'      => array('label' => 'Cours de musique à domicile',                                  'agrement' => false),
+            'cours_autres'       => array('label' => 'Autres cours à domicile',                                      'agrement' => false),
         ),
     ),
-    // Famille F : Autres
+    // Famille F : Soins & bien-être
     'F' => array(
         'label' => 'Soins & bien-être',
         'items' => array(
-            'soins_domicile'              => 'Soins à la personne non médicaux à domicile',
-            'aide_sport'                  => 'Activités sportives / de bien-être à domicile',
-            'assistance_numerique'        => 'Assistance aux démarches numériques',
-            'teleassistance'              => 'Téléassistance et visio-assistance',
-            'interpretation_langue'       => 'Interprète en langue des signes / technicien transcription',
+            'soins_domicile'         => array('label' => 'Soins à la personne non médicaux à domicile',              'agrement' => true),
+            'aide_sport'             => array('label' => 'Activités sportives / de bien-être à domicile',            'agrement' => false),
+            'assistance_numerique'   => array('label' => 'Assistance aux démarches numériques',                      'agrement' => false),
+            'teleassistance'         => array('label' => 'Téléassistance et visio-assistance',                       'agrement' => true),
+            'interpretation_langue'  => array('label' => 'Interprète en langue des signes',                          'agrement' => true),
         ),
     ),
 );
@@ -421,11 +424,17 @@ foreach ($activites_sap as $famille_key => $famille) {
     print '<div style="min-width:280px;flex:1;background:#f8f9fa;border:1px solid #dee2e6;border-radius:6px;padding:10px">';
     print '<strong style="color:#003d7a;display:block;margin-bottom:6px;border-bottom:1px solid #dee2e6;padding-bottom:4px">'
          .dol_escape_htmltag($famille['label']).'</strong>';
-    foreach ($famille['items'] as $key => $label) {
-        $checked = !empty($activites_sel[$key]) ? ' checked' : '';
-        print '<label style="display:block;margin:3px 0;cursor:pointer">';
+    foreach ($famille['items'] as $key => $item) {
+        $label    = $item['label'];
+        $needs_ag = $item['agrement'];
+        $checked  = !empty($activites_sel[$key]) ? ' checked' : '';
+        // Masquer si agrement requis et type=declaration
+        $hidden   = ($needs_ag && $hab_type === 'declaration') ? ' style="display:none"' : '';
+        $css_ag   = $needs_ag ? ' sap-agrement-only' : '';
+        print '<label class="sap-activite'.$css_ag.'"'.$hidden.' style="display:block;margin:3px 0;cursor:pointer">';
         print '<input type="checkbox" name="ATTESTATIONSAP_ACTIVITES[]" value="'.dol_escape_htmltag($key).'"'.$checked.'> ';
         print dol_escape_htmltag($label);
+        if ($needs_ag) print ' <span style="font-size:10px;color:#e67e22;font-weight:bold" title="Nécessite un agrément préfectoral">⚠ Agr.</span>';
         print '</label>';
     }
     print '</div>';
@@ -591,6 +600,23 @@ print '<script>
     }
     document.querySelectorAll("input[name=ATTESTATIONSAP_INTERVENANT_MODE]").forEach(function(r){ r.addEventListener("change", toggleInterv); });
     toggleInterv();
+
+    // Afficher/masquer les activités nécessitant un agrément
+    function toggleActivitesAgrement() {
+        var type = "declaration";
+        document.querySelectorAll("input[name=ATTESTATIONSAP_HABILITATION_TYPE]").forEach(function(r){ if(r.checked) type = r.value; });
+        document.querySelectorAll(".sap-agrement-only").forEach(function(el) {
+            if (type === "agrement") {
+                el.style.display = "block";
+            } else {
+                el.style.display = "none";
+                var cb = el.querySelector("input[type=checkbox]");
+                if (cb) cb.checked = false;
+            }
+        });
+    }
+    document.querySelectorAll("input[name=ATTESTATIONSAP_HABILITATION_TYPE]").forEach(function(r){ r.addEventListener("change", toggleActivitesAgrement); });
+    toggleActivitesAgrement();
 })();
 </script>';
 
