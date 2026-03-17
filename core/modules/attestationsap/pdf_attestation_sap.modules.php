@@ -296,13 +296,13 @@ class pdf_attestation_sap
             ));
             foreach ($logoCandidates as $lp) {
                 if (!empty($logoDir) && is_readable($logoDir . $lp)) {
-                    $pdf->Image($logoDir . $lp, $colL, 8, 50, 0, '', '', 'T', false, 300);
+                    $pdf->Image($logoDir . $lp, $colL, 8, 40, 0, '', '', 'T', false, 300);
                     $logoFound = true;
                     break;
                 }
             }
-            $textOffX = $logoFound ? $colL + 50 : $colL;
-            $textW    = $pageW - ($logoFound ? 50 : 0);
+            $textOffX = $logoFound ? $colL + 44 : $colL;
+            $textW    = $pageW - ($logoFound ? 44 : 0) - 42; // -42 pour le logo SAP à droite
 
             // ---- LOGO SAP OFFICIEL (coin supérieur droit) ----
             $logoSapPath = '';
