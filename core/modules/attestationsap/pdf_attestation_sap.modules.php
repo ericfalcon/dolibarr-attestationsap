@@ -669,7 +669,10 @@ class pdf_attestation_sap
             if (!empty($mysoc->email))   $cachetLines[] = $mysoc->email;
             if (!empty($numAgrement))    $cachetLines[] = 'N° SAP : ' . $numAgrement;
 
-            $cachetH = $signBoxH;
+            // Hauteur du cachet selon le nombre de lignes
+            $cachetH = count($cachetLines) * 3.8 + 4;
+            // Le cadre signature s'adapte si le cachet est plus grand
+            if ($cachetH > $signBoxH) $signBoxH = $cachetH;
 
             // Fond et bordure du cachet (en fond, la signature viendra par-dessus)
             $pdf->SetFillColor(248, 250, 255);
@@ -677,13 +680,13 @@ class pdf_attestation_sap
             $pdf->SetLineWidth(0.4);
             $pdf->RoundedRect($cachetX, $cachetY, $cachetW, $cachetH, 1.5, '1234', 'DF');
 
-            // Texte du cachet
+            // Texte du cachet — Cell avec flag stretch=1 pour tronquer si trop long
             $pdf->SetFont('helvetica', '', 7);
             $pdf->SetTextColor(30, 50, 100);
             foreach ($cachetLines as $i => $line) {
                 $pdf->SetFont('helvetica', ($i === 0 ? 'B' : ''), 7);
                 $pdf->SetXY($cachetX + 2, $cachetY + 2 + $i * 3.8);
-                $pdf->Cell($cachetW - 4, 3.8, $line, 0, 0, 'L');
+                $pdf->Cell($cachetW - 4, 3.8, $line, 0, 0, 'L', false, '', 1);
             }
             $pdf->SetTextColor(0, 0, 0);
             $pdf->SetLineWidth(0.2);
