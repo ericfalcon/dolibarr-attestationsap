@@ -3,7 +3,10 @@ require_once dirname(__FILE__) . '/../../../main.inc.php';
 if (!$user->admin) accessforbidden();
 llxHeader('', 'Check PDF size');
 
-$dir = getDolGlobalString('ATTESTATIONSAP_OUTPUTDIR', DOL_DATA_ROOT.'/attestationsap');
+$dir = getDolGlobalString('ATTESTATIONSAP_OUTPUTDIR', '');
+if (empty($dir) || strpos($dir, DOL_DATA_ROOT) !== 0) {
+    $dir = DOL_DATA_ROOT.'/attestationsap';
+}
 if (!is_dir($dir)) { print '<p>Dossier introuvable</p>'; llxFooter(); exit; }
 
 $files = glob($dir.'/*.pdf');
