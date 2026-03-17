@@ -648,36 +648,17 @@ class pdf_attestation_sap
             $signBoxW = $pageW / 2;
             $signBoxH = 22;
             $pdf->Rect($signBoxX, $signBoxY, $signBoxW, $signBoxH, 'D');
-            if (!empty($signImagePath)) {
-                // Intégrer l'image de signature centrée dans le rectangle
-                $imgInfo = @getimagesize($signImagePath);
-                if ($imgInfo) {
-                    $imgW = $signBoxW - 6;
-                    $imgH = $signBoxH - 4;
-                    // Respecter les proportions
-                    $ratio = $imgInfo[0] / max(1, $imgInfo[1]);
-                    if ($imgW / $ratio > $imgH) $imgW = $imgH * $ratio;
-                    else $imgH = $imgW / $ratio;
-                    $imgX = $signBoxX + ($signBoxW - $imgW) / 2;
-                    $imgY = $signBoxY + ($signBoxH - $imgH) / 2;
-                    $ext = strtolower(pathinfo($signImagePath, PATHINFO_EXTENSION));
-                    $type = ($ext === 'png') ? 'PNG' : 'JPEG';
-                    $pdf->Image($signImagePath, $imgX, $imgY, $imgW, $imgH, $type);
-                }
-            }
+            // (signature dessinée après le cachet pour être au premier plan)
 
             // ================================================================
-            // CACHET AUTOMATIQUE (données entreprise Dolibarr)
+            // CACHET AUTOMATIQUE EN FOND (données entreprise Dolibarr)
+            // La signature sera redessinée par-dessus ensuite
             // ================================================================
-            $pdf->SetY($signBoxY + $signBoxH + 4);
-            $pdf->SetX($colL + $pageW / 2);
+            $cachetX = $signBoxX;
+            $cachetW = $signBoxW;
+            $cachetY = $signBoxY;
 
-            // Encadré cachet sous la signature
-            $cachetX = $colL + $pageW / 2;
-            $cachetW = $pageW / 2;
-            $cachetY = $pdf->GetY();
-
-            // Construire les lignes du cachet
+            // Construire les lignes du cachet (sans dol_string_nospecial qui ajoute des _)
             $cachetLines = array();
             if (!empty($mysoc->name))    $cachetLines[] = $mysoc->name;
             if (!empty($mysoc->address)) $cachetLines[] = $mysoc->address;
@@ -688,9 +669,9 @@ class pdf_attestation_sap
             if (!empty($mysoc->email))   $cachetLines[] = $mysoc->email;
             if (!empty($numAgrement))    $cachetLines[] = 'N° SAP : ' . $numAgrement;
 
-            $cachetH = count($cachetLines) * 3.8 + 4;
+            $cachetH = $signBoxH;
 
-            // Fond et bordure du cachet
+            // Fond et bordure du cachet (en fond, la signature viendra par-dessus)
             $pdf->SetFillColor(248, 250, 255);
             $pdf->SetDrawColor(100, 130, 180);
             $pdf->SetLineWidth(0.4);
@@ -702,10 +683,27 @@ class pdf_attestation_sap
             foreach ($cachetLines as $i => $line) {
                 $pdf->SetFont('helvetica', ($i === 0 ? 'B' : ''), 7);
                 $pdf->SetXY($cachetX + 2, $cachetY + 2 + $i * 3.8);
-                $pdf->Cell($cachetW - 4, 3.8, dol_string_nospecial($line), 0, 0, 'L');
+                $pdf->Cell($cachetW - 4, 3.8, $line, 0, 0, 'L');
             }
             $pdf->SetTextColor(0, 0, 0);
             $pdf->SetLineWidth(0.2);
+
+            // Redessiner la signature PAR-DESSUS le cachet
+            if (!empty($signImagePath)) {
+                $imgInfo = @getimagesize($signImagePath);
+                if ($imgInfo) {
+                    $imgW = $signBoxW - 6;
+                    $imgH = $signBoxH - 4;
+                    $ratio = $imgInfo[0] / max(1, $imgInfo[1]);
+                    if ($imgW / $ratio > $imgH) $imgW = $imgH * $ratio;
+                    else $imgH = $imgW / $ratio;
+                    $imgX = $signBoxX + ($signBoxW - $imgW) / 2;
+                    $imgY = $signBoxY + ($signBoxH - $imgH) / 2;
+                    $ext = strtolower(pathinfo($signImagePath, PATHINFO_EXTENSION));
+                    $type = ($ext === 'png') ? 'PNG' : 'JPEG';
+                    $pdf->Image($signImagePath, $imgX, $imgY, $imgW, $imgH, $type);
+                }
+            }
 
             // ---- Pied de page ----
             $pdf->SetY(-14);
