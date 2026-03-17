@@ -280,6 +280,15 @@ class modAttestationSap extends DolibarrModules
                   SELECT 'ATTESTATIONSAP_FACTURE_MODEL_NAME', 'facture_sap_v3', 'chaine', 'Modèle de facture SAP utilisé', 0, ".$e."
                   WHERE NOT EXISTS (SELECT 1 FROM ".MAIN_DB_PREFIX."const WHERE name='ATTESTATIONSAP_FACTURE_MODEL_NAME' AND entity=".$e.")";
 
+        // Copier le widget dans DOL_DOCUMENT_ROOT/core/boxes/ (Dolibarr 22 ne scanne pas les dossiers custom)
+        $src_box  = DOL_DOCUMENT_ROOT.'/custom/attestationsap/core/boxes/box_attestationsap.php';
+        $dest_box = DOL_DOCUMENT_ROOT.'/core/boxes/box_attestationsap.php';
+        if (file_exists($src_box) && !file_exists($dest_box)) {
+            @copy($src_box, $dest_box);
+        } elseif (file_exists($src_box)) {
+            @copy($src_box, $dest_box); // Mettre à jour si déjà présent
+        }
+
         return $this->_init($sql, $options);
     }
 
