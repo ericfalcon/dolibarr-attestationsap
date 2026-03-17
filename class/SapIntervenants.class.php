@@ -51,13 +51,12 @@ class SapIntervenants
     {
         $out = array();
 
-        // D'abord : chercher les users explicitement marqués SAP
+        // Chercher tous les utilisateurs internes actifs (y compris admin)
         $sql = "SELECT u.rowid, u.lastname, u.firstname, u.email
                 FROM " . MAIN_DB_PREFIX . "user u
                 WHERE u.entity IN (0, " . (int)$entity . ")
                   AND u.statut = 1
-                  AND u.employee = 1
-                  AND u.fk_user IS NOT NULL
+                  AND u.extern = 0
                 ORDER BY u.lastname ASC, u.firstname ASC";
 
         // Fallback : tous les users actifs internes si aucun "employee"
