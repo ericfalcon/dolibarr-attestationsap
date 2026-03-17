@@ -163,9 +163,9 @@ if ($action === 'save_settings') {
         if (!empty($activites_arr)) {
             // Table de correspondance clé → libellé court
             $activites_labels = array(
-                'garde_enfants_domicile'      => 'Garde d'enfants à domicile (<3 ans)',
-                'garde_enfants_3ans'          => 'Garde d'enfants à domicile (3 ans et +)',
-                'accompagnement_enfants'      => 'Accompagnement d'enfants',
+                'garde_enfants_domicile'      => 'Garde d\'enfants à domicile (<3 ans)',
+                'garde_enfants_3ans'          => 'Garde d\'enfants à domicile (3 ans et +)',
+                'accompagnement_enfants'      => 'Accompagnement d\'enfants',
                 'assistance_personnes_agees'  => 'Assistance personnes âgées',
                 'assistance_personnes_hand'   => 'Assistance personnes handicapées',
                 'aide_mobilite'               => 'Aide à la mobilité',
@@ -179,7 +179,7 @@ if ($action === 'save_settings') {
                 'collecte_livraison_linge'    => 'Livraison linge repassé',
                 'assistance_informatique'     => 'Assistance informatique',
                 'assistance_administrative'   => 'Assistance administrative',
-                'soins_animaux'               => 'Soins et promenades d'animaux',
+                'soins_animaux'               => 'Soins et promenades d\'animaux',
                 'maintenance_residence'       => 'Maintenance de la résidence',
                 'gardiennage'                 => 'Gardiennage de résidence',
                 'soutien_scolaire'            => 'Soutien scolaire / cours particuliers',
