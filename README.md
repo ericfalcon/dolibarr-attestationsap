@@ -8,16 +8,18 @@
 ## Fonctionnalités
 
 - **Modèle de devis SAP** (`devis_sap_v2`) — cadre mentions obligatoires, crédit d'impôt 50%
-- **Modèle de facture SAP** (`facture_sap_v3`) — crédit d'impôt, intervenant, numéro de déclaration/agrément, mentions légales
-- **Attestation fiscale annuelle** conforme art. 199 sexdecies CGI et D.7233-1 Code du travail
-  - Tableau détaillé : N° Facture, Date, Description, Heures, Montant TTC
-  - Signature et cachet intégrés automatiquement (image uploadée)
-  - Crédit d'impôt estimé (50%)
-  - Mentions légales complètes
+- **Modèle de facture SAP** (`facture_sap_v3`) — crédit d'impôt, intervenant, numéro de déclaration/agrément
+- **Attestation fiscale annuelle** conforme art. 199 sexdecies CGI et D.7233-1 :
+  - Logo entreprise automatique + logo SAP officiel
+  - Tableau : N° Facture | Date | Description | Heures | Montant TTC
+  - Uniquement les factures **payées** (art. 199 sexdecies CGI : "sommes versées")
+  - Cachet automatique depuis les données Dolibarr + signature uploadable
+  - Crédit d'impôt estimé (50%) + mentions légales complètes
+- **Onglet "Attestations SAP"** sur la fiche tiers — historique des attestations par client
+- **Événements agenda** à chaque envoi d'attestation
 - **Envoi email** des attestations par client ou en lot
-- **Widget tableau de bord** — derniers devis SAP, dernières factures SAP, rappel en janvier
-- **26 activités SAP officielles** (décret D.7231-1) avec filtrage automatique selon le type d'habilitation
-- **Signature/cachet uploadable** — intégrée automatiquement dans les PDF envoyés par email
+- **Widget tableau de bord** — derniers devis/factures SAP, rappel en janvier
+- **26 activités SAP officielles** (décret D.7231-1) avec filtrage automatique selon l'habilitation
 - **Page de configuration complète** en 11 sections
 
 ---
@@ -26,9 +28,9 @@
 
 | Texte | Objet |
 |-------|-------|
-| Art. 199 sexdecies CGI | Crédit d'impôt 50% pour services à domicile |
+| Art. 199 sexdecies CGI | Crédit d'impôt 50% — uniquement sur sommes versées (factures payées) |
 | Art. D.7231-1 Code du travail | Liste officielle des 26 activités SAP |
-| Art. D.7233-1 Code du travail | Mentions obligatoires sur les documents SAP |
+| Art. D.7233-1 Code du travail | Mentions obligatoires + description de la prestation |
 | Art. L.7232-1-1 Code du travail | Délivrance de l'attestation fiscale annuelle |
 | Art. 293 B CGI | Exonération de TVA (franchise en base) |
 | Décret n°2005-1698 | Agrément et déclaration préalable NOVA |
@@ -37,14 +39,14 @@
 
 ## Installation
 
-### Via Git (recommandé pour les mises à jour)
+### Via Git (recommandé)
 
 ```bash
 cd htdocs/custom/
 git clone https://github.com/ericfalcon/dolibarr-attestationsap.git attestationsap
 ```
 
-Puis dans Dolibarr : **Configuration → Modules → AttestationSAP → Activer**
+Puis : **Configuration → Modules → AttestationSAP → Activer**
 
 ### Mise à jour
 
@@ -53,7 +55,7 @@ cd htdocs/custom/attestationsap
 git fetch origin && git reset --hard origin/main
 ```
 
-Puis désactiver/réactiver le module dans Dolibarr si nécessaire.
+Désactiver/réactiver le module si nécessaire.
 
 ---
 
@@ -69,7 +71,7 @@ Puis désactiver/réactiver le module dans Dolibarr si nécessaire.
 | 6 — Modèles de factures | Sélection des modèles pris en compte |
 | 7 — Modèles PDF par défaut | `devis_sap_v2` et `facture_sap_v3` |
 | 8 — Options d'affichage | Crédit d'impôt, mention TVA |
-| 9 — Template email | Objet et corps du mail d'envoi des attestations |
+| 9 — Template email | Objet et corps du mail d'envoi |
 | 10 — Logo SAP | Logo affiché dans le cadre mentions obligatoires des factures |
 | 11 — Signature et cachet | Image PNG apposée automatiquement sur les attestations |
 
@@ -77,30 +79,24 @@ Puis désactiver/réactiver le module dans Dolibarr si nécessaire.
 
 ## Utilisation
 
-### Créer un devis SAP
-**SAP → Créer un devis SAP** → modèle `devis_sap_v2` automatiquement sélectionné.
-
-### Créer une facture SAP
-**SAP → Créer une facture SAP** → modèle `facture_sap_v3` avec crédit d'impôt 50% et mentions obligatoires.
+### Devis et factures SAP
+**SAP → Créer un devis SAP** / **Créer une facture SAP**
 
 ### Générer les attestations fiscales
-**SAP → Générer les attestations** → sélectionnez l'année → **Générer toutes les attestations** → **Envoyer**.
+**SAP → Générer les attestations** → Sélectionner l'année → **Générer toutes les attestations** → **Envoyer**
 
 > 💡 En **janvier**, le widget du tableau de bord affiche un rappel automatique.
 
+### Suivi par client
+Ouvrir la fiche d'un client → onglet **"Attestations SAP"** → liste des attestations avec statut d'envoi.
+
 ---
 
-## Signature et cachet des attestations
+## Signature et cachet
 
-Pour que les attestations envoyées par email soient légalement valables et complètes :
+Le cachet est généré **automatiquement** depuis les données de votre entreprise Dolibarr (nom, adresse, SIRET, N° SAP).
 
-**Cachet automatique** — généré automatiquement à partir des données de votre entreprise Dolibarr (nom, adresse, SIRET, téléphone, N° SAP). Aucune configuration nécessaire.
-
-**Signature** — image PNG apposée au premier plan par-dessus le cachet :
-
-1. Signez sur papier, scannez, supprimez le fond blanc → PNG transparent (~300×100 px)
-2. **SAP → Paramètres SAP → Section 11** → Uploader la signature
-3. Régénérez les attestations → signature intégrée automatiquement par-dessus le cachet
+Pour la signature : préparez un PNG transparent (~300×100 px) et uploadez-le en **Section 11 → Paramètres SAP**.
 
 ---
 
@@ -111,27 +107,21 @@ attestationsap/
 ├── core/
 │   ├── modules/
 │   │   ├── modAttestationSap.class.php
-│   │   ├── attestationsap/
-│   │   │   └── pdf_attestation_sap.modules.php
-│   │   ├── facture/doc/
-│   │   │   └── pdf_facture_sap_v3.modules.php
-│   │   └── propale/doc/
-│   │       └── pdf_devis_sap_v2.modules.php
-│   └── boxes/
-│       └── box_attestationsap.php
+│   │   ├── attestationsap/pdf_attestation_sap.modules.php
+│   │   ├── facture/doc/pdf_facture_sap_v3.modules.php
+│   │   └── propale/doc/pdf_devis_sap_v2.modules.php
+│   └── boxes/box_attestationsap.php
 ├── class/
+│   ├── actions_attestationsap.class.php
 │   └── SapIntervenants.class.php
-├── sql/
-│   └── llx_attestationsap.sql
-├── langs/fr_FR/
-│   └── attestationsap.lang
-├── img/
-│   └── logo-sap.jpg
-├── build/
-│   └── build.sh
-├── tools/                    # Scripts de diagnostic (admin)
+├── sql/llx_attestationsap.sql
+├── langs/fr_FR/attestationsap.lang
+├── img/logo-sap.jpg
+├── build/build.sh
+├── tools/                    # Scripts admin (fix_description, fix_models, repair_models)
 ├── index.php                 # Interface principale
-├── setup.php                 # Page de configuration (11 sections)
+├── tiers_tab.php             # Onglet attestations sur fiche tiers
+├── setup.php                 # Configuration (11 sections)
 └── help.php                  # Mode d'emploi intégré
 ```
 
@@ -149,8 +139,8 @@ attestationsap/
 
 | Version | Date | Notes |
 |---------|------|-------|
-| 2.1.0 | 2026-03 | Activités SAP officielles (D.7231-1), widget, signature/cachet uploadable, tableau attestation conforme D.7233-1 |
-| 2.0.0 | 2026-02 | Refonte complète, attestation avec détail par facture, Dolibarr 22 |
+| 2.1.0 | 2026-03 | Activités SAP D.7231-1, widget, signature/cachet, onglet tiers, factures payées uniquement |
+| 2.0.0 | 2026-02 | Refonte complète, attestation PDF, Dolibarr 22 |
 | 1.0.0 | 2025 | Version initiale |
 
 ---
@@ -158,4 +148,4 @@ attestationsap/
 ## Licence
 
 Plugin — Tous droits réservés.  
-Dépôt : [github.com/ericfalcon/dolibarr-attestationsap](https://github.com/ericfalcon/dolibarr-attestationsap)
+[github.com/ericfalcon/dolibarr-attestationsap](https://github.com/ericfalcon/dolibarr-attestationsap)
