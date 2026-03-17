@@ -622,7 +622,8 @@ print '</form>';
 // =====================================================================
 // JAVASCRIPT
 // =====================================================================
-print '<script>
+echo <<<ENDJS
+<script>
 (function () {
     // Toggle déclaration / agrément
     function toggleHab() {
@@ -705,7 +706,8 @@ print '<script>
         cb.addEventListener("change", updateNatureService);
     });
 })();
-</script>';
+</script>
+ENDJS;
 
 llxFooter();
 $db->close();
