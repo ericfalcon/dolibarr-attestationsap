@@ -462,19 +462,21 @@ class pdf_attestation_sap
             $pdf->SetTextColor(0, 0, 0);
             $pdf->Ln(1);
 
-            // En-tête tableau
-            $colW = array(50, 28, 28, 28, 46); // Ref | Date | Heures | TTC | Intervenants
+            // Colonnes : N° Facture | Date | Description | Heures | Montant TTC
+            // Largeurs totales = pageW (180mm)
+            $colW = array(32, 24, 68, 22, 34); // total = 180
             $rowH = 6.5;
 
+            // En-tête
             $pdf->SetFillColor(0, 60, 120);
             $pdf->SetTextColor(255, 255, 255);
             $pdf->SetFont('helvetica', 'B', 7.5);
             $pdf->SetX($colL);
-            $pdf->Cell($colW[0], $rowH, 'Facture', 1, 0, 'C', true);
-            $pdf->Cell($colW[1], $rowH, 'Date', 1, 0, 'C', true);
-            $pdf->Cell($colW[2], $rowH, 'Heures', 1, 0, 'C', true);
-            $pdf->Cell($colW[3], $rowH, 'Montant TTC', 1, 0, 'C', true);
-            $pdf->Cell($colW[4], $rowH, 'Intervenant(s)', 1, 1, 'C', true);
+            $pdf->Cell($colW[0], $rowH, 'N° Facture',   1, 0, 'C', true);
+            $pdf->Cell($colW[1], $rowH, 'Date',          1, 0, 'C', true);
+            $pdf->Cell($colW[2], $rowH, 'Description',   1, 0, 'C', true);
+            $pdf->Cell($colW[3], $rowH, 'Heures',        1, 0, 'C', true);
+            $pdf->Cell($colW[4], $rowH, 'Montant TTC',   1, 1, 'C', true);
 
             // Lignes factures
             $pdf->SetTextColor(0, 0, 0);
@@ -485,27 +487,36 @@ class pdf_attestation_sap
                 $facH   = isset($detail[$fac->rowid]) ? $detail[$fac->rowid]['qty'] : 0.0;
                 $facTTC = isset($detail[$fac->rowid]) ? $detail[$fac->rowid]['total_ttc'] : $fac->total_ttc;
 
-                // Intervenants par facture
-                $sapInter2       = new SapIntervenants($db);
-                $facIntervenants = $sapInter2->getIntervenantsForFacture($fac->rowid, $conf->entity);
-                $facInterStr     = !empty($facIntervenants) ? implode(', ', $facIntervenants) : $intervenantsStr;
+                // Description = nature du service (art. D.7233-1)
+                $descr = !empty($natureService) ? dol_string_nospecial($natureService) : 'Prestations SAP';
 
                 $pdf->SetFillColor($fill ? 245 : 255, $fill ? 248 : 255, 255);
+
+                // Calculer la hauteur nécessaire pour la description
+                $pdf->SetFont('helvetica', '', 7.5);
+                $nbLinesDescr = max(1, ceil($pdf->GetStringWidth($descr) / ($colW[2] - 2)));
+                $lineH        = max($rowH, $nbLinesDescr * 4.2 + 1);
+
+                $yRow = $pdf->GetY();
                 $pdf->SetX($colL);
 
-                // Calcul hauteur de ligne selon texte intervenant
-                $lineH = max($rowH, 4 + ceil(strlen($facInterStr) / 22) * 3.5);
+                // Cellules fixes (hauteur uniforme)
+                $pdf->Cell($colW[0], $lineH, dol_string_nospecial($fac->ref),           1, 0, 'L', $fill);
+                $pdf->Cell($colW[1], $lineH, dol_print_date($fac->datef, 'day'),         1, 0, 'C', $fill);
 
-                $pdf->Cell($colW[0], $lineH, dol_string_nospecial($fac->ref), 1, 0, 'L', $fill);
-                $pdf->Cell($colW[1], $lineH, dol_print_date($fac->datef, 'day'), 1, 0, 'C', $fill);
-                $pdf->Cell($colW[2], $lineH, number_format($facH, 2, ',', ' ') . ' h', 1, 0, 'R', $fill);
-                $pdf->Cell($colW[3], $lineH, number_format($facTTC, 2, ',', ' ') . ' €', 1, 0, 'R', $fill);
+                // Description avec MultiCell — on sauvegarde X/Y et on réaligne
+                $xDescr = $pdf->GetX();
+                $pdf->MultiCell($colW[2], 4.2, $descr, 0, 'L', $fill);
+                // Bordure manuelle autour de la zone description
+                $pdf->Rect($xDescr, $yRow, $colW[2], $lineH);
 
-                $xBefore = $pdf->GetX();
-                $yBefore = $pdf->GetY();
-                $pdf->MultiCell($colW[4], $lineH, $facInterStr, 1, 'L', $fill);
-                $pdf->SetY($yBefore + $lineH);
+                // Repositionner pour les colonnes suivantes
+                $pdf->SetXY($xDescr + $colW[2], $yRow);
+                $pdf->Cell($colW[3], $lineH, number_format($facH, 2, ',', ' ') . ' h', 1, 0, 'R', $fill);
+                $pdf->Cell($colW[4], $lineH, number_format($facTTC, 2, ',', ' ') . ' €', 1, 1, 'R', $fill);
 
+                // S'assurer qu'on est bien à la bonne ligne suivante
+                $pdf->SetY($yRow + $lineH);
                 $fill = !$fill;
 
                 // Saut de page si besoin
@@ -515,11 +526,11 @@ class pdf_attestation_sap
                     $pdf->SetTextColor(255, 255, 255);
                     $pdf->SetFont('helvetica', 'B', 7.5);
                     $pdf->SetX($colL);
-                    $pdf->Cell($colW[0], $rowH, 'Facture', 1, 0, 'C', true);
-                    $pdf->Cell($colW[1], $rowH, 'Date', 1, 0, 'C', true);
-                    $pdf->Cell($colW[2], $rowH, 'Heures', 1, 0, 'C', true);
-                    $pdf->Cell($colW[3], $rowH, 'Montant TTC', 1, 0, 'C', true);
-                    $pdf->Cell($colW[4], $rowH, 'Intervenant(s)', 1, 1, 'C', true);
+                    $pdf->Cell($colW[0], $rowH, 'N° Facture',  1, 0, 'C', true);
+                    $pdf->Cell($colW[1], $rowH, 'Date',         1, 0, 'C', true);
+                    $pdf->Cell($colW[2], $rowH, 'Description',  1, 0, 'C', true);
+                    $pdf->Cell($colW[3], $rowH, 'Heures',       1, 0, 'C', true);
+                    $pdf->Cell($colW[4], $rowH, 'Montant TTC',  1, 1, 'C', true);
                     $pdf->SetTextColor(0, 0, 0);
                     $pdf->SetFont('helvetica', '', 7.5);
                     $fill = false;
@@ -530,10 +541,9 @@ class pdf_attestation_sap
             $pdf->SetFont('helvetica', 'B', 8.5);
             $pdf->SetFillColor(215, 230, 255);
             $pdf->SetX($colL);
-            $pdf->Cell($colW[0] + $colW[1], $rowH, 'TOTAL', 1, 0, 'L', true);
-            $pdf->Cell($colW[2], $rowH, number_format((float)$hours, 2, ',', ' ') . ' h', 1, 0, 'R', true);
-            $pdf->Cell($colW[3], $rowH, number_format((float)$total_ttc, 2, ',', ' ') . ' €', 1, 0, 'R', true);
-            $pdf->Cell($colW[4], $rowH, '', 1, 1, 'L', true);
+            $pdf->Cell($colW[0] + $colW[1] + $colW[2], $rowH, 'TOTAL', 1, 0, 'L', true);
+            $pdf->Cell($colW[3], $rowH, number_format((float)$hours, 2, ',', ' ') . ' h', 1, 0, 'R', true);
+            $pdf->Cell($colW[4], $rowH, number_format((float)$total_ttc, 2, ',', ' ') . ' €', 1, 1, 'R', true);
             $pdf->Ln(5);
 
             // ================================================================
