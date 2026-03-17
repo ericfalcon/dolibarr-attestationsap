@@ -487,11 +487,25 @@ class pdf_attestation_sap
             $fill = false;
 
             foreach ($factures as $fac) {
-                $facH   = isset($detail[$fac->rowid]) ? $detail[$fac->rowid]['qty'] : 0.0;
-                $facTTC = isset($detail[$fac->rowid]) ? $detail[$fac->rowid]['total_ttc'] : $fac->total_ttc;
+                // Heures et TTC pour cette facture
+                if (isset($detail[$fac->rowid]) && $detail[$fac->rowid]['qty'] > 0) {
+                    $facH   = $detail[$fac->rowid]['qty'];
+                    $facTTC = $detail[$fac->rowid]['total_ttc'];
+                } else {
+                    // Fallback : sommer toutes les lignes de la facture
+                    $facTTC = $fac->total_ttc;
+                    $sqlQty = "SELECT SUM(fd.qty) as total_qty FROM ".MAIN_DB_PREFIX."facturedet fd
+                               WHERE fd.fk_facture = ".(int)$fac->rowid;
+                    $resQty = $db->query($sqlQty);
+                    $facH = 0.0;
+                    if ($resQty && $oQty = $db->fetch_object($resQty)) {
+                        $facH = (float)$oQty->total_qty;
+                        $db->free($resQty);
+                    }
+                }
 
                 // Description = nature du service (art. D.7233-1)
-                $descr = !empty($natureService) ? dol_string_nospecial($natureService) : 'Prestations SAP';
+                $descr = !empty($natureService) ? $natureService : 'Prestations SAP';
 
                 $pdf->SetFillColor($fill ? 245 : 255, $fill ? 248 : 255, 255);
 
