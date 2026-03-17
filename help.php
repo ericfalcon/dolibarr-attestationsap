@@ -87,9 +87,9 @@ $config_steps = array(
         'Affiché dans le cadre "Mentions obligatoires" des factures',
     ),
     '11 — Signature et cachet' => array(
-        'Uploadez une image PNG avec fond transparent (~300×100 px) de votre signature + cachet',
-        'Intégrée <strong>automatiquement</strong> dans la zone signature des attestations envoyées par email',
-        'Sans image : la zone reste vierge pour signature manuelle',
+        'Le <strong>cachet</strong> est généré automatiquement depuis les données de votre entreprise Dolibarr (nom, adresse, SIRET, N° SAP)',
+        'La <strong>signature</strong> s'ajoute par-dessus le cachet : uploadez une image PNG fond transparent (~300×100 px)',
+        'Sans image de signature : le cachet seul est affiché, la zone reste partiellement vierge',
     ),
 );
 
@@ -148,25 +148,30 @@ print '</ul>';
 
 // ---- SECTION 5 : SIGNATURE ----
 print '<hr><h3 id="signature">5. Signature et cachet</h3>';
-print '<p>Pour que les attestations envoyées par email soient <strong>légalement valables</strong>, elles doivent être signées avant envoi.</p>';
-print '<h4>Préparer l\'image de signature</h4>';
+print '<p>Les attestations intègrent automatiquement deux éléments superposés dans la zone signature :</p>';
+
+print '<h4>Cachet automatique (en fond)</h4>';
+print '<p>Généré <strong>automatiquement</strong> à partir des données de votre entreprise Dolibarr :</p>';
+print '<ul>';
+print '<li>Nom de l\'entreprise (en gras)</li>';
+print '<li>Adresse, code postal, ville</li>';
+print '<li>SIRET</li>';
+print '<li>Téléphone et email</li>';
+print '<li>Numéro de déclaration SAP</li>';
+print '</ul>';
+print '<p>Aucune configuration nécessaire — données depuis <em>Configuration → Société</em>.</p>';
+
+print '<h4>Signature (au premier plan, par-dessus le cachet)</h4>';
 print '<ol>';
-print '<li>Signez et apposez votre cachet sur une feuille blanche</li>';
-print '<li>Scannez ou photographiez la feuille</li>';
-print '<li>Ouvrez l\'image dans un éditeur (GIMP gratuit, Photoshop, Paint.NET...)</li>';
+print '<li>Signez sur une feuille blanche</li>';
+print '<li>Scannez ou photographiez</li>';
+print '<li>Ouvrez dans un éditeur image (GIMP, Photoshop, Paint.NET...)</li>';
 print '<li>Supprimez le fond blanc → fond transparent</li>';
-print '<li>Exportez en <strong>PNG</strong> (~300×100 px)</li>';
+print '<li>Exportez en <strong>PNG transparent</strong> (~300×100 px)</li>';
+print '<li>Allez dans <strong>SAP → Paramètres SAP → Section 11</strong> → Uploader</li>';
 print '</ol>';
-print '<h4>Uploader la signature</h4>';
-print '<ol>';
-print '<li>Allez dans <strong>SAP → Paramètres SAP → Section 11</strong></li>';
-print '<li>Cliquez <strong>Choisir un fichier</strong> et sélectionnez votre PNG</li>';
-print '<li>Cliquez <strong>Uploader la signature</strong></li>';
-print '<li>Régénérez une attestation pour vérifier le résultat</li>';
-print '</ol>';
-print '<div style="background:#e8f5e9;border-left:4px solid #4caf50;padding:10px 14px;border-radius:4px">';
-print '✅ Une fois la signature configurée, toutes les attestations générées l\'incluront automatiquement — ';
-print 'vous pouvez envoyer directement par email sans manipulation supplémentaire.';
+print '<div style="background:#e8f5e9;border-left:4px solid #4caf50;padding:10px 14px;border-radius:4px;margin-top:8px">';
+print '✅ Attestations signées et cachetées automatiquement — envoi direct par email sans manipulation.';
 print '</div>';
 
 // ---- SECTION 6 : WIDGET ----

@@ -90,13 +90,17 @@ Puis désactiver/réactiver le module dans Dolibarr si nécessaire.
 
 ---
 
-## Signature des attestations
+## Signature et cachet des attestations
 
-Pour que les attestations envoyées par email soient légalement valables :
+Pour que les attestations envoyées par email soient légalement valables et complètes :
 
-1. Préparez une image PNG avec fond transparent (~300×100 px) de votre signature + cachet
+**Cachet automatique** — généré automatiquement à partir des données de votre entreprise Dolibarr (nom, adresse, SIRET, téléphone, N° SAP). Aucune configuration nécessaire.
+
+**Signature** — image PNG apposée au premier plan par-dessus le cachet :
+
+1. Signez sur papier, scannez, supprimez le fond blanc → PNG transparent (~300×100 px)
 2. **SAP → Paramètres SAP → Section 11** → Uploader la signature
-3. Régénérez les attestations → la signature est intégrée automatiquement dans la zone dédiée
+3. Régénérez les attestations → signature intégrée automatiquement par-dessus le cachet
 
 ---
 
