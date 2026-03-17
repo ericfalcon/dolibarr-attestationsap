@@ -237,7 +237,7 @@ class modAttestationSap extends DolibarrModules
                   AND nom LIKE 'facture_sap%'";
 
         $sql[] = "INSERT INTO ".MAIN_DB_PREFIX."document_model (nom, entity, type, libelle, description)
-                  SELECT 'devis_sap', ".$e.", 'propal', 'devis_sap', 'Modèle devis SAP'
+                  SELECT 'devis_sap', ".$e.", 'propal', 'devis_sap', ''
                   WHERE NOT EXISTS (
                     SELECT 1 FROM ".MAIN_DB_PREFIX."document_model
                     WHERE nom='devis_sap' AND entity=".$e." AND type='propal'
@@ -245,7 +245,7 @@ class modAttestationSap extends DolibarrModules
 
         // Devis SAP V2
         $sql[] = "INSERT INTO ".MAIN_DB_PREFIX."document_model (nom, entity, type, libelle, description)
-                  SELECT 'devis_sap_v2', ".$e.", 'propal', 'devis_sap_v2', 'Modèle devis SAP V2'
+                  SELECT 'devis_sap_v2', ".$e.", 'propal', 'devis_sap_v2', ''
                   WHERE NOT EXISTS (
                     SELECT 1 FROM ".MAIN_DB_PREFIX."document_model
                     WHERE nom='devis_sap_v2' AND entity=".$e." AND type='propal'
@@ -253,7 +253,7 @@ class modAttestationSap extends DolibarrModules
 
         // Facture SAP V3
         $sql[] = "INSERT INTO ".MAIN_DB_PREFIX."document_model (nom, entity, type, libelle, description)
-                  SELECT 'facture_sap_v3', ".$e.", 'invoice', 'facture_sap_v3', 'Modèle facture SAP v3'
+                  SELECT 'facture_sap_v3', ".$e.", 'invoice', 'facture_sap_v3', ''
                   WHERE NOT EXISTS (
                     SELECT 1 FROM ".MAIN_DB_PREFIX."document_model
                     WHERE nom='facture_sap_v3' AND entity=".$e." AND type='invoice'
