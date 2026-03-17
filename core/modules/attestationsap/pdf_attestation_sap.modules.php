@@ -344,7 +344,7 @@ class pdf_attestation_sap
             $pdf->SetFont('helvetica', 'B', 10);
             $pdf->SetTextColor(0, 0, 0);
             $pdf->SetXY($colL + 2, $yBloc + 7);
-            $pdf->MultiCell($halfW - 4, 5, dol_string_nospecial($mysoc->name), 0, 'L');
+            $pdf->MultiCell($halfW - 4, 5, $mysoc->name, 0, 'L');
 
             $pdf->SetFont('helvetica', '', 8.5);
             $yTmp = $pdf->GetY();
