@@ -146,20 +146,26 @@ class pdf_attestation_sap
 
     protected static function isLineSap($db, $ln, $sap_cat_id, $needles)
     {
-        if ($sap_cat_id > 0 && (int)$ln->fk_product > 0) {
-            $rc = $db->query(
-                "SELECT 1 FROM " . MAIN_DB_PREFIX . "categorie_product
-                 WHERE fk_product = " . (int)$ln->fk_product . "
-                   AND fk_categorie = " . (int)$sap_cat_id . " LIMIT 1"
-            );
-            if ($rc && $db->fetch_object($rc)) return true;
+        // Option D : si catégorie produit SAP configurée → critère OBLIGATOIRE
+        if ($sap_cat_id > 0) {
+            if ((int)$ln->fk_product > 0) {
+                $rc = $db->query(
+                    "SELECT 1 FROM " . MAIN_DB_PREFIX . "categorie_product
+                     WHERE fk_product = " . (int)$ln->fk_product . "
+                       AND fk_categorie = " . (int)$sap_cat_id . " LIMIT 1"
+                );
+                return ($rc && $db->fetch_object($rc)) ? true : false;
+            }
+            // Produit sans fk_product (saisie libre) → fallback mots-clés si configurés
         }
+        // Fallback mots-clés (si catégorie non configurée)
         if (!empty($needles)) {
             $txt = dol_strtolower(dol_string_unaccent(($ln->label ?: '') . ' ' . ($ln->descs ?: '')));
             foreach ($needles as $n) {
                 if ($n !== '' && strpos($txt, $n) !== false) return true;
             }
         }
+        // Fallback générique (si rien de configuré)
         $txt2 = dol_strtolower(dol_string_unaccent(($ln->label ?: '') . ' ' . ($ln->descs ?: '')));
         if (strpos($txt2, 'service a la personne') !== false || strpos($txt2, ' sap ') !== false) return true;
         return false;

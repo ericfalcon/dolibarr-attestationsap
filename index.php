@@ -163,11 +163,16 @@ function sap_find_factures_for_year($db, $year, $socid = 0) {
 
 /* ============== Repérage lignes SAP & regroupement par client ============== */
 function sap_is_line_sap($db, $ln, $sap_cat_id, $needles) {
-    if ($sap_cat_id > 0 && (int)$ln->fk_product > 0) {
-        $q = "SELECT 1 FROM ".MAIN_DB_PREFIX."categorie_product WHERE fk_product=".(int)$ln->fk_product." AND fk_categorie=".(int)$sap_cat_id." LIMIT 1";
-        $r = $db->query($q);
-        if ($r && $db->fetch_object($r)) return true;
+    // Option D : si catégorie produit SAP configurée → critère OBLIGATOIRE
+    if ($sap_cat_id > 0) {
+        if ((int)$ln->fk_product > 0) {
+            $q = "SELECT 1 FROM ".MAIN_DB_PREFIX."categorie_product WHERE fk_product=".(int)$ln->fk_product." AND fk_categorie=".(int)$sap_cat_id." LIMIT 1";
+            $r = $db->query($q);
+            return ($r && $db->fetch_object($r)) ? true : false;
+        }
+        // Produit sans fk_product → fallback mots-clés
     }
+    // Fallback mots-clés
     if (!empty($needles)) {
         $txt = dol_strtolower(dol_string_unaccent(($ln->label?:'').' '.($ln->descs?:'')));
         for ($i=0; $i<count($needles); $i++) {
@@ -175,12 +180,21 @@ function sap_is_line_sap($db, $ln, $sap_cat_id, $needles) {
             if ($n !== '' && strpos($txt, $n) !== false) return true;
         }
     }
+    // Fallback générique
     $txt2 = dol_strtolower(dol_string_unaccent(($ln->label?:'').' '.($ln->descs?:'')));
-    if (strpos($txt2, 'service a la personne') !== false || strpos($txt2, 'sap') !== false) return true;
+    if (strpos($txt2, 'service a la personne') !== false || strpos($txt2, ' sap ') !== false) return true;
     return false;
 }
 
-function sap_group_clients_from_invoices($db, $invoices, $sap_cat_id, $services_fallback) {
+function sap_is_client_sap($db, $socid, $client_cat_id) {
+    // Si catégorie tiers SAP configurée → vérifier que le client en fait partie
+    if ($client_cat_id <= 0) return true; // pas de filtre
+    $q = "SELECT 1 FROM ".MAIN_DB_PREFIX."categorie_societe WHERE fk_soc=".(int)$socid." AND fk_categorie=".(int)$client_cat_id." LIMIT 1";
+    $r = $db->query($q);
+    return ($r && $db->fetch_object($r)) ? true : false;
+}
+
+function sap_group_clients_from_invoices($db, $invoices, $sap_cat_id, $services_fallback, $client_cat_id = 0) {
     $needles = array();
     $lines = preg_split('/\r?\n/', (string)$services_fallback);
     for ($i=0; $i<count($lines); $i++) {
@@ -457,8 +471,9 @@ if ($tab === 'generate') {
             print '<div class="opacitymedium">Aucune facture SAP trouvée pour l\'année '.$year.' avec le(s) modèle(s) configuré(s).</div>';
         } else {
             $sap_cat_id       = (int) getDolGlobalString('ATTESTATIONSAP_CATEGORY_ID', 0);
+            $client_cat_id    = (int) getDolGlobalString('ATTESTATIONSAP_CLIENT_CAT_ID', 0);
             $services_fallback= getDolGlobalString('ATTESTATIONSAP_SERVICES', '');
-            $byClient         = sap_group_clients_from_invoices($db, $invoices, $sap_cat_id, $services_fallback);
+            $byClient         = sap_group_clients_from_invoices($db, $invoices, $sap_cat_id, $services_fallback, $client_cat_id);
 
             if (empty($byClient)) {
                 print '<div class="opacitymedium">Des factures ont été trouvées, mais aucune ligne n\'est reconnue SAP (catégorie/mots‑clés). Vérifiez vos paramètres.</div>';

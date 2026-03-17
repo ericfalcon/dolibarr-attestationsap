@@ -51,6 +51,16 @@ function sap_get_pdf_models($db, $type, $entity)
     return array_values(array_unique($out));
 }
 
+function sap_get_categories_tiers($db)
+{
+    $out = array();
+    // type=2 = catégories tiers/sociétés dans Dolibarr
+    $sql = "SELECT rowid, label FROM " . MAIN_DB_PREFIX . "categorie WHERE type = 2 ORDER BY label";
+    $res = $db->query($sql);
+    if ($res) while ($o = $db->fetch_object($res)) $out[] = array('id' => (int)$o->rowid, 'label' => $o->label);
+    return $out;
+}
+
 function sap_get_categories_produits($db)
 {
     $out = array();
@@ -95,7 +105,8 @@ if ($action === 'save_settings') {
     $sign_text = GETPOST('ATTESTATIONSAP_SIGN_TEXT', 'alphanohtml');
 
     // Identification SAP
-    $sap_cat_id   = (int)GETPOST('ATTESTATIONSAP_CATEGORY_ID', 'int');
+    $sap_cat_id      = (int)GETPOST('ATTESTATIONSAP_CATEGORY_ID', 'int');
+    $sap_client_cat  = (int)GETPOST('ATTESTATIONSAP_CLIENT_CAT_ID', 'int');
     $sap_services = GETPOST('ATTESTATIONSAP_SERVICES', 'restricthtml');
 
     // Activités SAP officielles cochées
@@ -156,7 +167,8 @@ if ($action === 'save_settings') {
         $ok = $ok && (dolibarr_set_const($db, 'ATTESTATIONSAP_SIGN_TEXT', $sign_text, 'chaine', 0, '', $e) !== false);
 
         // Identification SAP
-        $ok = $ok && (dolibarr_set_const($db, 'ATTESTATIONSAP_CATEGORY_ID', $sap_cat_id,   'entier', 0, '', $e) !== false);
+        $ok = $ok && (dolibarr_set_const($db, 'ATTESTATIONSAP_CATEGORY_ID',    $sap_cat_id,     'entier', 0, '', $e) !== false);
+        $ok = $ok && (dolibarr_set_const($db, 'ATTESTATIONSAP_CLIENT_CAT_ID', $sap_client_cat, 'entier', 0, '', $e) !== false);
         $ok = $ok && (dolibarr_set_const($db, 'ATTESTATIONSAP_SERVICES',    $sap_services, 'chaine', 0, '', $e) !== false);
         $ok = $ok && (dolibarr_set_const($db, 'ATTESTATIONSAP_ACTIVITES',  $activites_csv_new, 'chaine', 0, '', $e) !== false);
         // Mettre à jour NATURE_SERVICE avec TOUTES les activités cochées (conformité légale)
@@ -323,6 +335,8 @@ $mode_intervention = getDolGlobalString('ATTESTATIONSAP_MODE', 'prestataire');
 $sign_name         = getDolGlobalString('ATTESTATIONSAP_SIGN_NAME', '');
 $sign_text         = getDolGlobalString('ATTESTATIONSAP_SIGN_TEXT', '');
 $current_cat_id    = (int)getDolGlobalString('ATTESTATIONSAP_CATEGORY_ID', 0);
+$current_cli_cat   = (int)getDolGlobalString('ATTESTATIONSAP_CLIENT_CAT_ID', 0);
+$categories_tiers  = sap_get_categories_tiers($db);
 $sap_services      = getDolGlobalString('ATTESTATIONSAP_SERVICES', '');
 $models_csv        = getDolGlobalString('ATTESTATIONSAP_FACTURE_MODEL_LIST', 'facture_sap_v3');
 $models_sel        = array();
@@ -541,6 +555,15 @@ print '<td>Optionnel</td></tr>';
 // =====================================================================
 print '<tr class="liste_titre"><td colspan="3"><strong>5 — Identification des prestations SAP</strong></td></tr>';
 
+// Alerte si double critère non configuré
+if ($current_cat_id === 0 || $current_cli_cat === 0) {
+    print '<tr class="oddeven"><td colspan="3">';
+    print '<div style="background:#fff3cd;border-left:4px solid #ffc107;padding:10px 14px;border-radius:4px">';
+    print '⚠ <strong>Configuration incomplète :</strong> Pour une détection fiable des prestations SAP, ';
+    print 'configurez à la fois la <strong>catégorie produit SAP</strong> ET la <strong>catégorie tiers SAP</strong>.';
+    print '</div></td></tr>';
+}
+
 print '<tr class="oddeven"><td>Catégorie produit SAP</td><td>';
 print '<select name="ATTESTATIONSAP_CATEGORY_ID" class="flat minwidth300">';
 print '<option value="0"' . ($current_cat_id === 0 ? ' selected' : '') . '>— (aucune, utiliser les mots-clés)</option>';
@@ -549,6 +572,22 @@ foreach ($categories_ps as $cat) {
     print '<option value="' . $cat['id'] . '"' . $sel . '>' . dol_escape_htmltag($cat['label']) . '</option>';
 }
 print '</select></td><td>Méthode prioritaire de détection des lignes SAP</td></tr>';
+
+print '<tr class="oddeven"><td>Catégorie tiers SAP <span class="fieldrequired">*</span></td><td>';
+print '<select name="ATTESTATIONSAP_CLIENT_CAT_ID" class="flat minwidth300">';
+print '<option value="0"'.($current_cli_cat === 0 ? ' selected' : '').'>— Aucune (tous les clients)</option>';
+foreach ($categories_tiers as $cat) {
+    $sel = ($cat['id'] === $current_cli_cat) ? ' selected' : '';
+    print '<option value="'.$cat['id'].'"'.$sel.'>'.dol_escape_htmltag($cat['label']).'</option>';
+}
+print '</select>';
+print '</td><td>';
+if ($current_cli_cat === 0) {
+    print '<span style="color:#e67e22">⚠ Non configurée — toutes les attestations seront générées sans filtrage client SAP</span>';
+} else {
+    print '<span style="color:#1a7a2e">✓ Seuls les clients avec cette catégorie recevront une attestation</span>';
+}
+print '</td></tr>';
 
 print '<tr class="oddeven"><td>Mots-clés SAP (fallback)</td>';
 print '<td><textarea name="ATTESTATIONSAP_SERVICES" rows="4" class="flat minwidth300" placeholder="assistance informatique&#10;dépannage domicile">' . dol_escape_htmltag($sap_services) . '</textarea></td>';
