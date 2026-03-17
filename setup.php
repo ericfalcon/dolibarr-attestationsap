@@ -648,6 +648,39 @@ print '</table><br><div class="center"><input type="submit" class="button" value
 print '</form>';
 
 // =====================================================================
+// SECTION 11 : Signature / cachet
+// =====================================================================
+print load_fiche_titre('11 — Signature et cachet (apposée automatiquement sur les attestations)', '', 'title_setup');
+
+$rel_sign = getDolGlobalString('ATTESTATIONSAP_SIGNATURE');
+
+print '<table class="noborder centpercent">';
+print '<tr class="liste_titre"><td colspan="3"><strong>Image de signature / cachet</strong> &nbsp; <small class="opacitymedium">Sera intégrée automatiquement dans la zone signature des attestations envoyées par email</small></td></tr>';
+print '<tr class="oddeven"><td style="width:270px">Signature actuelle</td><td colspan="2">';
+if ($rel_sign) {
+    $full_sign = DOL_DATA_ROOT . '/' . $rel_sign;
+    if (file_exists($full_sign)) {
+        $url_sign = DOL_URL_ROOT . '/viewimage.php?modulepart=mycompany&file=' . urlencode('logos/' . basename($full_sign));
+        print '<img src="'.dol_escape_htmltag($url_sign).'" style="max-height:80px;max-width:250px;border:1px solid #ccc;padding:6px;background:#fff;border-radius:4px" alt="Signature"><br><br>';
+    }
+    print '<a href="'.dol_buildpath('/custom/attestationsap/setup.php', 1).'?action=delete_signature&token='.newToken().'" class="butActionDelete">🗑 Supprimer la signature</a>';
+} else {
+    print '<span class="opacitymedium">Aucune signature configurée — la zone restera vierge sur les attestations.</span>';
+}
+print '</td></tr>';
+print '</table><br>';
+
+print '<form method="POST" enctype="multipart/form-data" action="'.dol_buildpath('/custom/attestationsap/setup.php', 1).'">';
+print '<input type="hidden" name="token" value="'.newToken().'">';
+print '<input type="hidden" name="action" value="upload_signature">';
+print '<table class="noborder centpercent">';
+print '<tr class="oddeven"><td style="width:270px">Uploader une nouvelle signature</td>';
+print '<td><input type="file" name="signature_sap" accept="image/png,image/jpeg" required>';
+print ' <small class="opacitymedium">PNG transparent recommandé, ~300×100 px</small></td><td></td></tr>';
+print '</table><br><div class="center"><input type="submit" class="button" value="Uploader la signature"></div>';
+print '</form>';
+
+// =====================================================================
 // JAVASCRIPT
 // =====================================================================
 echo <<<ENDJS
