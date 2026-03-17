@@ -85,3 +85,6 @@ LastSapProposals = %s derniers devis SAP
 LastSapInvoices = %s dernières factures SAP
 NoSapProposal = Aucun devis SAP
 NoSapInvoice = Aucune facture SAP
+
+# Activités SAP
+ActivitesSAP = Activités SAP exercées

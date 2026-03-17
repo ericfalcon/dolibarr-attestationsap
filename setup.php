@@ -98,6 +98,11 @@ if ($action === 'save_settings') {
     $sap_cat_id   = (int)GETPOST('ATTESTATIONSAP_CATEGORY_ID', 'int');
     $sap_services = GETPOST('ATTESTATIONSAP_SERVICES', 'restricthtml');
 
+    // Activités SAP officielles cochées
+    $activites_arr = GETPOST('ATTESTATIONSAP_ACTIVITES', 'array');
+    if (!is_array($activites_arr)) $activites_arr = array();
+    $activites_csv_new = implode(',', array_map('trim', $activites_arr));
+
     // Modèles factures
     $models_arr = GETPOST('ATTESTATIONSAP_FACTURE_MODEL_LIST', 'array');
     if (empty($models_arr)) $models_arr = array('facture_sap_v3');
@@ -153,6 +158,11 @@ if ($action === 'save_settings') {
         // Identification SAP
         $ok = $ok && (dolibarr_set_const($db, 'ATTESTATIONSAP_CATEGORY_ID', $sap_cat_id,   'entier', 0, '', $e) !== false);
         $ok = $ok && (dolibarr_set_const($db, 'ATTESTATIONSAP_SERVICES',    $sap_services, 'chaine', 0, '', $e) !== false);
+        $ok = $ok && (dolibarr_set_const($db, 'ATTESTATIONSAP_ACTIVITES',  $activites_csv_new, 'chaine', 0, '', $e) !== false);
+        // Mettre à jour NATURE_SERVICE avec les activités cochées (1ère cochée comme nature principale)
+        if (!empty($activites_arr)) {
+            $ok = $ok && (dolibarr_set_const($db, 'ATTESTATIONSAP_NATURE_SERVICE', $activites_arr[0], 'chaine', 0, '', $e) !== false);
+        }
 
         // Modèles
         $ok = $ok && (dolibarr_set_const($db, 'ATTESTATIONSAP_FACTURE_MODEL_LIST', $models_csv, 'chaine', 0, '', $e) !== false);
@@ -235,6 +245,9 @@ $interv_mode       = getDolGlobalString('ATTESTATIONSAP_INTERVENANT_MODE', 'user
 $interv_uid        = (int)getDolGlobalString('ATTESTATIONSAP_INTERVENANT_USER_ID', 0);
 $interv_libre      = getDolGlobalString('ATTESTATIONSAP_INTERVENANT_LIBRE', '');
 $nature_service    = getDolGlobalString('ATTESTATIONSAP_NATURE_SERVICE', 'Assistance informatique à domicile');
+$activites_csv     = getDolGlobalString('ATTESTATIONSAP_ACTIVITES', '');
+$activites_sel     = array();
+foreach (explode(',', $activites_csv) as $a) { $a = trim($a); if ($a !== '') $activites_sel[$a] = true; }
 $mode_intervention = getDolGlobalString('ATTESTATIONSAP_MODE', 'prestataire');
 $sign_name         = getDolGlobalString('ATTESTATIONSAP_SIGN_NAME', '');
 $sign_text         = getDolGlobalString('ATTESTATIONSAP_SIGN_TEXT', '');
@@ -330,13 +343,100 @@ print '<td><input type="text" name="ATTESTATIONSAP_INTERVENANT_LIBRE" value="' .
 print '<td>Utilisé si "Texte libre" est sélectionné</td></tr>';
 
 // =====================================================================
-// SECTION 3 : Nature & mode
+// SECTION 3 : Activités SAP & mode
 // =====================================================================
-print '<tr class="liste_titre"><td colspan="3"><strong>3 — Nature des services & mode d\'intervention</strong></td></tr>';
+print '<tr class="liste_titre"><td colspan="3"><strong>3 — Activités SAP & mode d\'intervention</strong> &nbsp; <small class="opacitymedium">Décret D.7231-1 du Code du travail</small></td></tr>';
 
-print '<tr class="oddeven"><td>Nature du service</td>';
-print '<td><input type="text" name="ATTESTATIONSAP_NATURE_SERVICE" value="' . dol_escape_htmltag($nature_service) . '" class="minwidth350" placeholder="Assistance informatique à domicile"></td>';
-print '<td>Affiché dans le cadre SAP des factures et sur l\'attestation</td></tr>';
+// Liste officielle des activités SAP (D.7231-1)
+$activites_sap = array(
+    // Famille A : Garde d'enfants
+    'A' => array(
+        'label' => 'Garde d'enfants',
+        'items' => array(
+            'garde_enfants_domicile'      => 'Garde d'enfants à domicile (moins de 3 ans)',
+            'garde_enfants_3ans'          => 'Garde d'enfants à domicile (3 ans et plus)',
+            'accompagnement_enfants'      => 'Accompagnement d'enfants dans les déplacements',
+        ),
+    ),
+    // Famille B : Assistance aux personnes âgées/handicapées
+    'B' => array(
+        'label' => 'Assistance aux personnes',
+        'items' => array(
+            'assistance_personnes_agees'  => 'Assistance aux personnes âgées (hors soins)',
+            'assistance_personnes_hand'   => 'Assistance aux personnes handicapées (hors soins)',
+            'aide_mobilite'               => 'Aide à la mobilité / transport accompagné',
+            'conduite_vehicule'           => 'Conduite du véhicule de la personne',
+        ),
+    ),
+    // Famille C : Entretien de la maison
+    'C' => array(
+        'label' => 'Entretien & vie quotidienne',
+        'items' => array(
+            'entretien_maison'            => 'Entretien de la maison et travaux ménagers',
+            'petits_travaux_jardinage'    => 'Petits travaux de jardinage',
+            'prestations_jardinage'       => 'Prestations de jardinage (agrément obligatoire)',
+            'prestations_nettoyage'       => 'Prestations de nettoyage de vitres',
+            'cuisine'                     => 'Préparation de repas / livraison de courses',
+            'livraison_repas'             => 'Livraison de repas à domicile',
+            'collecte_livraison_linge'    => 'Collecte et livraison du linge repassé',
+        ),
+    ),
+    // Famille D : Assistance informatique et administrative
+    'D' => array(
+        'label' => 'Assistance technique & administrative',
+        'items' => array(
+            'assistance_informatique'     => 'Assistance informatique à domicile',
+            'assistance_administrative'   => 'Assistance administrative à domicile',
+            'soins_esthetique'            => 'Soins et promenades d'animaux (hors vétérinaire)',
+            'maintenance_appareils'       => 'Maintenance, entretien et vigilance de la résidence',
+            'gardiennage'                 => 'Gardiennage et surveillance temporaire de résidence',
+        ),
+    ),
+    // Famille E : Soutien scolaire / cours
+    'E' => array(
+        'label' => 'Soutien scolaire & cours',
+        'items' => array(
+            'soutien_scolaire'            => 'Soutien scolaire à domicile / cours particuliers',
+            'cours_informatique'          => 'Cours informatique à domicile',
+            'cours_musique'               => 'Cours de musique à domicile',
+            'cours_autres'                => 'Autres cours à domicile',
+        ),
+    ),
+    // Famille F : Autres
+    'F' => array(
+        'label' => 'Soins & bien-être',
+        'items' => array(
+            'soins_domicile'              => 'Soins à la personne non médicaux à domicile',
+            'aide_sport'                  => 'Activités sportives / de bien-être à domicile',
+            'assistance_numerique'        => 'Assistance aux démarches numériques',
+            'teleassistance'              => 'Téléassistance et visio-assistance',
+            'interpretation_langue'       => 'Interprète en langue des signes / technicien transcription',
+        ),
+    ),
+);
+
+print '<tr class="oddeven"><td valign="top" style="width:270px">Activités exercées <span class="fieldrequired">*</span><br><small class="opacitymedium">Cochez toutes vos activités</small></td><td colspan="2">';
+print '<div style="display:flex;flex-wrap:wrap;gap:16px">';
+foreach ($activites_sap as $famille_key => $famille) {
+    print '<div style="min-width:280px;flex:1;background:#f8f9fa;border:1px solid #dee2e6;border-radius:6px;padding:10px">';
+    print '<strong style="color:#003d7a;display:block;margin-bottom:6px;border-bottom:1px solid #dee2e6;padding-bottom:4px">'
+         .dol_escape_htmltag($famille['label']).'</strong>';
+    foreach ($famille['items'] as $key => $label) {
+        $checked = !empty($activites_sel[$key]) ? ' checked' : '';
+        print '<label style="display:block;margin:3px 0;cursor:pointer">';
+        print '<input type="checkbox" name="ATTESTATIONSAP_ACTIVITES[]" value="'.dol_escape_htmltag($key).'"'.$checked.'> ';
+        print dol_escape_htmltag($label);
+        print '</label>';
+    }
+    print '</div>';
+}
+print '</div>';
+print '</td></tr>';
+
+// Champ nature service (affiché automatiquement mais modifiable)
+print '<tr class="oddeven"><td>Nature affichée sur les documents</td>';
+print '<td><input type="text" name="ATTESTATIONSAP_NATURE_SERVICE" value="' . dol_escape_htmltag($nature_service) . '" class="minwidth350" placeholder="Assistance informatique à domicile" id="nature_service_field"></td>';
+print '<td><small class="opacitymedium">Renseignée automatiquement avec la première activité cochée, ou personnalisable</small></td></tr>';
 
 print '<tr class="oddeven"><td>Mode d\'intervention</td><td>';
 print '<label><input type="radio" name="ATTESTATIONSAP_MODE" value="prestataire"' . ($mode_intervention === 'prestataire' ? ' checked' : '') . '> Mode prestataire</label> &nbsp; ';
