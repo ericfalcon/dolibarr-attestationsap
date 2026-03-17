@@ -666,6 +666,47 @@ class pdf_attestation_sap
                 }
             }
 
+            // ================================================================
+            // CACHET AUTOMATIQUE (données entreprise Dolibarr)
+            // ================================================================
+            $pdf->SetY($signBoxY + $signBoxH + 4);
+            $pdf->SetX($colL + $pageW / 2);
+
+            // Encadré cachet sous la signature
+            $cachetX = $colL + $pageW / 2;
+            $cachetW = $pageW / 2;
+            $cachetY = $pdf->GetY();
+
+            // Construire les lignes du cachet
+            $cachetLines = array();
+            if (!empty($mysoc->name))    $cachetLines[] = $mysoc->name;
+            if (!empty($mysoc->address)) $cachetLines[] = $mysoc->address;
+            $townLine = trim(($mysoc->zip ? $mysoc->zip . ' ' : '') . ($mysoc->town ?: ''));
+            if ($townLine) $cachetLines[] = $townLine;
+            if (!empty($mysoc->idprof2)) $cachetLines[] = 'SIRET : ' . $mysoc->idprof2;
+            if (!empty($mysoc->phone))   $cachetLines[] = 'Tél : ' . $mysoc->phone;
+            if (!empty($mysoc->email))   $cachetLines[] = $mysoc->email;
+            if (!empty($numAgrement))    $cachetLines[] = 'N° SAP : ' . $numAgrement;
+
+            $cachetH = count($cachetLines) * 3.8 + 4;
+
+            // Fond et bordure du cachet
+            $pdf->SetFillColor(248, 250, 255);
+            $pdf->SetDrawColor(100, 130, 180);
+            $pdf->SetLineWidth(0.4);
+            $pdf->RoundedRect($cachetX, $cachetY, $cachetW, $cachetH, 1.5, '1234', 'DF');
+
+            // Texte du cachet
+            $pdf->SetFont('helvetica', '', 7);
+            $pdf->SetTextColor(30, 50, 100);
+            foreach ($cachetLines as $i => $line) {
+                $pdf->SetFont('helvetica', ($i === 0 ? 'B' : ''), 7);
+                $pdf->SetXY($cachetX + 2, $cachetY + 2 + $i * 3.8);
+                $pdf->Cell($cachetW - 4, 3.8, dol_string_nospecial($line), 0, 0, 'L');
+            }
+            $pdf->SetTextColor(0, 0, 0);
+            $pdf->SetLineWidth(0.2);
+
             // ---- Pied de page ----
             $pdf->SetY(-14);
             $pdf->SetFont('helvetica', 'I', 6.5);
