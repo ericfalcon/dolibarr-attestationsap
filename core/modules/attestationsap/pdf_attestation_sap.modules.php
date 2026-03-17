@@ -193,8 +193,10 @@ class pdf_attestation_sap
 
         // Répertoire de sortie
         $outputdir = getDolGlobalString('ATTESTATIONSAP_OUTPUTDIR', '');
-        // Corriger les chemins relatifs ou invalides
-        if (empty($outputdir) || !is_dir(dirname($outputdir))) {
+        // Valider que le chemin est absolu et dans DOL_DATA_ROOT
+        if (empty($outputdir)
+            || strpos($outputdir, DOL_DATA_ROOT) !== 0
+            || !is_dir(dirname($outputdir))) {
             $outputdir = DOL_DATA_ROOT . '/attestationsap';
         }
         if (!is_dir($outputdir)) {
