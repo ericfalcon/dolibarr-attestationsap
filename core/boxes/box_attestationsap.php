@@ -12,7 +12,7 @@ class box_attestationsap extends ModeleBoxes
 	public $boxcode  = "box_attestationsap";
 	public $boximg   = "generic";
 	public $boxlabel = "BoxAttestationSAP";
-	public $depends  = array("modAttestationSap");
+	public $depends  = array("attestationsap");
 
 	public function __construct($db, $param = '')
 	{
