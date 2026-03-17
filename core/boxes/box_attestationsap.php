@@ -49,7 +49,7 @@ class box_attestationsap extends ModeleBoxes
 		// ---- EN-TÊTE DEVIS ----
 		$this->info_box_contents[$line][] = array(
 			'td'   => 'colspan="3" class="liste_titre"',
-			'text' => '<a href="'.DOL_URL_ROOT.'/comm/propal/list.php">Derniers devis SAP</a>',
+			'text' => '<a href="'.DOL_URL_ROOT.'/comm/propal/list.php"><strong style="text-transform:uppercase">Derniers devis SAP</strong></a>',
 			'asis' => 1,
 		);
 		$line++;
@@ -102,7 +102,7 @@ class box_attestationsap extends ModeleBoxes
 		// ---- EN-TÊTE FACTURES ----
 		$this->info_box_contents[$line][] = array(
 			'td'   => 'colspan="3" class="liste_titre"',
-			'text' => '<a href="'.DOL_URL_ROOT.'/compta/facture/list.php">Dernières factures SAP</a>',
+			'text' => '<a href="'.DOL_URL_ROOT.'/compta/facture/list.php"><strong style="text-transform:uppercase">Dernières factures SAP</strong></a>',
 			'asis' => 1,
 		);
 		$line++;
