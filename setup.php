@@ -487,7 +487,7 @@ print '</td></tr>';
 
 // Champ nature service (affiché automatiquement mais modifiable)
 print '<tr class="oddeven"><td>Nature affichée sur les documents</td>';
-print '<td><input type="text" name="ATTESTATIONSAP_NATURE_SERVICE" value="' . dol_escape_htmltag($nature_service) . '" class="minwidth350" placeholder="Assistance informatique à domicile" id="nature_service_field"></td>';
+print '<td><textarea name="ATTESTATIONSAP_NATURE_SERVICE" rows="3" id="nature_service_field" class="flat centpercent" style="resize:vertical;overflow-y:auto;min-height:60px" placeholder="Assistance informatique à domicile">' . dol_escape_htmltag($nature_service) . '</textarea></td>';
 print '<td><small class="opacitymedium">Renseignée automatiquement avec la première activité cochée, ou personnalisable</small></td></tr>';
 
 print '<tr class="oddeven"><td>Mode d\'intervention</td><td>';
