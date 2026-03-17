@@ -56,7 +56,7 @@ class SapIntervenants
                 FROM " . MAIN_DB_PREFIX . "user u
                 WHERE u.entity IN (0, " . (int)$entity . ")
                   AND u.statut = 1
-                  AND u.extern = 0
+                  AND (u.fk_soc = 0 OR u.fk_soc IS NULL)
                 ORDER BY u.lastname ASC, u.firstname ASC";
 
         // Fallback : tous les users actifs internes si aucun "employee"
@@ -76,7 +76,7 @@ class SapIntervenants
                      FROM " . MAIN_DB_PREFIX . "user u
                      WHERE u.entity IN (0, " . (int)$entity . ")
                        AND u.statut = 1
-                       AND u.extern = 0
+                       AND (u.fk_soc = 0 OR u.fk_soc IS NULL)
                      ORDER BY u.lastname ASC, u.firstname ASC";
             $res2 = $this->db->query($sql2);
             if ($res2) {
@@ -242,7 +242,7 @@ class SapIntervenants
                 FROM " . MAIN_DB_PREFIX . "user
                 WHERE entity IN (0, " . (int)$entity . ")
                   AND statut = 1
-                  AND extern = 0
+                  AND (fk_soc = 0 OR fk_soc IS NULL)
                 ORDER BY lastname ASC, firstname ASC";
         $res = $this->db->query($sql);
         if ($res) {
