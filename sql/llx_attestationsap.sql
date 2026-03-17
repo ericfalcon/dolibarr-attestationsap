@@ -37,3 +37,18 @@ CREATE TABLE IF NOT EXISTS llx_attestationsap_factures (
     INDEX idx_attfact_att (fk_attestation),
     INDEX idx_attfact_fac (fk_facture)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Table de suivi des envois d'attestations
+CREATE TABLE IF NOT EXISTS llx_attestationsap_sent (
+    rowid           INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    entity          INT DEFAULT 1,
+    fk_soc          INT NOT NULL,
+    year            INT NOT NULL,
+    filename        VARCHAR(255) NOT NULL,
+    email           VARCHAR(255),
+    sent_at         DATETIME,
+    sent_by         INT,
+    tms             TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_att_sent_soc (fk_soc),
+    INDEX idx_att_sent_year (year)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

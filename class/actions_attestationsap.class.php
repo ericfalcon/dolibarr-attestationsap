@@ -318,4 +318,51 @@ class ActionsAttestationsap
         $this->applyModelOnObject($object, $target);
         return 0;
     }
+
+    /**
+     * Hook : ajoute un onglet "Attestations SAP" sur la fiche tiers
+     */
+    public function addMoreTabsLinks($parameters, &$object, &$action, $hookmanager)
+    {
+        global $langs, $conf;
+
+        $contexts = $this->getContexts($parameters);
+        if (!in_array('thirdpartycomm', $contexts)
+            && !in_array('thirdpartynote', $contexts)
+            && !in_array('thirdpartycontact', $contexts)
+            && !in_array('thirdparty', $contexts)) {
+            return 0;
+        }
+
+        if (empty($conf->attestationsap->enabled)) return 0;
+        if (empty($object->id)) return 0;
+
+        // Compter les attestations pour ce tiers
+        $sql = "SELECT COUNT(*) as nb FROM ".MAIN_DB_PREFIX."attestationsap_sent
+                WHERE fk_soc = ".(int)$object->id."
+                AND entity = ".(int)$conf->entity;
+        $res = $this->db->query($sql);
+        $nb  = 0;
+        if ($res && $o = $this->db->fetch_object($res)) $nb = (int)$o->nb;
+
+        $url = dol_buildpath('/custom/attestationsap/tiers_tab.php', 1)
+             . '?socid=' . (int)$object->id;
+
+        $this->results[] = array(
+            'label' => 'Attestations SAP' . ($nb > 0 ? ' <span class="badge badge-info">'.$nb.'</span>' : ''),
+            'url'   => $url,
+            'lang'  => 'attestationsap@attestationsap',
+        );
+
+        return 0;
+    }
+
+    /**
+     * Hook : affiche le contenu de l'onglet Attestations SAP
+     */
+    public function printCommonFooter($parameters, &$object, &$action, $hookmanager)
+    {
+        return 0; // non utilisé ici
+    }
+
 }

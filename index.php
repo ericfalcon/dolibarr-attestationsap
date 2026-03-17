@@ -270,15 +270,20 @@ function sap_log_send_event($db, $socid, $bn, $year, $user) {
 
     $ac = new ActionComm($db);
     $ac->type_code    = 'AC_EMAIL';
-    $ac->label        = 'Envoi attestation fiscale SAP '.$year;
-    $ac->note_private = 'Pièce envoyée : '.$bn;
+    $ac->label        = 'Attestation fiscale SAP '.$year.' envoyée';
+    $ac->note_private = 'Fichier : '.$bn."
+".'Envoyé depuis le module AttestationSAP.';
     $ac->datep        = dol_now();
     $ac->datef        = $ac->datep;
     $ac->durationp    = 0;
     $ac->fk_soc       = $socid;
+    $ac->socpeopleassigned = array();
     $ac->authorid     = $user->id;
     $ac->userownerid  = $user->id;
     $ac->percentage   = 100;
+    // Lier à la société pour apparaître dans les événements du tiers
+    $ac->fk_element   = $socid;
+    $ac->elementtype  = 'societe';
 
     $res = $ac->create($user);
     // pas de setEventMessages ici pour éviter le bruit, c'est une aide silencieuse.
