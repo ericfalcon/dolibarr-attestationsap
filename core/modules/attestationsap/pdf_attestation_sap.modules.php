@@ -193,12 +193,13 @@ class pdf_attestation_sap
 
         // Répertoire de sortie
         $outputdir = getDolGlobalString('ATTESTATIONSAP_OUTPUTDIR', '');
-        if (empty($outputdir)) {
-            $outputdir = !empty($conf->attestationsap->dir_output)
-                ? $conf->attestationsap->dir_output
-                : DOL_DATA_ROOT . '/attestationsap';
+        // Corriger les chemins relatifs ou invalides
+        if (empty($outputdir) || !is_dir(dirname($outputdir))) {
+            $outputdir = DOL_DATA_ROOT . '/attestationsap';
         }
-        if (!is_dir($outputdir) && dol_mkdir($outputdir) < 0) return false;
+        if (!is_dir($outputdir)) {
+            if (!@mkdir($outputdir, 0755, true)) return false;
+        }
         if (!is_writable($outputdir)) return false;
 
         // Chargement factures
