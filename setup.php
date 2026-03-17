@@ -354,11 +354,11 @@ print '<tr class="liste_titre"><td colspan="3"><strong>3 — Activités SAP & mo
 $activites_sap = array(
     // Famille A : Garde d'enfants
     'A' => array(
-        'label' => 'Garde d'enfants',
+        'label' => 'Garde d\'enfants',
         'items' => array(
-            'garde_enfants_domicile' => array('label' => 'Garde d'enfants à domicile (moins de 3 ans)',       'agrement' => true),
-            'garde_enfants_3ans'     => array('label' => 'Garde d'enfants à domicile (3 ans et plus)',         'agrement' => false),
-            'accompagnement_enfants' => array('label' => 'Accompagnement d'enfants dans les déplacements',     'agrement' => true),
+            'garde_enfants_domicile' => array('label' => 'Garde d\'enfants à domicile (moins de 3 ans)',       'agrement' => true),
+            'garde_enfants_3ans'     => array('label' => 'Garde d\'enfants à domicile (3 ans et plus)',         'agrement' => false),
+            'accompagnement_enfants' => array('label' => 'Accompagnement d\'enfants dans les déplacements',     'agrement' => true),
         ),
     ),
     // Famille B : Assistance aux personnes âgées/handicapées
@@ -390,7 +390,7 @@ $activites_sap = array(
         'items' => array(
             'assistance_informatique'   => array('label' => 'Assistance informatique à domicile',                   'agrement' => false),
             'assistance_administrative' => array('label' => 'Assistance administrative à domicile',                  'agrement' => false),
-            'soins_animaux'             => array('label' => 'Soins et promenades d'animaux (hors vétérinaire)',     'agrement' => false),
+            'soins_animaux'             => array('label' => 'Soins et promenades d\'animaux (hors vétérinaire)',     'agrement' => false),
             'maintenance_residence'     => array('label' => 'Maintenance et entretien de la résidence',              'agrement' => false),
             'gardiennage'               => array('label' => 'Gardiennage et surveillance temporaire de résidence',   'agrement' => false),
         ),
@@ -407,7 +407,7 @@ $activites_sap = array(
     ),
     // Famille F : Soins & bien-être
     'F' => array(
-        'label' => 'Soins & bien-être',
+        'label' => 'Soins &amp; bien-être',
         'items' => array(
             'soins_domicile'         => array('label' => 'Soins à la personne non médicaux à domicile',              'agrement' => true),
             'aide_sport'             => array('label' => 'Activités sportives / de bien-être à domicile',            'agrement' => false),
