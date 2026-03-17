@@ -645,7 +645,7 @@ class pdf_attestation_sap
             $pdf->SetLineWidth(0.3);
             $signBoxX = $colL + $pageW / 2;
             $signBoxY = $ySign + 4;
-            $signBoxW = $pageW / 2;
+            $signBoxW = $pageW / 2 - 1; // -1mm pour éviter débordement droite
             $signBoxH = 22;
             $pdf->Rect($signBoxX, $signBoxY, $signBoxW, $signBoxH, 'D');
             // (signature dessinée après le cachet pour être au premier plan)
