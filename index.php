@@ -141,7 +141,7 @@ function sap_find_factures_for_year($db, $year, $socid = 0) {
             FROM ".MAIN_DB_PREFIX."facture f
             WHERE f.entity = ".((int)$conf->entity)."
               AND f.type = 0
-              AND f.fk_statut IN (1,2)
+              AND f.fk_statut = 2 -- Uniquement factures payées (art. 199 sexdecies CGI)
               AND COALESCE(f.datef, f.date_valid) BETWEEN $ds AND $de
               AND $wModel
               $wSoc

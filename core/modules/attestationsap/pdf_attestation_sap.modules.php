@@ -90,7 +90,7 @@ class pdf_attestation_sap
                 WHERE f.entity = " . (int)$conf->entity . "
                   AND f.fk_soc = " . (int)$socid . "
                   AND f.type = 0
-                  AND f.fk_statut IN (1,2)
+                  AND f.fk_statut = 2 -- Uniquement factures payées (art. 199 sexdecies CGI : "sommes versées")
                   AND COALESCE(f.datef, f.date_valid) BETWEEN $ds AND $de
                   AND (" . implode(' OR ', $parts) . ")
                 ORDER BY COALESCE(f.datef, f.date_valid) ASC";
