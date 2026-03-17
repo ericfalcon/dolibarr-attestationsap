@@ -219,6 +219,23 @@ class modAttestationSap extends DolibarrModules
             'target'    => '',
             'user'      => 2
         );
+
+        // LEFT: Guide de démarrage
+        $this->menu[$m++] = array(
+            'fk_menu'   => 'fk_mainmenu=attestationsap',
+            'type'      => 'left',
+            'titre'     => 'Guide de démarrage',
+            'prefix'    => img_picto('', 'setup', 'class="paddingright pictofixedwidth valignmiddle"'),
+            'mainmenu'  => 'attestationsap',
+            'leftmenu'  => 'attestationsap_install',
+            'url'       => '/custom/attestationsap/install_guide.php',
+            'langs'     => 'attestationsap@attestationsap',
+            'position'  => 150,
+            'enabled'   => '$conf->attestationsap->enabled',
+            'perms'     => '$user->rights->attestationsap->read',
+            'target'    => '',
+            'user'      => 2
+        );
     }
 
     /**
