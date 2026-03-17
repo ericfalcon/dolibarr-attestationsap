@@ -248,6 +248,34 @@ if ($action === 'upload_logo') {
     }
 }
 
+if ($action === 'upload_signature') {
+    if (!empty($_FILES['signature_sap']['tmp_name'])) {
+        $upload_dir = (!empty($conf->mycompany->multidir_output[$conf->entity]) ? $conf->mycompany->multidir_output[$conf->entity] : $conf->mycompany->dir_output) . '/logos';
+        if (!is_dir($upload_dir)) @mkdir($upload_dir, 0755, true);
+        $ext = strtolower(pathinfo($_FILES['signature_sap']['name'], PATHINFO_EXTENSION));
+        if (!in_array($ext, array('png', 'jpg', 'jpeg', 'gif'))) {
+            setEventMessages("Format non supporté (PNG, JPG uniquement).", null, 'errors');
+        } else {
+            $dest = $upload_dir . '/signature-sap.' . $ext;
+            if (dol_move_uploaded_file($_FILES['signature_sap']['tmp_name'], $dest, 1) > 0) {
+                dolibarr_set_const($db, 'ATTESTATIONSAP_SIGNATURE', 'mycompany/logos/' . basename($dest), 'chaine', 0, '', $conf->entity);
+                setEventMessages('Signature uploadée avec succès.', null, 'mesgs');
+            } else {
+                setEventMessages("Erreur lors de l'upload.", null, 'errors');
+            }
+        }
+    }
+}
+if ($action === 'delete_signature') {
+    $rel = getDolGlobalString('ATTESTATIONSAP_SIGNATURE');
+    if ($rel) {
+        $full = DOL_DATA_ROOT . '/' . $rel;
+        if (file_exists($full)) @unlink($full);
+        dolibarr_del_const($db, 'ATTESTATIONSAP_SIGNATURE', $conf->entity);
+        setEventMessages('Signature supprimée.', null, 'mesgs');
+    }
+}
+
 if ($action === 'delete_logo') {
     $token = GETPOST('token', 'alpha');
     if (empty($token) || $token !== $_SESSION['newtoken']) accessforbidden();

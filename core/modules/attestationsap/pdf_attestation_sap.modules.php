@@ -249,6 +249,12 @@ class pdf_attestation_sap
         $showCreditImpot  = getDolGlobalInt('ATTESTATIONSAP_SHOW_CREDIT_IMPOT', 1);
         $creditImpot      = round((float)$total_ttc * 0.5, 2);
         $signName         = getDolGlobalString('ATTESTATIONSAP_SIGN_NAME', $mysoc->name);
+        $signImageRel     = getDolGlobalString('ATTESTATIONSAP_SIGNATURE', '');
+        $signImagePath    = '';
+        if (!empty($signImageRel)) {
+            $p = DOL_DATA_ROOT . '/' . $signImageRel;
+            if (file_exists($p) && is_readable($p)) $signImagePath = $p;
+        }
         $signText         = getDolGlobalString('ATTESTATIONSAP_SIGN_TEXT', '');
 
         // ---- Génération TCPDF ----
@@ -634,10 +640,31 @@ class pdf_attestation_sap
             $pdf->Cell($pageW / 2 - 2, 4, $signName . ($signText ? ' — ' . $signText : ''), 0, 1, 'L');
             $pdf->SetTextColor(0, 0, 0);
 
-            // Zone signature vierge
+            // Zone signature : image si disponible, sinon rectangle vierge
             $pdf->SetDrawColor(160, 160, 160);
             $pdf->SetLineWidth(0.3);
-            $pdf->Rect($colL + $pageW / 2, $ySign + 4, $pageW / 2, 18, 'D');
+            $signBoxX = $colL + $pageW / 2;
+            $signBoxY = $ySign + 4;
+            $signBoxW = $pageW / 2;
+            $signBoxH = 22;
+            $pdf->Rect($signBoxX, $signBoxY, $signBoxW, $signBoxH, 'D');
+            if (!empty($signImagePath)) {
+                // Intégrer l'image de signature centrée dans le rectangle
+                $imgInfo = @getimagesize($signImagePath);
+                if ($imgInfo) {
+                    $imgW = $signBoxW - 6;
+                    $imgH = $signBoxH - 4;
+                    // Respecter les proportions
+                    $ratio = $imgInfo[0] / max(1, $imgInfo[1]);
+                    if ($imgW / $ratio > $imgH) $imgW = $imgH * $ratio;
+                    else $imgH = $imgW / $ratio;
+                    $imgX = $signBoxX + ($signBoxW - $imgW) / 2;
+                    $imgY = $signBoxY + ($signBoxH - $imgH) / 2;
+                    $ext = strtolower(pathinfo($signImagePath, PATHINFO_EXTENSION));
+                    $type = ($ext === 'png') ? 'PNG' : 'JPEG';
+                    $pdf->Image($signImagePath, $imgX, $imgY, $imgW, $imgH, $type);
+                }
+            }
 
             // ---- Pied de page ----
             $pdf->SetY(-14);
