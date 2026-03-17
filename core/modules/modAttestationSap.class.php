@@ -297,34 +297,7 @@ class modAttestationSap extends DolibarrModules
      */
     public function remove($options = '')
     {
-        global $conf;
-
-        $sql = array();
-        $e   = (int)$conf->entity;
-
-        // Supprimer les entrées document_model du module
-        $sql[] = "DELETE FROM ".MAIN_DB_PREFIX."document_model
-                  WHERE entity = ".$e."
-                  AND nom IN ('facture_sap_v3','devis_sap_v2','devis_sap')";
-
-        // Supprimer la box du tableau de bord
-        $sql[] = "DELETE FROM ".MAIN_DB_PREFIX."boxes
-                  WHERE entity = ".$e."
-                  AND box_id IN (
-                      SELECT rowid FROM ".MAIN_DB_PREFIX."boxes_def
-                      WHERE file = 'box_attestationsap@attestationsap'
-                      AND entity = ".$e."
-                  )";
-        $sql[] = "DELETE FROM ".MAIN_DB_PREFIX."boxes_def
-                  WHERE file = 'box_attestationsap@attestationsap'
-                  AND entity = ".$e;
-
-        // Supprimer la copie physique de la box dans core/boxes/
-        $box_copy = DOL_DOCUMENT_ROOT.'/core/boxes/box_attestationsap.php';
-        if (file_exists($box_copy)) {
-            @unlink($box_copy);
-        }
-
-        return $this->_remove($sql, $options);
+        // Pas de suppression agressive (on laisse docmodels et constantes)
+        return $this->_remove(array(), $options);
     }
 }
