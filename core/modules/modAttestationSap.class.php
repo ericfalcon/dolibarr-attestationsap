@@ -212,45 +212,71 @@ class modAttestationSap extends DolibarrModules
     {
         global $conf;
 
+        // Charger tables SQL si présentes (silencieux si aucun fichier)
         $result = $this->_load_tables('/attestationsap/sql/');
         if ($result < 0) return -1;
 
-        // Nettoyage préalable (comme dans la v1 fonctionnelle)
-        $this->remove($options);
-
-        $entity = (int) $conf->entity;
+        // Répertoires de données (créés automatiquement par le core sur _init)
         $sql = array();
 
-        $sql[] = "INSERT INTO ".MAIN_DB_PREFIX."document_model (nom, entity, type, libelle, description)
-                  SELECT 'devis_sap', ".$entity.", 'propal', 'devis_sap', 'Modèle devis SAP'
-                  WHERE NOT EXISTS (
-                    SELECT 1 FROM ".MAIN_DB_PREFIX."document_model
-                    WHERE nom='devis_sap' AND entity=".$entity." AND type='propal'
-                  )";
+        // Enregistrer les modèles doc (idempotent)
+        $e = (int) $conf->entity;
+
+        // Devis SAP (V1)
+        // ---- Nettoyage des entrées avec suffixes ':...' (ex: 'facture_sap_v3:aucun') ----
+        // Ces suffixes apparaissent quand Dolibarr ne trouve pas le fichier PHP au moment du scan
+        $sql[] = "DELETE FROM ".MAIN_DB_PREFIX."document_model
+                  WHERE entity = ".$e."
+                  AND type = 'invoice'
+                  AND nom LIKE 'facture_sap%'
+                  AND nom LIKE '%:%'";
+        $sql[] = "DELETE FROM ".MAIN_DB_PREFIX."document_model
+                  WHERE entity = ".$e."
+                  AND type = 'invoice'
+                  AND nom NOT IN ('facture_sap_v3')
+                  AND nom LIKE 'facture_sap%'";
 
         $sql[] = "INSERT INTO ".MAIN_DB_PREFIX."document_model (nom, entity, type, libelle, description)
-                  SELECT 'devis_sap_v2', ".$entity.", 'propal', 'devis_sap_v2', 'Modèle devis SAP V2'
+                  SELECT 'devis_sap', ".$e.", 'propal', 'devis_sap', 'Modèle devis SAP'
                   WHERE NOT EXISTS (
                     SELECT 1 FROM ".MAIN_DB_PREFIX."document_model
-                    WHERE nom='devis_sap_v2' AND entity=".$entity." AND type='propal'
+                    WHERE nom='devis_sap' AND entity=".$e." AND type='propal'
                   )";
 
+        // Devis SAP V2
         $sql[] = "INSERT INTO ".MAIN_DB_PREFIX."document_model (nom, entity, type, libelle, description)
-                  SELECT 'facture_sap_v3', ".$entity.", 'invoice', 'facture_sap_v3', 'Modèle facture SAP v3'
+                  SELECT 'devis_sap_v2', ".$e.", 'propal', 'devis_sap_v2', 'Modèle devis SAP V2'
                   WHERE NOT EXISTS (
                     SELECT 1 FROM ".MAIN_DB_PREFIX."document_model
-                    WHERE nom='facture_sap_v3' AND entity=".$entity." AND type='invoice'
+                    WHERE nom='devis_sap_v2' AND entity=".$e." AND type='propal'
                   )";
 
-        foreach ($sql as $q) {
-            $res = $this->db->query($q);
-            if (!$res) { $this->error = $this->db->lasterror(); return 0; }
-        }
+        // Facture SAP V3
+        $sql[] = "INSERT INTO ".MAIN_DB_PREFIX."document_model (nom, entity, type, libelle, description)
+                  SELECT 'facture_sap_v3', ".$e.", 'invoice', 'facture_sap_v3', 'Modèle facture SAP v3'
+                  WHERE NOT EXISTS (
+                    SELECT 1 FROM ".MAIN_DB_PREFIX."document_model
+                    WHERE nom='facture_sap_v3' AND entity=".$e." AND type='invoice'
+                  )";
 
-        return $this->_init(array(), $options);
+        // Constantes de confort (idempotentes)
+        // - Dossier de sortie fallback (si non configuré par setup)
+        // - Modèle de facture utilisé par l’attestation (par défaut facture_sap_v3)
+        $docroot = $conf->dolibarr_main_document_root.'/attestationsap';
+        $sql[] = "INSERT INTO ".MAIN_DB_PREFIX."const (name, value, type, note, visible, entity)
+                  SELECT 'ATTESTATIONSAP_OUTPUTDIR', '".$this->db->escape($docroot)."', 'chaine', 'Répertoire de sortie des attestations', 0, ".$e."
+                  WHERE NOT EXISTS (SELECT 1 FROM ".MAIN_DB_PREFIX."const WHERE name='ATTESTATIONSAP_OUTPUTDIR' AND entity=".$e.")";
+        $sql[] = "INSERT INTO ".MAIN_DB_PREFIX."const (name, value, type, note, visible, entity)
+                  SELECT 'ATTESTATIONSAP_FACTURE_MODEL_NAME', 'facture_sap_v3', 'chaine', 'Modèle de facture SAP utilisé', 0, ".$e."
+                  WHERE NOT EXISTS (SELECT 1 FROM ".MAIN_DB_PREFIX."const WHERE name='ATTESTATIONSAP_FACTURE_MODEL_NAME' AND entity=".$e.")";
+
+        return $this->_init($sql, $options);
     }
 
-        public function remove($options = '')
+    /**
+     * Désinstallation du module
+     */
+    public function remove($options = '')
     {
         // Pas de suppression agressive (on laisse docmodels et constantes)
         return $this->_remove(array(), $options);
