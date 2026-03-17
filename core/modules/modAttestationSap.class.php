@@ -35,7 +35,8 @@ class modAttestationSap extends DolibarrModules
         // --- Activation de parties du module ---
         $this->module_parts = array(
             'hooks'     => array('invoicecard', 'propalcard', 'pdfgeneration', 'formbuilddoc'),
-            'models'    => 1, // autorise docmodels
+            'models'    => 1,
+            'boxes'     => 1, // déclare des widgets tableau de bord
             'docmodels' => array(
                 'propal'  => array('class' => '/custom/attestationsap/core/modules/propale/doc/'),
                 'invoice' => array('class' => '/custom/attestationsap/core/modules/facture/doc/'),
