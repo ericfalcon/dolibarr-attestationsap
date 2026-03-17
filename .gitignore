@@ -26,3 +26,4 @@ desktop.ini
 # Archives de build
 *.zip
 *.tar.gz
+dist/

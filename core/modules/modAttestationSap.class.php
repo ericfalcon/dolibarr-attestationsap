@@ -42,6 +42,15 @@ class modAttestationSap extends DolibarrModules
             ),
         );
 
+        // --- Widgets tableau de bord ---
+        $this->boxes = array(
+            0 => array(
+                'file'  => 'box_attestationsap@attestationsap',
+                'note'  => '',
+                'enabledbydefaulton' => 'Home',
+            ),
+        );
+
         // --- Répertoires de données (créés à l'activation) ---
         $this->dirs = array(
             '/attestationsap',
@@ -85,7 +94,7 @@ class modAttestationSap extends DolibarrModules
             'prefix'    => img_picto('', 'generic', 'class="paddingright pictofixedwidth valignmiddle"'),
             'mainmenu'  => 'attestationsap',
             'leftmenu'  => '',
-            'url'       => '/custom/attestationsap/index.php',
+            'url'       => '/custom/attestationsap/index.php?tab=dashboard',
             'langs'     => 'attestationsap@attestationsap',
             'position'  => 1000,
             'enabled'   => '$conf->attestationsap->enabled',

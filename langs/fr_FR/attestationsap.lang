@@ -79,3 +79,5 @@ AgrementNumRequired = Le numéro d'agrément SAP est obligatoire.
 SignaireRequired = Le nom du signataire est obligatoire.
 MissingEmail = Le client n'a pas d'adresse email configurée.
 IntervenantNotConfigured = ⚠ Intervenant non renseigné — Configurez-le dans Paramètres SAP
+
+BoxAttestationSAP = Widget SAP (devis, factures, attestations)
