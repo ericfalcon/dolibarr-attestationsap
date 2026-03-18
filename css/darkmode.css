@@ -247,3 +247,84 @@ body.attestationsap-dark .titre_create,
 body.attestationsap-dark h1 {
     color: #90c0e8 !important;
 }
+
+/* ======================================================
+   DROPDOWN AUTOCOMPLETE (sélection tiers, produits)
+   ====================================================== */
+body.attestationsap-dark .ui-autocomplete,
+body.attestationsap-dark .ui-menu,
+body.attestationsap-dark .ui-widget-content,
+body.attestationsap-dark .ui-menu-item,
+body.attestationsap-dark .ui-menu-item-wrapper,
+body.attestationsap-dark div.select2-dropdown,
+body.attestationsap-dark .select2-results__option,
+body.attestationsap-dark .select2-results {
+    background-color: #1a2535 !important;
+    color: #c0d0e0 !important;
+    border-color: #2e4060 !important;
+}
+
+body.attestationsap-dark .ui-menu-item:hover,
+body.attestationsap-dark .ui-menu-item-wrapper:hover,
+body.attestationsap-dark .ui-state-active,
+body.attestationsap-dark .select2-results__option--highlighted {
+    background-color: #1e3a60 !important;
+    color: #ffffff !important;
+}
+
+/* Select2 container */
+body.attestationsap-dark .select2-container--default .select2-selection,
+body.attestationsap-dark .select2-selection--single,
+body.attestationsap-dark .select2-selection--multiple {
+    background-color: #1e2d45 !important;
+    border-color: #2e4060 !important;
+    color: #c8ddf0 !important;
+}
+
+body.attestationsap-dark .select2-selection__rendered {
+    color: #c8ddf0 !important;
+}
+
+/* ======================================================
+   ÉDITEUR WYSIWYG (TinyMCE / CKEditor)
+   ====================================================== */
+body.attestationsap-dark .mce-tinymce,
+body.attestationsap-dark .mce-container,
+body.attestationsap-dark .mce-toolbar,
+body.attestationsap-dark .mce-btn-group,
+body.attestationsap-dark .mce-panel {
+    background-color: #1a2535 !important;
+    border-color: #2e4060 !important;
+    color: #c0d0e0 !important;
+}
+
+body.attestationsap-dark .cke_chrome,
+body.attestationsap-dark .cke_top,
+body.attestationsap-dark .cke_bottom,
+body.attestationsap-dark .cke_toolbar {
+    background-color: #1a2535 !important;
+    border-color: #2e4060 !important;
+}
+
+/* Barre d'outils éditeur texte enrichi Dolibarr */
+body.attestationsap-dark div[class*="editor"],
+body.attestationsap-dark .note-toolbar,
+body.attestationsap-dark .note-editing-area {
+    background-color: #1a2535 !important;
+    border-color: #2e4060 !important;
+}
+
+/* Zone de saisie texte enrichi (iframe) */
+body.attestationsap-dark .note-editable,
+body.attestationsap-dark [contenteditable="true"] {
+    background-color: #1e2d45 !important;
+    color: #c8ddf0 !important;
+}
+
+/* Boutons barre outils éditeur */
+body.attestationsap-dark .note-btn,
+body.attestationsap-dark .note-toolbar .btn {
+    background-color: #243448 !important;
+    color: #a0b8d0 !important;
+    border-color: #2e4060 !important;
+}
