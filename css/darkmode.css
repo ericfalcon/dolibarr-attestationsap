@@ -191,3 +191,84 @@ body.attestationsap-dark .badge {
     background-color: #1e3a5f !important;
     color: #c9d6e3 !important;
 }
+
+/* ---- Corrections lisibilité ---- */
+
+/* Labels et textes généraux */
+body.attestationsap-dark label,
+body.attestationsap-dark p,
+body.attestationsap-dark td,
+body.attestationsap-dark th,
+body.attestationsap-dark span:not(.fas):not(.far):not(.fab),
+body.attestationsap-dark div:not(.mainmenu) {
+    color: #d0d8e8;
+}
+
+/* Titres de section (liste_titre) */
+body.attestationsap-dark tr.liste_titre,
+body.attestationsap-dark tr.liste_titre th,
+body.attestationsap-dark tr.liste_titre td {
+    background-color: #0d2a4a !important;
+    color: #ffffff !important;
+}
+
+/* Inputs, selects, textareas */
+body.attestationsap-dark input[type="text"],
+body.attestationsap-dark input[type="number"],
+body.attestationsap-dark input[type="date"],
+body.attestationsap-dark input[type="email"],
+body.attestationsap-dark select,
+body.attestationsap-dark textarea {
+    background-color: #1e2d45 !important;
+    color: #e8eef7 !important;
+    border: 1px solid #3a5078 !important;
+}
+
+/* Cases à cocher et boutons radio — forcer l'affichage */
+body.attestationsap-dark input[type="checkbox"],
+body.attestationsap-dark input[type="radio"] {
+    accent-color: #7eb8f7;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    filter: brightness(1.8) !important;
+}
+
+/* Texte opacité réduite (opacitymedium) */
+body.attestationsap-dark .opacitymedium {
+    color: #8899b0 !important;
+    opacity: 1 !important;
+}
+
+/* Alertes et info boxes */
+body.attestationsap-dark .info,
+body.attestationsap-dark .warning,
+body.attestationsap-dark .error {
+    color: #e8eef7 !important;
+}
+
+/* Bordures tableau */
+body.attestationsap-dark .noborder td,
+body.attestationsap-dark .noborder th {
+    border-color: #2a3a5c !important;
+}
+
+/* Fond principal page */
+body.attestationsap-dark #id-right {
+    background-color: #111827 !important;
+}
+
+/* Blocs fichecenter et fiches */
+body.attestationsap-dark .fichehalfleft,
+body.attestationsap-dark .fichehalfright,
+body.attestationsap-dark .fiche {
+    background-color: #1a2535 !important;
+    border-color: #2a3a5c !important;
+}
+
+/* Bouton toggle dans la barre — style cohérent */
+#mainmenutd_sapdarkmode .topmenuimage {
+    font-size: 18px !important;
+    line-height: 1.2 !important;
+    padding: 0 4px !important;
+}
