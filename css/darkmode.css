@@ -208,3 +208,42 @@ body.attestationsap-dark .menu_titre a:hover {
 #mainmenutd_sapdarkmode:hover .topmenuimage {
     opacity: 1;
 }
+
+/* ======================================================
+   AJUSTEMENTS FINAUX v5.1
+   ====================================================== */
+
+/* Astérisque champ obligatoire */
+body.attestationsap-dark .fieldrequired,
+body.attestationsap-dark span.fieldrequired,
+body.attestationsap-dark .required {
+    color: #e07070 !important;
+}
+
+/* Texte aide colonne droite — un peu plus visible */
+body.attestationsap-dark td:last-child:not(:only-child):not(:first-child) {
+    color: #607888 !important;
+}
+
+/* Titres de colonnes activités (Garde d'enfants etc.) */
+body.attestationsap-dark td > strong:first-child,
+body.attestationsap-dark td > b:first-child {
+    color: #90b8d8 !important;
+}
+
+/* Texte "source : user" et petits textes */
+body.attestationsap-dark .opacitymedium {
+    color: #506878 !important;
+}
+
+/* Lien "Retour liste des modules" */
+body.attestationsap-dark .right a,
+body.attestationsap-dark .pagination a {
+    color: #5a9fd4 !important;
+}
+
+/* Titre de page (Configuration du module...) */
+body.attestationsap-dark .titre_create,
+body.attestationsap-dark h1 {
+    color: #90c0e8 !important;
+}
