@@ -25,8 +25,21 @@ class box_attestationsap extends ModeleBoxes
 
 		$langs->load('attestationsap@attestationsap');
 
+		// Compter attestations non envoyées de l'année fiscale (N-1)
+		$attDir = getDolGlobalString('ATTESTATIONSAP_OUTPUTDIR', '');
+		if (empty($attDir) || strpos($attDir, DOL_DATA_ROOT) !== 0) $attDir = DOL_DATA_ROOT.'/attestationsap';
+		$yearFisc = (int)date('Y') - 1;
+		$allPdfs = is_dir($attDir) ? (glob($attDir.'/attestation_sap_'.$yearFisc.'-*.pdf') ?: array()) : array();
+		$nbNonEnvoyees = 0;
+		foreach ($allPdfs as $pdf) {
+			if (!file_exists($pdf.'.sent.json')) $nbNonEnvoyees++;
+		}
+		$badge = $nbNonEnvoyees > 0
+			? ' <span class="badge marginleftonlyshort" style="background:#e74c3c;color:#fff" title="'.$nbNonEnvoyees.' attestation(s) non envoyée(s) pour '.$yearFisc.'">'.$nbNonEnvoyees.'</span>'
+			: '';
+
 		$this->info_box_head = array(
-			'text'    => $langs->trans("BoxAttestationSAP"),
+			'text'    => $langs->trans("BoxAttestationSAP").$badge,
 			'sublink' => dol_buildpath('/custom/attestationsap/index.php', 1),
 		);
 

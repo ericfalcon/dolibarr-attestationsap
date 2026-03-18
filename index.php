@@ -536,6 +536,9 @@ if ($tab === 'generate') {
             print "</pre>";
         }
 
+        $nb_gen_ok  = 0;
+        $nb_gen_err = 0;
+
         if (empty($invoices)) {
             print '<div class="opacitymedium">Aucune facture SAP trouvée pour l\'année '.$year.' avec le(s) modèle(s) configuré(s).</div>';
         } else {
@@ -585,7 +588,7 @@ if ($tab === 'generate') {
                     $statusSend = '<span class="badge-not">Non envoyée</span>';
                     $actions = 'N/A';
 
-                    if ($generatedPath && file_exists($generatedPath)) {
+                    if ($generatedPath && file_exists($generatedPath)) { $nb_gen_ok++;
                         $filesize = filesize($generatedPath);
                         $bn = basename($generatedPath);
                         $dlUrl = DOL_URL_ROOT.'/document.php?modulepart=attestationsap&file='.urlencode($bn);

@@ -130,6 +130,28 @@ if ($action === 'save_settings') {
     $show_tva_exo = GETPOST('ATTESTATIONSAP_MENTION_TVA_EXONEREE', 'int') ? 1 : 0;
 
     // Email
+    // Action : envoi email de test
+    if ($action === 'send_email_test') {
+        require_once DOL_DOCUMENT_ROOT.'/core/class/CMailFile.class.php';
+        $tpl_subj = getDolGlobalString('ATTESTATIONSAP_EMAIL_SUBJECT', 'Attestation fiscale SAP {YEAR}');
+        $tpl_body = getDolGlobalString('ATTESTATIONSAP_EMAIL_BODY', '');
+        $yr = (int)date('Y') - 1;
+        $repl_from = array('{YEAR}', '{CLIENT}', '{COMPANY}');
+        $repl_to   = array($yr, $user->firstname.' '.$user->lastname, $mysoc->name);
+        $subj = str_replace($repl_from, $repl_to, $tpl_subj);
+        $body = nl2br(htmlspecialchars(str_replace($repl_from, $repl_to, $tpl_body)));
+        $dest = $user->email ?: $mysoc->email;
+        if ($dest) {
+            $mail = new CMailFile($subj, $dest, $mysoc->email ?: $dest, $body, array(), array(), array(), '', '', 0, 1);
+            if ($mail->sendfile()) setEventMessages('Email de test envoyé à '.$dest, null, 'mesgs');
+            else setEventMessages('Erreur envoi : '.(is_object($mail) ? $mail->error : ''), null, 'errors');
+        } else {
+            setEventMessages('Aucune adresse email configurée pour votre compte.', null, 'warnings');
+        }
+        header('Location: '.htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES).'?action=');
+        exit;
+    }
+
     $email_subject = GETPOST('ATTESTATIONSAP_EMAIL_SUBJECT', 'alphanohtml');
     $email_body    = GETPOST('ATTESTATIONSAP_EMAIL_BODY', 'restricthtml');
 
@@ -437,6 +459,36 @@ print '<tr class="liste_titre"><td colspan="3"><strong>3 — Activités SAP & mo
 // agrement=true = nécessite agrément préfectoral (art. L.7232-1 Code du travail)
 // agrement=false = simple déclaration préalable suffit
 $activites_sap = array(
+    // Références légales pour tooltips
+    $refs_legales = array(
+        'garde_enfants_domicile_3ans_plus' => 'Art. D.7231-1, 1° a)',
+        'garde_enfants_domicile_moins3ans' => 'Art. D.7231-1, 1° a) + Agrément',
+        'accompagnement_enfants'           => 'Art. D.7231-1, 1° b) + Agrément',
+        'assistance_personnes_agees'       => 'Art. D.7231-1, 2° a) + Agrément',
+        'assistance_personnes_hand'        => 'Art. D.7231-1, 2° b) + Agrément',
+        'conduite_vehicule'                => 'Art. D.7231-1, 2° c) + Agrément',
+        'accompagnement_deplacements'      => 'Art. D.7231-1, 2° d) + Agrément',
+        'entretien_maison'                 => 'Art. D.7231-1, 3° a)',
+        'petits_travaux_jardinage'         => 'Art. D.7231-1, 3° b)',
+        'nettoyage_vitres'                 => 'Art. D.7231-1, 3° c)',
+        'preparation_repas'                => 'Art. D.7231-1, 3° d)',
+        'livraison_repas'                  => 'Art. D.7231-1, 3° e) + Agrément',
+        'collecte_linge'                   => 'Art. D.7231-1, 3° f)',
+        'assistance_informatique'          => 'Art. D.7231-1, 4° a)',
+        'assistance_administrative'        => 'Art. D.7231-1, 4° b)',
+        'soins_animaux'                    => 'Art. D.7231-1, 4° c)',
+        'maintenance_residence'            => 'Art. D.7231-1, 4° d)',
+        'gardiennage_residence'            => 'Art. D.7231-1, 4° e)',
+        'soutien_scolaire'                 => 'Art. D.7231-1, 5° a)',
+        'cours_informatique_domicile'      => 'Art. D.7231-1, 5° b)',
+        'cours_musique'                    => 'Art. D.7231-1, 5° c)',
+        'autres_cours'                     => 'Art. D.7231-1, 5° d)',
+        'soins_non_medicaux'               => 'Art. D.7231-1, 6° a) + Agrément',
+        'activites_sportives'              => 'Art. D.7231-1, 6° b)',
+        'assistance_numerique'             => 'Art. D.7231-1, 6° c)',
+        'teleassistance'                   => 'Art. D.7231-1, 6° d) + Agrément',
+    );
+
     // Famille A : Garde d'enfants
     'A' => array(
         'label' => 'Garde d\'enfants',
@@ -518,7 +570,9 @@ foreach ($activites_sap as $famille_key => $famille) {
         $css_ag   = $needs_ag ? ' sap-agrement-only' : '';
         print '<label class="sap-activite'.$css_ag.'"'.$hidden.' style="display:block;margin:3px 0;cursor:pointer;color:#b8d4ee">';
         print '<input type="checkbox" name="ATTESTATIONSAP_ACTIVITES[]" value="'.dol_escape_htmltag($key).'"'.$checked.'> ';
-        print dol_escape_htmltag($label);
+        $ref_legal = isset($refs_legales[$key]) ? $refs_legales[$key] : '';
+        $title_attr = $ref_legal ? ' title="'.dol_escape_htmltag($ref_legal).'"' : '';
+        print '<span'.$title_attr.'>'.dol_escape_htmltag($label).'</span>';
         if ($needs_ag) print ' <span style="font-size:10px;color:#e67e22;font-weight:bold" title="Nécessite un agrément préfectoral">⚠ Agr.</span>';
         print '</label>';
     }
@@ -645,6 +699,11 @@ print '<tr class="liste_titre"><td colspan="3"><strong>9 — Template d\'email d
 
 print '<tr class="oddeven"><td>Objet</td><td colspan="2"><input type="text" name="ATTESTATIONSAP_EMAIL_SUBJECT" value="' . dol_escape_htmltag($email_subject) . '" class="flat centpercent"></td></tr>';
 print '<tr class="oddeven"><td>Corps</td><td colspan="2"><textarea name="ATTESTATIONSAP_EMAIL_BODY" rows="5" class="flat centpercent">' . dol_escape_htmltag($email_body) . '</textarea></td></tr>';
+print '<tr class="oddeven"><td>Test</td><td colspan="2">';
+print '<a href="'.htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES).'?action=send_email_test&token='.newToken().'" class="butAction" title="Envoie un email de test à votre adresse ('.$user->email.')">';
+print '📧 M'envoyer un test</a>';
+print ' <small class="opacitymedium">→ envoyé à '.dol_escape_htmltag($user->email ?: 'votre email').'</small>';
+print '</td></tr>';
 
 print '</table>';
 print '<br><div class="center"><input type="submit" class="button button-save" value="' . $langs->trans('Save') . '"></div>';
