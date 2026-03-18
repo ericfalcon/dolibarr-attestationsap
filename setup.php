@@ -77,6 +77,28 @@ function sap_get_categories_produits($db)
 // ACTIONS
 // =========================================================================
 
+// Action : envoi email de test
+if ($action === 'send_email_test') {
+    require_once DOL_DOCUMENT_ROOT.'/core/class/CMailFile.class.php';
+    $tpl_subj = getDolGlobalString('ATTESTATIONSAP_EMAIL_SUBJECT', 'Attestation fiscale SAP {YEAR}');
+    $tpl_body = getDolGlobalString('ATTESTATIONSAP_EMAIL_BODY', '');
+    $yr = (int)date('Y') - 1;
+    $repl_from = array('{YEAR}', '{CLIENT}', '{COMPANY}');
+    $repl_to   = array($yr, $user->firstname.' '.$user->lastname, $mysoc->name);
+    $subj = str_replace($repl_from, $repl_to, $tpl_subj);
+    $body = nl2br(htmlspecialchars(str_replace($repl_from, $repl_to, $tpl_body)));
+    $dest = $user->email ?: $mysoc->email;
+    if ($dest) {
+        $mail = new CMailFile($subj, $dest, $mysoc->email ?: $dest, $body, array(), array(), array(), '', '', 0, 1);
+        if ($mail->sendfile()) setEventMessages('Email de test envoyé à '.$dest, null, 'mesgs');
+        else setEventMessages('Erreur envoi : '.(is_object($mail) ? $mail->error : ''), null, 'errors');
+    } else {
+        setEventMessages('Aucune adresse email configurée pour votre compte.', null, 'warnings');
+    }
+    header('Location: '.htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES));
+    exit;
+}
+
 if ($action === 'save_settings') {
     $token = GETPOST('token', 'alpha');
     if (empty($token) || $token !== $_SESSION['newtoken']) accessforbidden();
@@ -128,29 +150,6 @@ if ($action === 'save_settings') {
     // Options affichage
     $show_credit  = GETPOST('ATTESTATIONSAP_SHOW_CREDIT_IMPOT', 'int') ? 1 : 0;
     $show_tva_exo = GETPOST('ATTESTATIONSAP_MENTION_TVA_EXONEREE', 'int') ? 1 : 0;
-
-    // Email
-    // Action : envoi email de test
-    if ($action === 'send_email_test') {
-        require_once DOL_DOCUMENT_ROOT.'/core/class/CMailFile.class.php';
-        $tpl_subj = getDolGlobalString('ATTESTATIONSAP_EMAIL_SUBJECT', 'Attestation fiscale SAP {YEAR}');
-        $tpl_body = getDolGlobalString('ATTESTATIONSAP_EMAIL_BODY', '');
-        $yr = (int)date('Y') - 1;
-        $repl_from = array('{YEAR}', '{CLIENT}', '{COMPANY}');
-        $repl_to   = array($yr, $user->firstname.' '.$user->lastname, $mysoc->name);
-        $subj = str_replace($repl_from, $repl_to, $tpl_subj);
-        $body = nl2br(htmlspecialchars(str_replace($repl_from, $repl_to, $tpl_body)));
-        $dest = $user->email ?: $mysoc->email;
-        if ($dest) {
-            $mail = new CMailFile($subj, $dest, $mysoc->email ?: $dest, $body, array(), array(), array(), '', '', 0, 1);
-            if ($mail->sendfile()) setEventMessages('Email de test envoyé à '.$dest, null, 'mesgs');
-            else setEventMessages('Erreur envoi : '.(is_object($mail) ? $mail->error : ''), null, 'errors');
-        } else {
-            setEventMessages('Aucune adresse email configurée pour votre compte.', null, 'warnings');
-        }
-        header('Location: '.htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES).'?action=');
-        exit;
-    }
 
     $email_subject = GETPOST('ATTESTATIONSAP_EMAIL_SUBJECT', 'alphanohtml');
     $email_body    = GETPOST('ATTESTATIONSAP_EMAIL_BODY', 'restricthtml');
