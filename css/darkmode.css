@@ -285,3 +285,72 @@ body.attestationsap-dark .fiche {
     line-height: 1.2 !important;
     padding: 0 4px !important;
 }
+
+/* ---- Ajustements fin v2 ---- */
+
+/* Texte labels à côté des checkboxes */
+body.attestationsap-dark input[type="checkbox"] + label,
+body.attestationsap-dark input[type="radio"] + label,
+body.attestationsap-dark .checkboxlabel {
+    color: #d8e4f0 !important;
+}
+
+/* Texte aide/description (colonne droite des paramètres) */
+body.attestationsap-dark td:last-child:not(:first-child) {
+    color: #8899b0 !important;
+}
+
+/* Fond des blocs de section (titres bleus) */
+body.attestationsap-dark .liste_titre,
+body.attestationsap-dark table .liste_titre th {
+    background: linear-gradient(90deg, #0a2040, #0d2a4a) !important;
+    color: #e8f0fb !important;
+    border-color: #1e3a5f !important;
+}
+
+/* Menu latéral - améliorer contraste */
+body.attestationsap-dark #left-side-div a,
+body.attestationsap-dark .menu_titre a,
+body.attestationsap-dark .vmenu a {
+    color: #b8cde0 !important;
+}
+body.attestationsap-dark #left-side-div a:hover,
+body.attestationsap-dark .vmenu a:hover {
+    color: #ffffff !important;
+    background-color: #1e3a5f !important;
+}
+body.attestationsap-dark .menu_contenu {
+    background-color: #0d1b2e !important;
+}
+
+/* Texte placeholder */
+body.attestationsap-dark ::placeholder {
+    color: #5a7090 !important;
+}
+
+/* Select options */
+body.attestationsap-dark select option {
+    background-color: #1e2d45 !important;
+    color: #e0e8f0 !important;
+}
+
+/* Barre de recherche et inputs dans le header */
+body.attestationsap-dark #top-search-bar input {
+    background-color: #1e2d45 !important;
+    color: #e0e8f0 !important;
+    border-color: #3a5078 !important;
+}
+
+/* Icône du bouton dark mode dans la barre top */
+#mainmenutd_sapdarkmode {
+    border-left: 1px solid rgba(255,255,255,0.1);
+}
+#mainmenutd_sapdarkmode .topmenuimage {
+    font-size: 16px !important;
+    padding: 0 6px !important;
+    opacity: 0.85;
+    transition: opacity 0.2s;
+}
+#mainmenutd_sapdarkmode:hover .topmenuimage {
+    opacity: 1;
+}
