@@ -303,6 +303,33 @@ function sap_log_send_event($db, $socid, $bn, $year, $user) {
     // pas de setEventMessages ici pour éviter le bruit, c'est une aide silencieuse.
 }
 
+// Régénération unitaire
+if ($action === 'generate_one') {
+    $socid = GETPOST('socid', 'int');
+    if ($socid > 0 && $year) {
+        require_once DOL_DOCUMENT_ROOT.'/custom/attestationsap/core/modules/attestationsap/pdf_attestation_sap.modules.php';
+        require_once DOL_DOCUMENT_ROOT.'/societe/class/societe.class.php';
+        $soc = new Societe($db);
+        if ($soc->fetch($socid) > 0) {
+            $sap_cat_id    = (int)getDolGlobalString('ATTESTATIONSAP_CATEGORY_ID', 0);
+            $client_cat_id = (int)getDolGlobalString('ATTESTATIONSAP_CLIENT_CAT_ID', 0);
+            $services_fb   = getDolGlobalString('ATTESTATIONSAP_SERVICES', '');
+            $all_invoices  = sap_find_factures_for_year($db, $year, $socid);
+            $byClient      = sap_group_clients_from_invoices($db, $all_invoices, $sap_cat_id, $services_fb, $client_cat_id);
+            if (!empty($byClient[$socid])) {
+                $sum  = $byClient[$socid];
+                $path = pdf_attestation_sap::write_file($soc, $sum['total_ttc'], $sum['hours'], $year, $sum['invoices']);
+                if ($path) setEventMessages('Attestation régénérée : '.basename($path), null, 'mesgs');
+                else setEventMessages('Erreur lors de la régénération.', null, 'errors');
+            } else {
+                setEventMessages('Aucune facture SAP payée trouvée pour ce client en '.$year.'.', null, 'warnings');
+            }
+        }
+    }
+    header('Location: '.htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES).'?tab=generate&year='.(int)$year);
+    exit;
+}
+
 // Envoi unitaire
 if ($action === 'sendmail') {
     $socid = GETPOST('socid','int');
@@ -437,13 +464,41 @@ if ($tab === 'generate') {
 
     print load_fiche_titre('GÉNÉRATION DES ATTESTATIONS FISCALES', '', 'title_generic');
 
+    // ---- UX : Alerte si configuration incomplète ----
+    $sap_cat_check    = (int)getDolGlobalString('ATTESTATIONSAP_CATEGORY_ID', 0);
+    $client_cat_check = (int)getDolGlobalString('ATTESTATIONSAP_CLIENT_CAT_ID', 0);
+    $num_sap_check    = getDolGlobalString('ATTESTATIONSAP_DECL_NUM', '');
+    $warnings = array();
+    if (empty($num_sap_check)) {
+        $warnings[] = '⚠ <strong>Numéro de déclaration SAP manquant</strong> — '
+                    . '<a href="'.dol_buildpath('/custom/attestationsap/setup.php', 1).'">Configurer → Section 1</a>';
+    }
+    if ($sap_cat_check === 0) {
+        $warnings[] = '⚠ <strong>Catégorie produit SAP non configurée</strong> — les lignes de factures ne seront pas reconnues comme SAP. '
+                    . '<a href="'.dol_buildpath('/custom/attestationsap/setup.php', 1).'">Configurer → Section 5</a>';
+    }
+    if ($client_cat_check === 0) {
+        $warnings[] = '⚠ <strong>Catégorie tiers SAP non configurée</strong> — tous les clients seront inclus sans filtre. '
+                    . '<a href="'.dol_buildpath('/custom/attestationsap/setup.php', 1).'">Configurer → Section 5</a>';
+    }
+    if (!empty($warnings)) {
+        print '<div style="background:#fff3cd;border-left:4px solid #ffc107;padding:12px 16px;border-radius:4px;margin-bottom:16px">';
+        print '<strong>Configuration incomplète</strong><br>';
+        foreach ($warnings as $w) print '<div style="margin-top:6px">'.$w.'</div>';
+        print '</div>';
+    }
+
     print '<form method="GET" action="'.htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES).'" class="nocellnopadd">';
     print '<input type="hidden" name="tab" value="generate">';
     print '<table class="noborder centpercent">';
     print '  <tr class="liste_titre"><th colspan="4">Paramètres</th></tr>';
     print '  <tr class="oddeven">';
     print '    <td style="width:180px;">Année fiscale :</td>';
-    print '    <td style="width:200px;"><input type="number" name="year" value="'.(int)$year.'" min="2000" max="2100" class="flat" style="width:110px;"></td>';
+    print '    <td style="width:240px;">';
+    print '      <a href="'.htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES).'?tab=generate&year='.((int)$year-1).'" class="button" title="Année précédente" style="padding:2px 8px;font-size:14px">◀</a> ';
+    print '      <input type="number" name="year" value="'.(int)$year.'" min="2000" max="2100" class="flat" style="width:80px;text-align:center">';
+    print '      <a href="'.htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES).'?tab=generate&year='.((int)$year+1).'" class="button" title="Année suivante" style="padding:2px 8px;font-size:14px">▶</a>';
+    print '    </td>';
     print '    <td><input type="submit" class="button" value="Actualiser"></td>';
     print '    <td style="text-align:right;"><a class="butAction" href="'.htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES).'?tab=generate&year='.(int)$year.'&action=generate">Générer toutes les attestations</a></td>';
     print '  </tr>';
@@ -522,7 +577,7 @@ if ($tab === 'generate') {
                         $dlUrl = DOL_URL_ROOT.'/document.php?modulepart=attestationsap&file='.urlencode($bn);
 
                         $statusPdf = '✔ Généré ('.number_format($filesize / 1024, 1, ',', ' ').' Ko)';
-                        $download  = '<a class="button" href="'.$dlUrl.'" target="_blank">Télécharger</a>';
+                        $download  = '<a class="button" href="'.$dlUrl.'" target="_blank" onclick="window.open(this.href,\'pdf_preview_\'+Math.random(),\'width=900,height=700,scrollbars=yes,resizable=yes\');return false;" title="Ouvrir le PDF dans une fenêtre">📄 Visualiser</a>';
 
                         $sentInfo = att_is_sent($attDir, $bn);
                         if ($sentInfo) {
@@ -535,7 +590,8 @@ if ($tab === 'generate') {
                             $checkbox = '<input type="checkbox" class="bulkgen" name="bulk_items[]" value="'.$socid.'|'.htmlspecialchars($bn, ENT_QUOTES).'">';
                         }
 
-                        $actions  = '<a class="butAction" href="'.htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES).'?tab=generate&year='.$year.'&action=sendmail&socid='.$socid.'&file='.urlencode($bn).'&token='.newToken().'">Envoyer</a> ';
+                        $actions  = '<a class="button" href="'.htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES).'?tab=generate&year='.$year.'&action=generate_one&socid='.$socid.'&token='.newToken().'" title="Régénérer cette attestation">↺ Régénérer</a> ';
+                        $actions .= '<a class="butAction" href="'.htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES).'?tab=generate&year='.$year.'&action=sendmail&socid='.$socid.'&file='.urlencode($bn).'&token='.newToken().'">Envoyer</a> ';
                         if (!empty($user->admin)) {
                             $actions .= '<a class="butActionDelete" href="'.htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES).'?tab=generate&year='.$year.'&action=delete&file='.urlencode($bn).'&token='.newToken().'" onclick="return confirm(\'Supprimer cette attestation ?\')">Supprimer</a>';
                         }
@@ -699,7 +755,8 @@ if ($tab === 'generate') {
             print '  <td>'.$sizeKo.'</td>';
             print '  <td>'.($r['date'] ? dol_print_date($r['date'],'dayhour') : '-').'</td>';
             print '  <td>'.$statusSend.'</td>';
-            print '  <td><a class="button" href="'.$dlUrl.'" target="_blank">Télécharger</a> '.$sendlink.$deletelink.'</td>';
+            $previewlink = '<a class="button" href="'.$dlUrl.'" target="_blank" onclick="window.open(this.href,\'pdf_preview_\'+Math.random(),\'width=900,height=700,scrollbars=yes,resizable=yes\');return false;" title="Ouvrir le PDF dans une fenêtre">📄 Visualiser</a>';
+            print '  <td>'.$previewlink.' '.$sendlink.$deletelink.'</td>';
             print '</tr>';
         }
 
