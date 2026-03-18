@@ -358,11 +358,62 @@ class ActionsAttestationsap
     }
 
     /**
-     * Hook : affiche le contenu de l'onglet Attestations SAP
+     * Hook : injecte le CSS/JS dark mode sur toutes les pages Dolibarr
      */
     public function printCommonFooter($parameters, &$object, &$action, $hookmanager)
     {
-        return 0; // non utilisé ici
+        global $conf, $user, $db;
+
+        if (empty($conf->attestationsap->enabled)) return 0;
+
+        // Lire la préférence dark mode de l'utilisateur
+        $darkmode = 0;
+        $sql = "SELECT value FROM ".MAIN_DB_PREFIX."user_param
+                WHERE fk_user = ".(int)$user->id."
+                AND param = 'ATTESTATIONSAP_DARKMODE'";
+        $res = $db->query($sql);
+        if ($res && $o = $db->fetch_object($res)) $darkmode = (int)$o->value;
+
+        // Sauvegarder si changement demandé
+        if (isset($_GET['sap_darkmode'])) {
+            $darkmode = (int)$_GET['sap_darkmode'];
+            // Upsert dans user_param
+            $sqlCheck = "SELECT rowid FROM ".MAIN_DB_PREFIX."user_param
+                         WHERE fk_user = ".(int)$user->id." AND param = 'ATTESTATIONSAP_DARKMODE'";
+            $resCheck = $db->query($sqlCheck);
+            if ($resCheck && $db->num_rows($resCheck) > 0) {
+                $db->query("UPDATE ".MAIN_DB_PREFIX."user_param SET value = ".(int)$darkmode."
+                            WHERE fk_user = ".(int)$user->id." AND param = 'ATTESTATIONSAP_DARKMODE'");
+            } else {
+                $db->query("INSERT INTO ".MAIN_DB_PREFIX."user_param (fk_user, param, value)
+                            VALUES (".(int)$user->id.", 'ATTESTATIONSAP_DARKMODE', ".(int)$darkmode.")");
+            }
+        }
+
+        $cssUrl = dol_buildpath('/custom/attestationsap/css/darkmode.css', 1);
+        $currentUrl = htmlspecialchars($_SERVER['REQUEST_URI'] ?? '', ENT_QUOTES);
+        // Retirer sap_darkmode de l'URL pour éviter les boucles
+        $toggleBase = preg_replace('/[&?]sap_darkmode=\d/', '', $currentUrl);
+        $sep = (strpos($toggleBase, '?') !== false) ? '&' : '?';
+        $urlDark  = $toggleBase.$sep.'sap_darkmode=1';
+        $urlLight = $toggleBase.$sep.'sap_darkmode=0';
+
+        print '<link rel="stylesheet" href="'.dol_escape_htmltag($cssUrl).'">';
+        print '<script>';
+        print 'document.addEventListener("DOMContentLoaded", function() {';
+        if ($darkmode) {
+            print 'document.body.classList.add("attestationsap-dark");';
+        }
+        print '  var btn = document.createElement("button");';
+        print '  btn.id = "sap-darkmode-toggle";';
+        print '  btn.title = "'.($darkmode ? 'Désactiver' : 'Activer').' le mode sombre SAP";';
+        print '  btn.innerHTML = "'.($darkmode ? '☀️' : '🌙').'";';
+        print '  btn.onclick = function() { window.location.href = "'.($darkmode ? $urlLight : $urlDark).'"; };';
+        print '  document.body.appendChild(btn);';
+        print '});';
+        print '</script>';
+
+        return 0;
     }
 
 }

@@ -1,0 +1,95 @@
+/**
+ * AttestationSAP — Mode sombre
+ * Appliqué quand <body> a la classe .attestationsap-dark
+ * ou automatiquement selon la préférence système (@media prefers-color-scheme: dark)
+ */
+
+/* ---- Variables couleurs dark ---- */
+body.attestationsap-dark,
+body.attestationsap-dark .fichecenter,
+body.attestationsap-dark .fiche {
+    background-color: #1a1a2e !important;
+    color: #e0e0e0 !important;
+}
+
+body.attestationsap-dark .div-table-responsive,
+body.attestationsap-dark table.noborder,
+body.attestationsap-dark .tagtable {
+    background-color: #16213e !important;
+    color: #e0e0e0 !important;
+}
+
+body.attestationsap-dark tr.oddeven,
+body.attestationsap-dark tr.even {
+    background-color: #0f3460 !important;
+    color: #e0e0e0 !important;
+}
+
+body.attestationsap-dark tr.liste_titre th,
+body.attestationsap-dark tr.liste_titre td {
+    background-color: #003d7a !important;
+    color: #ffffff !important;
+}
+
+body.attestationsap-dark input[type="text"],
+body.attestationsap-dark input[type="number"],
+body.attestationsap-dark input[type="date"],
+body.attestationsap-dark select,
+body.attestationsap-dark textarea {
+    background-color: #0f3460 !important;
+    color: #e0e0e0 !important;
+    border-color: #4a6fa5 !important;
+}
+
+body.attestationsap-dark .div-table-responsive > div,
+body.attestationsap-dark .fichehalfleft,
+body.attestationsap-dark .fichehalfright {
+    background-color: #16213e !important;
+}
+
+body.attestationsap-dark a {
+    color: #7eb8f7 !important;
+}
+
+body.attestationsap-dark .butAction {
+    background: #0f3460 !important;
+    color: #7eb8f7 !important;
+    border-color: #4a6fa5 !important;
+}
+
+body.attestationsap-dark .butActionDelete {
+    background: #3a0000 !important;
+    color: #ff8080 !important;
+}
+
+/* Toggle bouton */
+#sap-darkmode-toggle {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px solid #4a6fa5;
+    background: #0f3460;
+    color: #fff;
+    font-size: 20px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+}
+
+#sap-darkmode-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+
+body:not(.attestationsap-dark) #sap-darkmode-toggle {
+    background: #f0f0f0;
+    color: #333;
+    border-color: #ccc;
+}
