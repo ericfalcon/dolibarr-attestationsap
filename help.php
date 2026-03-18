@@ -21,17 +21,17 @@ print '</div>';
 // SOMMAIRE
 print '<h3>Sommaire</h3><ol style="columns:2;column-gap:40px">';
 $sections = array(
-    'config'      => '1. Configuration initiale',
-    'devis'       => '2. Créer un devis SAP',
-    'facture'     => '3. Créer une facture SAP',
-    'attestation' => '4. Générer les attestations',
-    'signature'   => '5. Signature et cachet',
-    'tiers'       => '6. Onglet tiers',
-    'widget'      => '7. Widget tableau de bord',
-    'activites'   => '8. Activités SAP officielles',
-    'intervenant' => '9. Gestion des intervenants',
-    'legal'       => '10. Conformité légale',
-    'faq'         => '11. FAQ',
+    'config'      => 'Configuration initiale',
+    'devis'       => 'Créer un devis SAP',
+    'facture'     => 'Créer une facture SAP',
+    'attestation' => 'Générer les attestations',
+    'signature'   => 'Signature et cachet',
+    'tiers'       => 'Onglet tiers',
+    'widget'      => 'Widget tableau de bord',
+    'activites'   => 'Activités SAP officielles',
+    'intervenant' => 'Gestion des intervenants',
+    'legal'       => 'Conformité légale',
+    'faq'         => 'FAQ',
 );
 foreach ($sections as $id => $label) print '<li><a href="#'.$id.'">'.dol_escape_htmltag($label).'</a></li>';
 print '</ol><hr>';
