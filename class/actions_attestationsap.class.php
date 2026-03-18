@@ -402,14 +402,21 @@ class ActionsAttestationsap
         $icon  = $darkmode ? '&#9728;' : '&#9790;'; // ☀ ou 🌙
         $title = $darkmode ? 'Désactiver le mode sombre' : 'Activer le mode sombre';
 
-        $cssFile = DOL_DOCUMENT_ROOT.'/custom/attestationsap/css/darkmode.css';
-        $cssVer  = file_exists($cssFile) ? filemtime($cssFile) : '1';
-        print '<link rel="stylesheet" href="'.dol_escape_htmltag($cssUrl).'?v='.$cssVer.'">';
+        // Détecter si on est sur une page SAP
+        $currentScript = $_SERVER['SCRIPT_FILENAME'] ?? '';
+        $isSapPage = (strpos($currentScript, '/attestationsap/') !== false);
+
+        // CSS uniquement sur les pages SAP
+        if ($isSapPage) {
+            $cssFile = DOL_DOCUMENT_ROOT.'/custom/attestationsap/css/darkmode.css';
+            $cssVer  = file_exists($cssFile) ? filemtime($cssFile) : '1';
+            print '<link rel="stylesheet" href="'.dol_escape_htmltag($cssUrl).'?v='.$cssVer.'">';
+        }
         print <<<ENDJS
 <script>
 document.addEventListener("DOMContentLoaded", function() {
 ENDJS;
-        if ($darkmode) {
+        if ($darkmode && $isSapPage) {
             // Retirer les styles inline background-color blancs/clairs
             print <<<ENDJS2
     // Nettoyer les styles inline Dolibarr qui résistent au CSS
