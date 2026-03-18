@@ -195,13 +195,16 @@ body.attestationsap-dark .badge {
 /* ---- Corrections lisibilité ---- */
 
 /* Labels et textes généraux */
-body.attestationsap-dark label,
+body.attestationsap-dark label {
+    color: #d0d8e8 !important;
+}
 body.attestationsap-dark p,
 body.attestationsap-dark td,
-body.attestationsap-dark th,
-body.attestationsap-dark span:not(.fas):not(.far):not(.fab),
-body.attestationsap-dark div:not(.mainmenu) {
-    color: #d0d8e8;
+body.attestationsap-dark th {
+    color: #d0d8e8 !important;
+}
+body.attestationsap-dark span.mainmenuaspan {
+    color: #c9d6e3 !important;
 }
 
 /* Titres de section (liste_titre) */
@@ -224,14 +227,24 @@ body.attestationsap-dark textarea {
     border: 1px solid #3a5078 !important;
 }
 
-/* Cases à cocher et boutons radio — forcer l'affichage */
+/* Cases à cocher et boutons radio */
 body.attestationsap-dark input[type="checkbox"],
 body.attestationsap-dark input[type="radio"] {
-    accent-color: #7eb8f7;
-    width: 16px;
-    height: 16px;
-    cursor: pointer;
-    filter: brightness(1.8) !important;
+    accent-color: #7eb8f7 !important;
+    width: 16px !important;
+    height: 16px !important;
+    cursor: pointer !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    -webkit-appearance: auto !important;
+    appearance: auto !important;
+    background-color: #1e2d45 !important;
+    border: 1px solid #7eb8f7 !important;
+}
+
+body.attestationsap-dark input[type="checkbox"]:checked {
+    background-color: #7eb8f7 !important;
+    border-color: #7eb8f7 !important;
 }
 
 /* Texte opacité réduite (opacitymedium) */

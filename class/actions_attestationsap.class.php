@@ -402,7 +402,9 @@ class ActionsAttestationsap
         $icon  = $darkmode ? '&#9728;' : '&#9790;'; // ☀ ou 🌙
         $title = $darkmode ? 'Désactiver le mode sombre' : 'Activer le mode sombre';
 
-        print '<link rel="stylesheet" href="'.dol_escape_htmltag($cssUrl).'">';
+        $cssFile = DOL_DOCUMENT_ROOT.'/custom/attestationsap/css/darkmode.css';
+        $cssVer  = file_exists($cssFile) ? filemtime($cssFile) : '1';
+        print '<link rel="stylesheet" href="'.dol_escape_htmltag($cssUrl).'?v='.$cssVer.'">';
         print <<<ENDJS
 <script>
 document.addEventListener("DOMContentLoaded", function() {
