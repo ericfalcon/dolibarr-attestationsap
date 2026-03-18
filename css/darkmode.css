@@ -1,147 +1,93 @@
 /**
- * AttestationSAP — Mode sombre v4
- * Approche : forcer le dark sur TOUS les éléments via * selector
+ * AttestationSAP — Mode sombre v5
+ * Stratégie : CSS variables + ciblage précis, pas de reset global
  */
 
 /* ======================================================
-   RESET GLOBAL — Écraser les styles inline Dolibarr
-   ====================================================== */
-body.attestationsap-dark *:not(script):not(style):not(.fas):not(.far):not(.fab):not(i) {
-    background-color: transparent !important;
-    border-color: #2a3d55 !important;
-    color: #b8cde0 !important;
-    box-shadow: none !important;
-}
-
-/* ======================================================
-   FOND DES CONTENEURS PRINCIPAUX
+   FOND GÉNÉRAL
    ====================================================== */
 body.attestationsap-dark {
     background-color: #111827 !important;
+    color: #c0d0e0 !important;
 }
-body.attestationsap-dark #id-right,
-body.attestationsap-dark body,
-body.attestationsap-dark .fiche,
-body.attestationsap-dark .fichecenter,
-body.attestationsap-dark .fichehalfleft,
-body.attestationsap-dark .fichehalfright,
-body.attestationsap-dark .div-table-responsive,
-body.attestationsap-dark table,
-body.attestationsap-dark tbody,
-body.attestationsap-dark tr,
-body.attestationsap-dark td,
-body.attestationsap-dark th {
+
+body.attestationsap-dark #id-right {
     background-color: #111827 !important;
 }
 
-/* Alternance légère sur les lignes */
-body.attestationsap-dark tr.oddeven,
-body.attestationsap-dark tr.odd {
+/* ======================================================
+   TABLEAUX — ciblage précis sans reset global
+   ====================================================== */
+body.attestationsap-dark table.noborder,
+body.attestationsap-dark table.centpercent {
+    background-color: #111827 !important;
+}
+
+body.attestationsap-dark table.noborder td,
+body.attestationsap-dark table.noborder th,
+body.attestationsap-dark table.centpercent td,
+body.attestationsap-dark table.centpercent th {
+    background-color: #111827 !important;
+    color: #c0d0e0 !important;
+    border-color: #243448 !important;
+}
+
+body.attestationsap-dark tr.oddeven td,
+body.attestationsap-dark tr.odd td {
     background-color: #1a2535 !important;
 }
-body.attestationsap-dark tr.even {
-    background-color: #151e2d !important;
+body.attestationsap-dark tr.even td {
+    background-color: #141e2d !important;
 }
 
-/* ======================================================
-   BARRE TOP MENU — fonds spécifiques
-   ====================================================== */
-body.attestationsap-dark .tmenudiv,
-body.attestationsap-dark ul.tmenu,
-body.attestationsap-dark li.tmenu,
-body.attestationsap-dark li.tmenusel,
-body.attestationsap-dark li.tmenuend,
-body.attestationsap-dark .tmenucenter {
-    background-color: #0a1628 !important;
-}
-body.attestationsap-dark li.tmenu:hover {
-    background-color: #1a3050 !important;
-}
-body.attestationsap-dark li.tmenusel {
-    background-color: #1e3a60 !important;
-}
-
-/* Icônes et textes top menu */
-body.attestationsap-dark li.tmenu span.fas,
-body.attestationsap-dark li.tmenu span.far,
-body.attestationsap-dark li.tmenu .mainmenuaspan,
-body.attestationsap-dark li.tmenu a {
-    color: #8fa8c8 !important;
-}
-body.attestationsap-dark li.tmenusel span.fas,
-body.attestationsap-dark li.tmenusel .mainmenuaspan {
-    color: #ffffff !important;
-}
-
-/* ======================================================
-   MENU LATÉRAL GAUCHE
-   ====================================================== */
-body.attestationsap-dark #left-side-div,
-body.attestationsap-dark .menu_contenu,
-body.attestationsap-dark .vmenu,
-body.attestationsap-dark #sidebar-nav {
-    background-color: #0d1520 !important;
-}
-body.attestationsap-dark .menu_titre a,
-body.attestationsap-dark .vmenu a,
-body.attestationsap-dark #left-side-div a {
-    color: #7a9abf !important;
-}
-body.attestationsap-dark .menu_titre a:hover,
-body.attestationsap-dark .vmenu a:hover {
-    color: #c8e0f8 !important;
-    background-color: #1a3050 !important;
-}
-
-/* ======================================================
-   EN-TÊTES DE SECTION (titres bleus des paramètres)
-   ====================================================== */
-body.attestationsap-dark tr.liste_titre,
+/* En-têtes de section */
 body.attestationsap-dark tr.liste_titre td,
 body.attestationsap-dark tr.liste_titre th {
     background-color: #0d2240 !important;
     color: #d8eaf8 !important;
+    border-color: #1a3a5a !important;
 }
 
 /* ======================================================
-   TEXTES PAR RÔLE
+   BLOCS D'ACTIVITÉS (les cases avec bordure)
    ====================================================== */
-/* Labels de champ */
-body.attestationsap-dark td:first-child,
-body.attestationsap-dark label {
-    color: #a0b8d0 !important;
+body.attestationsap-dark td[style],
+body.attestationsap-dark div[style*="border"],
+body.attestationsap-dark div[style*="background"] {
+    background-color: #1a2535 !important;
+    border-color: #243448 !important;
 }
 
-/* Texte principal */
+/* ======================================================
+   TEXTES
+   ====================================================== */
 body.attestationsap-dark td,
+body.attestationsap-dark th,
+body.attestationsap-dark label,
 body.attestationsap-dark p,
-body.attestationsap-dark span:not(.fas):not(.far):not(.mainmenu) {
-    color: #b8cde0 !important;
+body.attestationsap-dark li {
+    color: #c0d0e0 !important;
 }
 
-/* Titres de colonnes (Garde d'enfants etc.) */
-body.attestationsap-dark td strong,
-body.attestationsap-dark th strong,
+body.attestationsap-dark strong,
 body.attestationsap-dark b {
-    color: #c8ddf0 !important;
+    color: #d8e8f8 !important;
 }
 
-/* Texte d'aide (colonne droite) */
-body.attestationsap-dark td:last-child:not(:only-child):not(:first-child) {
-    color: #556070 !important;
-}
-
-/* Textes réduits / opacité */
 body.attestationsap-dark .opacitymedium,
-body.attestationsap-dark small,
-body.attestationsap-dark .opacityhigh {
-    color: #556878 !important;
+body.attestationsap-dark small {
+    color: #607080 !important;
     opacity: 1 !important;
 }
 
+/* Texte aide (colonne droite) */
+body.attestationsap-dark td:last-child:not(:only-child):not(:first-child) {
+    color: #506070 !important;
+}
+
 /* Liens */
-body.attestationsap-dark a:not(.butAction):not(.butActionDelete):not(.button):not(.tmenuimage):not(.tmenulabel) {
-    color: #6ab0e8 !important;
+body.attestationsap-dark a:not([class*="butAction"]):not([class*="button"]):not([class*="tmenu"]):not([class*="tmenulabel"]):not([class*="tmenuimage"]) {
+    color: #5a9fd4 !important;
 }
 
 /* ======================================================
@@ -168,12 +114,10 @@ body.attestationsap-dark ::placeholder {
     color: #445060 !important;
 }
 
-/* Cases à cocher et radios */
 body.attestationsap-dark input[type="checkbox"],
 body.attestationsap-dark input[type="radio"] {
     accent-color: #4a90d9 !important;
     opacity: 1 !important;
-    background-color: #1e2d45 !important;
 }
 
 /* ======================================================
@@ -183,9 +127,6 @@ body.attestationsap-dark .butAction {
     background-color: #1a3a6a !important;
     color: #7eb8f7 !important;
     border: 1px solid #2e4a7a !important;
-}
-body.attestationsap-dark .butAction:hover {
-    background-color: #1e4a85 !important;
 }
 body.attestationsap-dark .butActionDelete {
     background-color: #3a1515 !important;
@@ -200,33 +141,69 @@ body.attestationsap-dark input[type="submit"] {
 }
 
 /* ======================================================
-   BLOCS D'INFO (alertes, encadrés)
+   BARRE TOP MENU
    ====================================================== */
-body.attestationsap-dark div[style*="background:#e8f4fd"],
-body.attestationsap-dark div[style*="background:#e3f2fd"],
-body.attestationsap-dark div[style*="background:#fff3cd"],
-body.attestationsap-dark div[style*="background:#e8f5e9"],
-body.attestationsap-dark div[style*="background:#fafafa"] {
-    background-color: #0d1e30 !important;
-    border-left-color: #2a5080 !important;
+body.attestationsap-dark .tmenudiv,
+body.attestationsap-dark ul.tmenu {
+    background-color: #0a1628 !important;
 }
-body.attestationsap-dark div[style*="background:#fff3cd"] {
-    border-left-color: #806020 !important;
+body.attestationsap-dark li.tmenu,
+body.attestationsap-dark li.tmenuend,
+body.attestationsap-dark li.tmenusel {
+    background-color: #0a1628 !important;
+}
+body.attestationsap-dark li.tmenu:hover {
+    background-color: #1a3050 !important;
+}
+body.attestationsap-dark li.tmenusel {
+    background-color: #1e3a60 !important;
+}
+body.attestationsap-dark li.tmenu span,
+body.attestationsap-dark li.tmenu a {
+    color: #8fa8c8 !important;
+}
+body.attestationsap-dark li.tmenusel span,
+body.attestationsap-dark li.tmenusel a {
+    color: #ffffff !important;
+}
+body.attestationsap-dark .tmenucenter {
+    background-color: transparent !important;
 }
 
 /* ======================================================
-   BOUTON DARK MODE DANS BARRE TOP
+   MENU LATÉRAL
    ====================================================== */
-#mainmenutd_sapdarkmode {
-    border-left: 1px solid rgba(255,255,255,0.08) !important;
+body.attestationsap-dark #left-side-div,
+body.attestationsap-dark .menu_contenu {
+    background-color: #0d1520 !important;
+}
+body.attestationsap-dark .menu_titre,
+body.attestationsap-dark .menu_titre a,
+body.attestationsap-dark .vmenu a {
+    color: #7a9abf !important;
+    background-color: transparent !important;
+}
+body.attestationsap-dark .vmenu a:hover,
+body.attestationsap-dark .menu_titre a:hover {
+    color: #c0d8f0 !important;
+    background-color: #1a3050 !important;
+}
+
+/* ======================================================
+   BOUTON DARK MODE BARRE TOP
+   ====================================================== */
+#mainmenutd_sapdarkmode,
+#mainmenutd_sapdarkmode .tmenucenter,
+#mainmenutd_sapdarkmode div {
     background-color: #0a1628 !important;
+    border-left: 1px solid rgba(255,255,255,0.08) !important;
 }
 #mainmenutd_sapdarkmode .topmenuimage {
     font-size: 16px !important;
     padding: 0 8px !important;
-    opacity: 0.8;
-    transition: opacity 0.2s;
     color: #8fa8c8 !important;
+    opacity: 0.85;
+    transition: opacity 0.2s;
 }
 #mainmenutd_sapdarkmode:hover .topmenuimage {
     opacity: 1;

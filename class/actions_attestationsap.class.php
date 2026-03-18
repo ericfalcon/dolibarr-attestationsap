@@ -410,6 +410,31 @@ class ActionsAttestationsap
 document.addEventListener("DOMContentLoaded", function() {
 ENDJS;
         if ($darkmode) {
+            // Retirer les styles inline background-color blancs/clairs
+            print <<<ENDJS2
+    // Nettoyer les styles inline Dolibarr qui résistent au CSS
+    var allEls = document.querySelectorAll('[style]');
+    allEls.forEach(function(el) {
+        var s = el.style;
+        // Retirer background-color blanc ou très clair
+        if (s.backgroundColor) {
+            var bg = s.backgroundColor;
+            // Convertir en valeurs RGB pour détecter les couleurs claires
+            if (bg.match(/rgb\(2[0-9]{2}|rgb\(25[0-9]/)) {
+                s.removeProperty('background-color');
+            }
+            if (bg === 'white' || bg === '#fff' || bg === '#ffffff') {
+                s.removeProperty('background-color');
+            }
+        }
+        // Retirer les bordures blanches
+        if (s.borderColor && (s.borderColor === 'white' || s.borderColor.match(/rgb\(2[0-9]{2}/))) {
+            s.removeProperty('border-color');
+        }
+    });
+ENDJS2;
+        }
+        if ($darkmode) {
             print 'document.body.classList.add("attestationsap-dark");'."
 ";
         }
