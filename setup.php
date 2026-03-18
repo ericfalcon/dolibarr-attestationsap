@@ -506,7 +506,7 @@ $activites_sap = array(
 print '<tr class="oddeven"><td valign="top" style="width:270px">Activités exercées <span class="fieldrequired">*</span><br><small class="opacitymedium">Cochez toutes vos activités</small></td><td colspan="2">';
 print '<div style="display:flex;flex-wrap:wrap;gap:16px">';
 foreach ($activites_sap as $famille_key => $famille) {
-    print '<div style="min-width:280px;flex:1;background:#f8f9fa;border:1px solid #dee2e6;border-radius:6px;padding:10px">';
+    print '<div style="min-width:280px;flex:1;background:#1a2535;border:1px solid #2e4060;border-radius:6px;padding:10px">';
     print '<strong style="color:#5a9fd4;display:block;margin-bottom:6px;border-bottom:1px solid #3a5a7a;padding-bottom:4px">'
          .dol_escape_htmltag($famille['label']).'</strong>';
     foreach ($famille['items'] as $key => $item) {
@@ -516,7 +516,7 @@ foreach ($activites_sap as $famille_key => $famille) {
         // Masquer si agrement requis et type=declaration
         $hidden   = ($needs_ag && $hab_type === 'declaration') ? ' style="display:none"' : '';
         $css_ag   = $needs_ag ? ' sap-agrement-only' : '';
-        print '<label class="sap-activite'.$css_ag.'"'.$hidden.' style="display:block;margin:3px 0;cursor:pointer">';
+        print '<label class="sap-activite'.$css_ag.'"'.$hidden.' style="display:block;margin:3px 0;cursor:pointer;color:#b8d4ee">';
         print '<input type="checkbox" name="ATTESTATIONSAP_ACTIVITES[]" value="'.dol_escape_htmltag($key).'"'.$checked.'> ';
         print dol_escape_htmltag($label);
         if ($needs_ag) print ' <span style="font-size:10px;color:#e67e22;font-weight:bold" title="Nécessite un agrément préfectoral">⚠ Agr.</span>';
