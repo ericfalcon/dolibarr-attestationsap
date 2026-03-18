@@ -700,7 +700,7 @@ print '<tr class="oddeven"><td>Objet</td><td colspan="2"><input type="text" name
 print '<tr class="oddeven"><td>Corps</td><td colspan="2"><textarea name="ATTESTATIONSAP_EMAIL_BODY" rows="5" class="flat centpercent">' . dol_escape_htmltag($email_body) . '</textarea></td></tr>';
 print '<tr class="oddeven"><td>Test</td><td colspan="2">';
 print '<a href="'.htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES).'?action=send_email_test&token='.newToken().'" class="butAction" title="Envoie un email de test à votre adresse ('.$user->email.')">';
-print '📧 M'envoyer un test</a>';
+print '📧 M\'envoyer un test</a>';
 print ' <small class="opacitymedium">→ envoyé à '.dol_escape_htmltag($user->email ?: 'votre email').'</small>';
 print '</td></tr>';
 
