@@ -393,25 +393,39 @@ class ActionsAttestationsap
         $cssUrl = dol_buildpath('/custom/attestationsap/css/darkmode.css', 1);
         $currentUrl = htmlspecialchars($_SERVER['REQUEST_URI'] ?? '', ENT_QUOTES);
         // Retirer sap_darkmode de l'URL pour éviter les boucles
-        $toggleBase = preg_replace('/[&?]sap_darkmode=\d/', '', $currentUrl);
+        $toggleBase = preg_replace('/([&?])sap_darkmode=\d/', '', $currentUrl);
+        $toggleBase = preg_replace('/[?]$/', '', $toggleBase);
         $sep = (strpos($toggleBase, '?') !== false) ? '&' : '?';
         $urlDark  = $toggleBase.$sep.'sap_darkmode=1';
         $urlLight = $toggleBase.$sep.'sap_darkmode=0';
+        $urlToggle = $darkmode ? $urlLight : $urlDark;
+        $icon  = $darkmode ? '&#9728;' : '&#9790;'; // ☀ ou 🌙
+        $title = $darkmode ? 'Désactiver le mode sombre' : 'Activer le mode sombre';
 
         print '<link rel="stylesheet" href="'.dol_escape_htmltag($cssUrl).'">';
-        print '<script>';
-        print 'document.addEventListener("DOMContentLoaded", function() {';
+        print <<<ENDJS
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+ENDJS;
         if ($darkmode) {
-            print 'document.body.classList.add("attestationsap-dark");';
+            print 'document.body.classList.add("attestationsap-dark");'."
+";
         }
-        print '  var btn = document.createElement("button");';
-        print '  btn.id = "sap-darkmode-toggle";';
-        print '  btn.title = "'.($darkmode ? 'Désactiver' : 'Activer').' le mode sombre SAP";';
-        print '  btn.innerHTML = "'.($darkmode ? '☀️' : '🌙').'";';
-        print '  btn.onclick = function() { window.location.href = "'.($darkmode ? $urlLight : $urlDark).'"; };';
-        print '  document.body.appendChild(btn);';
-        print '});';
-        print '</script>';
+        print <<<ENDJS
+    // Insérer le bouton dark mode dans la barre de menu du haut
+    // juste avant le li.tmenuend (dernier élément vide à droite)
+    var tmenuEnd = document.getElementById('mainmenutd_');
+    if (tmenuEnd && tmenuEnd.parentNode) {
+        var li = document.createElement('li');
+        li.className = 'tmenu nohover';
+        li.id = 'mainmenutd_sapdarkmode';
+        li.style.cssText = 'cursor:pointer';
+        li.innerHTML = '<div class="tmenucenter"><a class="tmenuimage tmenu" tabindex="-1" href="{$urlToggle}" title="{$title}" style="text-decoration:none"><div class="mainmenu topmenuimage" style="font-size:16px;line-height:1">{$icon}</div></a></div>';
+        tmenuEnd.parentNode.insertBefore(li, tmenuEnd);
+    }
+});
+</script>
+ENDJS;
 
         return 0;
     }

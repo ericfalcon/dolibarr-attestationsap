@@ -93,3 +93,101 @@ body:not(.attestationsap-dark) #sap-darkmode-toggle {
     color: #333;
     border-color: #ccc;
 }
+
+/* ---- Bouton dans la barre de menu du haut ---- */
+#mainmenutd_sapdarkmode a {
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+#mainmenutd_sapdarkmode a:hover {
+    opacity: 1;
+}
+
+/* ---- Dark mode : barre de menu du haut ---- */
+body.attestationsap-dark .tmenudiv,
+body.attestationsap-dark ul.tmenu {
+    background-color: #0d1b2a !important;
+}
+body.attestationsap-dark li.tmenu a,
+body.attestationsap-dark li.tmenu span {
+    color: #c9d6e3 !important;
+}
+body.attestationsap-dark li.tmenu:hover,
+body.attestationsap-dark li.tmenusel {
+    background-color: #1e3a5f !important;
+}
+
+/* ---- Dark mode : menu latéral ---- */
+body.attestationsap-dark #left-side-div,
+body.attestationsap-dark .vmenu,
+body.attestationsap-dark #sidebar-nav {
+    background-color: #0d1b2a !important;
+}
+body.attestationsap-dark .vmenu a,
+body.attestationsap-dark .menu_titre {
+    color: #c9d6e3 !important;
+}
+
+/* ---- Dark mode : contenu principal ---- */
+body.attestationsap-dark #id-right,
+body.attestationsap-dark .fiche,
+body.attestationsap-dark .fichecenter {
+    background-color: #1a1a2e !important;
+    color: #e0e0e0 !important;
+}
+
+/* ---- Dark mode : tableaux ---- */
+body.attestationsap-dark table.noborder td,
+body.attestationsap-dark table.noborder th {
+    border-color: #2a3a5c !important;
+    color: #e0e0e0 !important;
+}
+body.attestationsap-dark tr.oddeven {
+    background-color: #1e2d45 !important;
+}
+body.attestationsap-dark tr.even {
+    background-color: #162236 !important;
+}
+
+/* ---- Dark mode : champs formulaire ---- */
+body.attestationsap-dark input,
+body.attestationsap-dark select,
+body.attestationsap-dark textarea {
+    background-color: #1e2d45 !important;
+    color: #e0e0e0 !important;
+    border-color: #3a5078 !important;
+}
+
+/* ---- Dark mode : boutons ---- */
+body.attestationsap-dark .butAction {
+    background: #1e3a5f !important;
+    color: #7eb8f7 !important;
+    border-color: #3a5078 !important;
+}
+body.attestationsap-dark .butActionDelete {
+    background: #3a1010 !important;
+    color: #ff8080 !important;
+}
+body.attestationsap-dark .button {
+    background: #2a3a5c !important;
+    color: #c9d6e3 !important;
+    border-color: #3a5078 !important;
+}
+
+/* ---- Dark mode : titre de page ---- */
+body.attestationsap-dark .titre_create,
+body.attestationsap-dark .titre_full,
+body.attestationsap-dark h1, h2, h3 {
+    color: #7eb8f7 !important;
+}
+
+/* ---- Dark mode : liens ---- */
+body.attestationsap-dark a:not(.butAction):not(.butActionDelete):not(.button) {
+    color: #7eb8f7 !important;
+}
+
+/* ---- Dark mode : badges et labels ---- */
+body.attestationsap-dark .badge {
+    background-color: #1e3a5f !important;
+    color: #c9d6e3 !important;
+}
