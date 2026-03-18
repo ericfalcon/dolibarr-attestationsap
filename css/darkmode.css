@@ -1,354 +1,209 @@
 /**
- * AttestationSAP — Mode sombre
- * Appliqué quand <body> a la classe .attestationsap-dark
- * ou automatiquement selon la préférence système (@media prefers-color-scheme: dark)
+ * AttestationSAP — Mode sombre v3
+ * Palette : fond #111827, surface #1e2535, texte #b0bec5
+ * Accents : bleu #4a90d9, liens #7eb8f7
  */
 
-/* ---- Variables couleurs dark ---- */
-body.attestationsap-dark,
-body.attestationsap-dark .fichecenter,
-body.attestationsap-dark .fiche {
-    background-color: #1a1a2e !important;
-    color: #e0e0e0 !important;
+/* ======================================================
+   PALETTE DE BASE
+   ====================================================== */
+:root {
+    --sap-dark-bg:       #111827;
+    --sap-dark-surface:  #1e2535;
+    --sap-dark-surface2: #263040;
+    --sap-dark-border:   #2e3f55;
+    --sap-dark-text:     #b0bec5;
+    --sap-dark-text-dim: #6b7f95;
+    --sap-dark-accent:   #4a90d9;
+    --sap-dark-accent2:  #7eb8f7;
+    --sap-dark-header:   #0d1e33;
 }
 
-body.attestationsap-dark .div-table-responsive,
+/* ======================================================
+   FOND GÉNÉRAL
+   ====================================================== */
+body.attestationsap-dark {
+    background-color: var(--sap-dark-bg) !important;
+    color: var(--sap-dark-text) !important;
+}
+
+body.attestationsap-dark #id-right,
+body.attestationsap-dark .fiche,
+body.attestationsap-dark .fichecenter,
+body.attestationsap-dark .fichehalfleft,
+body.attestationsap-dark .fichehalfright {
+    background-color: var(--sap-dark-bg) !important;
+    color: var(--sap-dark-text) !important;
+}
+
+/* ======================================================
+   TABLEAUX
+   ====================================================== */
 body.attestationsap-dark table.noborder,
-body.attestationsap-dark .tagtable {
-    background-color: #16213e !important;
-    color: #e0e0e0 !important;
+body.attestationsap-dark .div-table-responsive {
+    background-color: var(--sap-dark-surface) !important;
+}
+
+body.attestationsap-dark table.noborder td,
+body.attestationsap-dark table.noborder th {
+    border-color: var(--sap-dark-border) !important;
+    color: var(--sap-dark-text) !important;
+    background-color: transparent !important;
 }
 
 body.attestationsap-dark tr.oddeven,
+body.attestationsap-dark tr.odd {
+    background-color: var(--sap-dark-surface) !important;
+}
 body.attestationsap-dark tr.even {
-    background-color: #0f3460 !important;
-    color: #e0e0e0 !important;
+    background-color: var(--sap-dark-surface2) !important;
 }
 
+/* En-têtes de section */
 body.attestationsap-dark tr.liste_titre th,
-body.attestationsap-dark tr.liste_titre td {
-    background-color: #003d7a !important;
-    color: #ffffff !important;
+body.attestationsap-dark tr.liste_titre td,
+body.attestationsap-dark .liste_titre {
+    background-color: var(--sap-dark-header) !important;
+    color: #e0eaf6 !important;
+    border-color: var(--sap-dark-border) !important;
 }
 
-body.attestationsap-dark input[type="text"],
-body.attestationsap-dark input[type="number"],
-body.attestationsap-dark input[type="date"],
-body.attestationsap-dark select,
-body.attestationsap-dark textarea {
-    background-color: #0f3460 !important;
-    color: #e0e0e0 !important;
-    border-color: #4a6fa5 !important;
-}
-
-body.attestationsap-dark .div-table-responsive > div,
-body.attestationsap-dark .fichehalfleft,
-body.attestationsap-dark .fichehalfright {
-    background-color: #16213e !important;
-}
-
-body.attestationsap-dark a {
-    color: #7eb8f7 !important;
-}
-
-body.attestationsap-dark .butAction {
-    background: #0f3460 !important;
-    color: #7eb8f7 !important;
-    border-color: #4a6fa5 !important;
-}
-
-body.attestationsap-dark .butActionDelete {
-    background: #3a0000 !important;
-    color: #ff8080 !important;
-}
-
-/* Toggle bouton */
-#sap-darkmode-toggle {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 9999;
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    border: 2px solid #4a6fa5;
-    background: #0f3460;
-    color: #fff;
-    font-size: 20px;
-    cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s;
-}
-
-#sap-darkmode-toggle:hover {
-    transform: scale(1.1);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-}
-
-body:not(.attestationsap-dark) #sap-darkmode-toggle {
-    background: #f0f0f0;
-    color: #333;
-    border-color: #ccc;
-}
-
-/* ---- Bouton dans la barre de menu du haut ---- */
-#mainmenutd_sapdarkmode a {
-    opacity: 0.8;
-    transition: opacity 0.2s;
-}
-#mainmenutd_sapdarkmode a:hover {
-    opacity: 1;
-}
-
-/* ---- Dark mode : barre de menu du haut ---- */
-body.attestationsap-dark .tmenudiv,
-body.attestationsap-dark ul.tmenu {
-    background-color: #0d1b2a !important;
-}
-body.attestationsap-dark li.tmenu a,
-body.attestationsap-dark li.tmenu span {
-    color: #c9d6e3 !important;
-}
-body.attestationsap-dark li.tmenu:hover,
-body.attestationsap-dark li.tmenusel {
-    background-color: #1e3a5f !important;
-}
-
-/* ---- Dark mode : menu latéral ---- */
-body.attestationsap-dark #left-side-div,
-body.attestationsap-dark .vmenu,
-body.attestationsap-dark #sidebar-nav {
-    background-color: #0d1b2a !important;
-}
-body.attestationsap-dark .vmenu a,
-body.attestationsap-dark .menu_titre {
-    color: #c9d6e3 !important;
-}
-
-/* ---- Dark mode : contenu principal ---- */
-body.attestationsap-dark #id-right,
-body.attestationsap-dark .fiche,
-body.attestationsap-dark .fichecenter {
-    background-color: #1a1a2e !important;
-    color: #e0e0e0 !important;
-}
-
-/* ---- Dark mode : tableaux ---- */
-body.attestationsap-dark table.noborder td,
-body.attestationsap-dark table.noborder th {
-    border-color: #2a3a5c !important;
-    color: #e0e0e0 !important;
-}
-body.attestationsap-dark tr.oddeven {
-    background-color: #1e2d45 !important;
-}
-body.attestationsap-dark tr.even {
-    background-color: #162236 !important;
-}
-
-/* ---- Dark mode : champs formulaire ---- */
-body.attestationsap-dark input,
-body.attestationsap-dark select,
-body.attestationsap-dark textarea {
-    background-color: #1e2d45 !important;
-    color: #e0e0e0 !important;
-    border-color: #3a5078 !important;
-}
-
-/* ---- Dark mode : boutons ---- */
-body.attestationsap-dark .butAction {
-    background: #1e3a5f !important;
-    color: #7eb8f7 !important;
-    border-color: #3a5078 !important;
-}
-body.attestationsap-dark .butActionDelete {
-    background: #3a1010 !important;
-    color: #ff8080 !important;
-}
-body.attestationsap-dark .button {
-    background: #2a3a5c !important;
-    color: #c9d6e3 !important;
-    border-color: #3a5078 !important;
-}
-
-/* ---- Dark mode : titre de page ---- */
-body.attestationsap-dark .titre_create,
-body.attestationsap-dark .titre_full,
-body.attestationsap-dark h1, h2, h3 {
-    color: #7eb8f7 !important;
-}
-
-/* ---- Dark mode : liens ---- */
-body.attestationsap-dark a:not(.butAction):not(.butActionDelete):not(.button) {
-    color: #7eb8f7 !important;
-}
-
-/* ---- Dark mode : badges et labels ---- */
-body.attestationsap-dark .badge {
-    background-color: #1e3a5f !important;
-    color: #c9d6e3 !important;
-}
-
-/* ---- Corrections lisibilité ---- */
-
-/* Labels et textes généraux */
+/* ======================================================
+   TEXTES
+   ====================================================== */
 body.attestationsap-dark label {
-    color: #d0d8e8 !important;
-}
-body.attestationsap-dark p,
-body.attestationsap-dark td,
-body.attestationsap-dark th {
-    color: #d0d8e8 !important;
-}
-body.attestationsap-dark span.mainmenuaspan {
-    color: #c9d6e3 !important;
+    color: var(--sap-dark-text) !important;
 }
 
-/* Titres de section (liste_titre) */
-body.attestationsap-dark tr.liste_titre,
-body.attestationsap-dark tr.liste_titre th,
-body.attestationsap-dark tr.liste_titre td {
-    background-color: #0d2a4a !important;
-    color: #ffffff !important;
+/* Colonne aide (texte gris à droite) */
+body.attestationsap-dark td.tdtop,
+body.attestationsap-dark td[style*="color"] {
+    color: var(--sap-dark-text-dim) !important;
 }
 
-/* Inputs, selects, textareas */
+body.attestationsap-dark .opacitymedium,
+body.attestationsap-dark small {
+    color: var(--sap-dark-text-dim) !important;
+    opacity: 1 !important;
+}
+
+/* ======================================================
+   FORMULAIRES
+   ====================================================== */
 body.attestationsap-dark input[type="text"],
 body.attestationsap-dark input[type="number"],
 body.attestationsap-dark input[type="date"],
 body.attestationsap-dark input[type="email"],
+body.attestationsap-dark input[type="password"],
 body.attestationsap-dark select,
 body.attestationsap-dark textarea {
-    background-color: #1e2d45 !important;
-    color: #e8eef7 !important;
-    border: 1px solid #3a5078 !important;
+    background-color: var(--sap-dark-surface2) !important;
+    color: #d0dcea !important;
+    border: 1px solid var(--sap-dark-border) !important;
 }
 
-/* Cases à cocher et boutons radio */
+body.attestationsap-dark select option {
+    background-color: var(--sap-dark-surface2) !important;
+    color: #d0dcea !important;
+}
+
+body.attestationsap-dark ::placeholder {
+    color: var(--sap-dark-text-dim) !important;
+}
+
+/* Cases à cocher et radios */
 body.attestationsap-dark input[type="checkbox"],
 body.attestationsap-dark input[type="radio"] {
-    accent-color: #7eb8f7 !important;
-    width: 16px !important;
-    height: 16px !important;
+    accent-color: var(--sap-dark-accent2) !important;
+    opacity: 1 !important;
     cursor: pointer !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-    -webkit-appearance: auto !important;
-    appearance: auto !important;
-    background-color: #1e2d45 !important;
-    border: 1px solid #7eb8f7 !important;
 }
 
-body.attestationsap-dark input[type="checkbox"]:checked {
-    background-color: #7eb8f7 !important;
-    border-color: #7eb8f7 !important;
+/* ======================================================
+   BOUTONS
+   ====================================================== */
+body.attestationsap-dark .butAction {
+    background-color: #1a3a6a !important;
+    color: var(--sap-dark-accent2) !important;
+    border: 1px solid var(--sap-dark-border) !important;
+}
+body.attestationsap-dark .butAction:hover {
+    background-color: #1e4a85 !important;
+}
+body.attestationsap-dark .butActionDelete {
+    background-color: #3a1515 !important;
+    color: #ff8080 !important;
+    border: 1px solid #5a2020 !important;
+}
+body.attestationsap-dark .button {
+    background-color: var(--sap-dark-surface2) !important;
+    color: #c0d0e0 !important;
+    border: 1px solid var(--sap-dark-border) !important;
 }
 
-/* Texte opacité réduite (opacitymedium) */
-body.attestationsap-dark .opacitymedium {
-    color: #8899b0 !important;
-    opacity: 1 !important;
+/* ======================================================
+   LIENS
+   ====================================================== */
+body.attestationsap-dark a:not(.butAction):not(.butActionDelete):not(.button):not(.tmenu) {
+    color: var(--sap-dark-accent2) !important;
 }
 
-/* Alertes et info boxes */
-body.attestationsap-dark .info,
-body.attestationsap-dark .warning,
-body.attestationsap-dark .error {
-    color: #e8eef7 !important;
+/* ======================================================
+   BARRE TOP MENU
+   ====================================================== */
+body.attestationsap-dark .tmenudiv,
+body.attestationsap-dark ul.tmenu {
+    background-color: #0a1628 !important;
+    border-bottom: 1px solid var(--sap-dark-border) !important;
+}
+body.attestationsap-dark li.tmenu > div > a,
+body.attestationsap-dark li.tmenu .mainmenuaspan,
+body.attestationsap-dark li.tmenu span.fas,
+body.attestationsap-dark li.tmenu span.far {
+    color: #8fa8c8 !important;
+}
+body.attestationsap-dark li.tmenu:hover {
+    background-color: #1a3050 !important;
+}
+body.attestationsap-dark li.tmenusel {
+    background-color: #1e3a60 !important;
+}
+body.attestationsap-dark li.tmenusel .mainmenuaspan,
+body.attestationsap-dark li.tmenusel span.fas {
+    color: #ffffff !important;
 }
 
-/* Bordures tableau */
-body.attestationsap-dark .noborder td,
-body.attestationsap-dark .noborder th {
-    border-color: #2a3a5c !important;
+/* ======================================================
+   MENU LATÉRAL GAUCHE
+   ====================================================== */
+body.attestationsap-dark #left-side-div,
+body.attestationsap-dark .menu_contenu {
+    background-color: #0e1a2a !important;
 }
-
-/* Fond principal page */
-body.attestationsap-dark #id-right {
-    background-color: #111827 !important;
-}
-
-/* Blocs fichecenter et fiches */
-body.attestationsap-dark .fichehalfleft,
-body.attestationsap-dark .fichehalfright,
-body.attestationsap-dark .fiche {
-    background-color: #1a2535 !important;
-    border-color: #2a3a5c !important;
-}
-
-/* Bouton toggle dans la barre — style cohérent */
-#mainmenutd_sapdarkmode .topmenuimage {
-    font-size: 18px !important;
-    line-height: 1.2 !important;
-    padding: 0 4px !important;
-}
-
-/* ---- Ajustements fin v2 ---- */
-
-/* Texte labels à côté des checkboxes */
-body.attestationsap-dark input[type="checkbox"] + label,
-body.attestationsap-dark input[type="radio"] + label,
-body.attestationsap-dark .checkboxlabel {
-    color: #d8e4f0 !important;
-}
-
-/* Texte aide/description (colonne droite des paramètres) */
-body.attestationsap-dark td:last-child:not(:first-child) {
-    color: #8899b0 !important;
-}
-
-/* Fond des blocs de section (titres bleus) */
-body.attestationsap-dark .liste_titre,
-body.attestationsap-dark table .liste_titre th {
-    background: linear-gradient(90deg, #0a2040, #0d2a4a) !important;
-    color: #e8f0fb !important;
-    border-color: #1e3a5f !important;
-}
-
-/* Menu latéral - améliorer contraste */
-body.attestationsap-dark #left-side-div a,
+body.attestationsap-dark .menu_titre,
 body.attestationsap-dark .menu_titre a,
 body.attestationsap-dark .vmenu a {
-    color: #b8cde0 !important;
+    color: #8fa8c8 !important;
 }
-body.attestationsap-dark #left-side-div a:hover,
+body.attestationsap-dark .menu_titre a:hover,
 body.attestationsap-dark .vmenu a:hover {
     color: #ffffff !important;
-    background-color: #1e3a5f !important;
-}
-body.attestationsap-dark .menu_contenu {
-    background-color: #0d1b2e !important;
+    background-color: #1a3050 !important;
 }
 
-/* Texte placeholder */
-body.attestationsap-dark ::placeholder {
-    color: #5a7090 !important;
-}
-
-/* Select options */
-body.attestationsap-dark select option {
-    background-color: #1e2d45 !important;
-    color: #e0e8f0 !important;
-}
-
-/* Barre de recherche et inputs dans le header */
-body.attestationsap-dark #top-search-bar input {
-    background-color: #1e2d45 !important;
-    color: #e0e8f0 !important;
-    border-color: #3a5078 !important;
-}
-
-/* Icône du bouton dark mode dans la barre top */
+/* ======================================================
+   BOUTON DARK MODE DANS LA BARRE
+   ====================================================== */
 #mainmenutd_sapdarkmode {
-    border-left: 1px solid rgba(255,255,255,0.1);
+    border-left: 1px solid rgba(255,255,255,0.08);
+}
+#mainmenutd_sapdarkmode a {
+    text-decoration: none !important;
 }
 #mainmenutd_sapdarkmode .topmenuimage {
     font-size: 16px !important;
-    padding: 0 6px !important;
-    opacity: 0.85;
+    padding: 0 8px !important;
+    opacity: 0.75;
     transition: opacity 0.2s;
 }
 #mainmenutd_sapdarkmode:hover .topmenuimage {
