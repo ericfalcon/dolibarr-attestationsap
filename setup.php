@@ -457,37 +457,37 @@ print '<tr class="liste_titre"><td colspan="3"><strong>3 — Activités SAP & mo
 // Structure : 'clé' => array('label' => ..., 'agrement' => bool)
 // agrement=true = nécessite agrément préfectoral (art. L.7232-1 Code du travail)
 // agrement=false = simple déclaration préalable suffit
-$activites_sap = array(
-    // Références légales pour tooltips
-    $refs_legales = array(
-        'garde_enfants_domicile_3ans_plus' => 'Art. D.7231-1, 1° a)',
-        'garde_enfants_domicile_moins3ans' => 'Art. D.7231-1, 1° a) + Agrément',
-        'accompagnement_enfants'           => 'Art. D.7231-1, 1° b) + Agrément',
-        'assistance_personnes_agees'       => 'Art. D.7231-1, 2° a) + Agrément',
-        'assistance_personnes_hand'        => 'Art. D.7231-1, 2° b) + Agrément',
-        'conduite_vehicule'                => 'Art. D.7231-1, 2° c) + Agrément',
-        'accompagnement_deplacements'      => 'Art. D.7231-1, 2° d) + Agrément',
-        'entretien_maison'                 => 'Art. D.7231-1, 3° a)',
-        'petits_travaux_jardinage'         => 'Art. D.7231-1, 3° b)',
-        'nettoyage_vitres'                 => 'Art. D.7231-1, 3° c)',
-        'preparation_repas'                => 'Art. D.7231-1, 3° d)',
-        'livraison_repas'                  => 'Art. D.7231-1, 3° e) + Agrément',
-        'collecte_linge'                   => 'Art. D.7231-1, 3° f)',
-        'assistance_informatique'          => 'Art. D.7231-1, 4° a)',
-        'assistance_administrative'        => 'Art. D.7231-1, 4° b)',
-        'soins_animaux'                    => 'Art. D.7231-1, 4° c)',
-        'maintenance_residence'            => 'Art. D.7231-1, 4° d)',
-        'gardiennage_residence'            => 'Art. D.7231-1, 4° e)',
-        'soutien_scolaire'                 => 'Art. D.7231-1, 5° a)',
-        'cours_informatique_domicile'      => 'Art. D.7231-1, 5° b)',
-        'cours_musique'                    => 'Art. D.7231-1, 5° c)',
-        'autres_cours'                     => 'Art. D.7231-1, 5° d)',
-        'soins_non_medicaux'               => 'Art. D.7231-1, 6° a) + Agrément',
-        'activites_sportives'              => 'Art. D.7231-1, 6° b)',
-        'assistance_numerique'             => 'Art. D.7231-1, 6° c)',
-        'teleassistance'                   => 'Art. D.7231-1, 6° d) + Agrément',
-    );
+// Références légales pour tooltips
+$refs_legales = array(
+    'garde_enfants_domicile_3ans_plus' => 'Art. D.7231-1, 1° a)',
+    'garde_enfants_domicile_moins3ans' => 'Art. D.7231-1, 1° a) + Agrément',
+    'accompagnement_enfants'           => 'Art. D.7231-1, 1° b) + Agrément',
+    'assistance_personnes_agees'       => 'Art. D.7231-1, 2° a) + Agrément',
+    'assistance_personnes_hand'        => 'Art. D.7231-1, 2° b) + Agrément',
+    'conduite_vehicule'                => 'Art. D.7231-1, 2° c) + Agrément',
+    'accompagnement_deplacements'      => 'Art. D.7231-1, 2° d) + Agrément',
+    'entretien_maison'                 => 'Art. D.7231-1, 3° a)',
+    'petits_travaux_jardinage'         => 'Art. D.7231-1, 3° b)',
+    'nettoyage_vitres'                 => 'Art. D.7231-1, 3° c)',
+    'preparation_repas'                => 'Art. D.7231-1, 3° d)',
+    'livraison_repas'                  => 'Art. D.7231-1, 3° e) + Agrément',
+    'collecte_linge'                   => 'Art. D.7231-1, 3° f)',
+    'assistance_informatique'          => 'Art. D.7231-1, 4° a)',
+    'assistance_administrative'        => 'Art. D.7231-1, 4° b)',
+    'soins_animaux'                    => 'Art. D.7231-1, 4° c)',
+    'maintenance_residence'            => 'Art. D.7231-1, 4° d)',
+    'gardiennage_residence'            => 'Art. D.7231-1, 4° e)',
+    'soutien_scolaire'                 => 'Art. D.7231-1, 5° a)',
+    'cours_informatique_domicile'      => 'Art. D.7231-1, 5° b)',
+    'cours_musique'                    => 'Art. D.7231-1, 5° c)',
+    'autres_cours'                     => 'Art. D.7231-1, 5° d)',
+    'soins_non_medicaux'               => 'Art. D.7231-1, 6° a) + Agrément',
+    'activites_sportives'              => 'Art. D.7231-1, 6° b)',
+    'assistance_numerique'             => 'Art. D.7231-1, 6° c)',
+    'teleassistance'                   => 'Art. D.7231-1, 6° d) + Agrément',
+);
 
+$activites_sap = array(
     // Famille A : Garde d'enfants
     'A' => array(
         'label' => 'Garde d\'enfants',

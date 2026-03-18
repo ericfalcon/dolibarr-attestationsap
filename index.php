@@ -582,6 +582,7 @@ if ($tab === 'generate') {
                         }
                     }
 
+                    $nb_gen_err++;
                     $checkbox = '<span class="opacitymedium" title="Email manquant">—</span>';
                     $download = 'N/A';
                     $statusPdf = '✖ Erreur de génération';
@@ -625,7 +626,15 @@ if ($tab === 'generate') {
                     print '</tr>';
                 }
 
-                print '</table><br>';
+                print '</table>';
+                // Résumé génération
+                $msg_style = $nb_gen_err === 0
+                    ? 'background:#0d2a1a;border-left:4px solid #4caf50'
+                    : 'background:#2a1a0d;border-left:4px solid #ffc107';
+                print '<div style="'.$msg_style.';padding:10px 14px;border-radius:4px;margin:8px 0">';
+                if ($nb_gen_ok > 0)  print '✅ <strong>'.$nb_gen_ok.' attestation'.($nb_gen_ok>1?'s':'').' générée'.($nb_gen_ok>1?'s':'').'</strong> avec succès. ';
+                if ($nb_gen_err > 0) print '⚠ <strong style="color:#e67e22">'.$nb_gen_err.' erreur'.($nb_gen_err>1?'s':'').'</strong>.';
+                print '</div>';
                 print '</form><br>';
             }
         }
