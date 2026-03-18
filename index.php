@@ -268,6 +268,20 @@ print '<style>
 print '<div class="actions-bar">';
 print '  <a class="cta butAction" href="'.htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES).'?tab=dashboard">TABLEAU DE BORD</a>';
 print '  <a class="cta butAction" href="'.htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES).'?tab=generate&year='.(int)$year.'">GÉNÉRER LES ATTESTATIONS</a>';
+
+// Bouton bascule mode sombre (utilise le mécanisme natif Dolibarr THEME_DARKMODEENABLED)
+$isDark = !empty($conf->global->THEME_DARKMODEENABLED);
+$darkUrl = htmlspecialchars($_SERVER['REQUEST_URI'], ENT_QUOTES);
+// Ajouter ou retirer le paramètre THEME_DARKMODEENABLED
+if ($isDark) {
+    $darkUrl = preg_replace('/[&?]THEME_DARKMODEENABLED=[^&]*/', '', $darkUrl);
+    $darkUrl .= (strpos($darkUrl, '?') === false ? '?' : '&') . 'THEME_DARKMODEENABLED=0';
+    $darkLabel = '☀ Mode clair';
+} else {
+    $darkUrl .= (strpos($darkUrl, '?') === false ? '?' : '&') . 'THEME_DARKMODEENABLED=1';
+    $darkLabel = '🌙 Mode sombre';
+}
+print '  <a class="button" href="'.$darkUrl.'" style="margin-left:auto;float:right" title="Basculer le mode sombre">'.$darkLabel.'</a>';
 print '  <a class="cta-secondary button" href="'.htmlspecialchars($url_propal, ENT_QUOTES).'">NOUVEAU DEVIS SAP</a>';
 print '  <a class="cta-secondary button" href="'.htmlspecialchars($url_facture, ENT_QUOTES).'">NOUVELLE FACTURE SAP</a>';
 print '</div>';
