@@ -393,7 +393,7 @@ print '<strong>Pour vous (auto-entrepreneur) :</strong> sélectionnez simplement
 print 'Pour une société avec salariés, chaque salarié doit avoir un compte utilisateur Dolibarr actif.<br>';
 print '<strong>Intervenant actuellement affiché :</strong> ';
 if ($intervenantActuel) {
-    print '<strong style="color:#1a7a2e;">' . dol_escape_htmltag($intervenantActuel['fullname']) . '</strong>';
+    print '<strong style="color:#4caf50;">' . dol_escape_htmltag($intervenantActuel['fullname']) . '</strong>';
     print ' <small class="opacitymedium">(source : ' . dol_escape_htmltag($intervenantActuel['source']) . ')</small>';
 } else {
     print '<span style="color:#c0392b;">⚠ Aucun intervenant configuré</span>';
@@ -507,7 +507,7 @@ print '<tr class="oddeven"><td valign="top" style="width:270px">Activités exerc
 print '<div style="display:flex;flex-wrap:wrap;gap:16px">';
 foreach ($activites_sap as $famille_key => $famille) {
     print '<div style="min-width:280px;flex:1;background:#f8f9fa;border:1px solid #dee2e6;border-radius:6px;padding:10px">';
-    print '<strong style="color:#003d7a;display:block;margin-bottom:6px;border-bottom:1px solid #dee2e6;padding-bottom:4px">'
+    print '<strong style="color:#5a9fd4;display:block;margin-bottom:6px;border-bottom:1px solid #3a5a7a;padding-bottom:4px">'
          .dol_escape_htmltag($famille['label']).'</strong>';
     foreach ($famille['items'] as $key => $item) {
         $label    = $item['label'];
