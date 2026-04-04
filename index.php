@@ -583,8 +583,12 @@ if ($tab === 'generate') {
                         $dlUrl = DOL_URL_ROOT.'/document.php?modulepart=attestationsap&file='.urlencode($bn);
 
                         $statusPdf = '✔ Généré ('.number_format($filesize / 1024, 1, ',', ' ').' Ko)';
-                        $previewUrl = getAdvancedPreviewUrl('attestationsap', $bn, 0, '');
-                        $download   = '<a class="button documentpreview" href="'.$previewUrl.'" mime="application/pdf" title="'.$langs->trans('Preview').'">'.img_picto('', 'search-plus', 'class="pictofixedwidth"').' Visualiser</a>';
+                        $previewData = getAdvancedPreviewUrl('attestationsap', $bn, 1, '');
+                        if (!empty($previewData['url'])) {
+                            $download = '<a class="button '.$previewData['css'].'" href="'.dol_escape_htmltag($previewData['url']).'" mime="'.dol_escape_htmltag($previewData['mime']).'" target="'.$previewData['target'].'" title="'.$langs->trans('Preview').'">'.img_picto('', 'search-plus', 'class="pictofixedwidth"').' Visualiser</a>';
+                        } else {
+                            $download = '<a class="button" href="'.DOL_URL_ROOT.'/document.php?modulepart=attestationsap&attachment=0&file='.urlencode($bn).'" target="_blank">'.img_picto('', 'search-plus', 'class="pictofixedwidth"').' Visualiser</a>';
+                        }
 
                         $sentInfo = att_is_sent($attDir, $bn);
                         if ($sentInfo) {
@@ -770,8 +774,12 @@ if ($tab === 'generate') {
             print '  <td>'.$sizeKo.'</td>';
             print '  <td>'.($r['date'] ? dol_print_date($r['date'],'dayhour') : '-').'</td>';
             print '  <td>'.$statusSend.'</td>';
-            $previewUrl2 = getAdvancedPreviewUrl('attestationsap', $bn, 0, '');
-            $previewlink = '<a class="button documentpreview" href="'.$previewUrl2.'" mime="application/pdf" title="'.$langs->trans('Preview').'">'.img_picto('', 'search-plus', 'class="pictofixedwidth"').' Visualiser</a>';
+            $previewData2 = getAdvancedPreviewUrl('attestationsap', $bn, 1, '');
+            if (!empty($previewData2['url'])) {
+                $previewlink = '<a class="button '.$previewData2['css'].'" href="'.dol_escape_htmltag($previewData2['url']).'" mime="'.dol_escape_htmltag($previewData2['mime']).'" target="'.$previewData2['target'].'" title="'.$langs->trans('Preview').'">'.img_picto('', 'search-plus', 'class="pictofixedwidth"').' Visualiser</a>';
+            } else {
+                $previewlink = '<a class="button" href="'.DOL_URL_ROOT.'/document.php?modulepart=attestationsap&attachment=0&file='.urlencode($bn).'" target="_blank">'.img_picto('', 'search-plus', 'class="pictofixedwidth"').' Visualiser</a>';
+            }
             print '  <td>'.$previewlink.' '.$sendlink.$deletelink.'</td>';
             print '</tr>';
         }

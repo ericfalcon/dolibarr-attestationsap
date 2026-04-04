@@ -110,8 +110,11 @@ if (empty($files)) {
         $dlUrl = DOL_URL_ROOT.'/document.php?modulepart=attestationsap&file='.urlencode($bn);
 
         print '<tr class="'.$css.'">';
-        $previewUrl = getAdvancedPreviewUrl('attestationsap', $bn, 0, '');
-        print '<td><a class="documentpreview" href="'.dol_escape_htmltag($previewUrl).'" mime="application/pdf">'.img_picto('', 'search-plus', 'class="pictofixedwidth"').'</a> <a href="'.DOL_URL_ROOT.'/document.php?modulepart=attestationsap&attachment=0&file='.urlencode($bn).'" target="_blank">'.dol_escape_htmltag($bn).'</a></td>';
+        $previewDataT = getAdvancedPreviewUrl('attestationsap', $bn, 1, '');
+        $previewIconT = !empty($previewDataT['url'])
+            ? '<a class="'.$previewDataT['css'].'" href="'.dol_escape_htmltag($previewDataT['url']).'" mime="'.dol_escape_htmltag($previewDataT['mime']).'" target="'.$previewDataT['target'].'">'.img_picto('', 'search-plus', 'class="pictofixedwidth"').'</a>'
+            : '';
+        print '<td>'.$previewIconT.' <a href="'.DOL_URL_ROOT.'/document.php?modulepart=attestationsap&attachment=0&file='.urlencode($bn).'" target="_blank">'.dol_escape_htmltag($bn).'</a></td>';
         print '<td class="center">'.$year.'</td>';
         print '<td class="center">'.$size.' Ko</td>';
         print '<td>'.dol_print_date($mtime, 'dayhour').'</td>';
