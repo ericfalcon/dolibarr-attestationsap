@@ -583,7 +583,8 @@ if ($tab === 'generate') {
                         $dlUrl = DOL_URL_ROOT.'/document.php?modulepart=attestationsap&file='.urlencode($bn);
 
                         $statusPdf = '✔ Généré ('.number_format($filesize / 1024, 1, ',', ' ').' Ko)';
-                        $download  = '<a class="button" href="'.$dlUrl.'" target="_blank" onclick="window.open(this.href,\'pdf_preview_\'+Math.random(),\'width=900,height=700,scrollbars=yes,resizable=yes\');return false;" title="Ouvrir le PDF dans une fenêtre">📄 Visualiser</a>';
+                        $dlUrlInline = DOL_URL_ROOT.'/document.php?modulepart=attestationsap&attachment=0&file='.urlencode($bn);
+                        $download  = '<a class="button" href="'.$dlUrlInline.'" target="_blank" title="Visualiser le PDF">'.img_picto('Visualiser', 'search').' Visualiser</a>';
 
                         $sentInfo = att_is_sent($attDir, $bn);
                         if ($sentInfo) {
@@ -769,7 +770,8 @@ if ($tab === 'generate') {
             print '  <td>'.$sizeKo.'</td>';
             print '  <td>'.($r['date'] ? dol_print_date($r['date'],'dayhour') : '-').'</td>';
             print '  <td>'.$statusSend.'</td>';
-            $previewlink = '<a class="button" href="'.$dlUrl.'" target="_blank" onclick="window.open(this.href,\'pdf_preview_\'+Math.random(),\'width=900,height=700,scrollbars=yes,resizable=yes\');return false;" title="Ouvrir le PDF dans une fenêtre">📄 Visualiser</a>';
+            $dlUrlInline2 = DOL_URL_ROOT.'/document.php?modulepart=attestationsap&attachment=0&file='.urlencode($bn);
+            $previewlink = '<a class="button" href="'.$dlUrlInline2.'" target="_blank" title="Visualiser le PDF">'.img_picto('Visualiser', 'search').' Visualiser</a>';
             print '  <td>'.$previewlink.' '.$sendlink.$deletelink.'</td>';
             print '</tr>';
         }
