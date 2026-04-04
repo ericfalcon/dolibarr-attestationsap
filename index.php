@@ -583,8 +583,8 @@ if ($tab === 'generate') {
                         $dlUrl = DOL_URL_ROOT.'/document.php?modulepart=attestationsap&file='.urlencode($bn);
 
                         $statusPdf = '✔ Généré ('.number_format($filesize / 1024, 1, ',', ' ').' Ko)';
-                        $dlUrlInline = DOL_URL_ROOT.'/document.php?modulepart=attestationsap&attachment=0&file='.urlencode($bn);
-                        $download  = '<a class="button" href="'.$dlUrlInline.'" target="_blank" title="Visualiser le PDF">'.img_picto('Visualiser', 'search').' Visualiser</a>';
+                        $previewUrl = getAdvancedPreviewUrl('attestationsap', $bn, 0, '');
+                        $download   = '<a class="button documentpreview" href="'.$previewUrl.'" mime="application/pdf" title="'.$langs->trans('Preview').'">'.img_picto('', 'search-plus', 'class="pictofixedwidth"').' Visualiser</a>';
 
                         $sentInfo = att_is_sent($attDir, $bn);
                         if ($sentInfo) {
@@ -770,8 +770,8 @@ if ($tab === 'generate') {
             print '  <td>'.$sizeKo.'</td>';
             print '  <td>'.($r['date'] ? dol_print_date($r['date'],'dayhour') : '-').'</td>';
             print '  <td>'.$statusSend.'</td>';
-            $dlUrlInline2 = DOL_URL_ROOT.'/document.php?modulepart=attestationsap&attachment=0&file='.urlencode($bn);
-            $previewlink = '<a class="button" href="'.$dlUrlInline2.'" target="_blank" title="Visualiser le PDF">'.img_picto('Visualiser', 'search').' Visualiser</a>';
+            $previewUrl2 = getAdvancedPreviewUrl('attestationsap', $bn, 0, '');
+            $previewlink = '<a class="button documentpreview" href="'.$previewUrl2.'" mime="application/pdf" title="'.$langs->trans('Preview').'">'.img_picto('', 'search-plus', 'class="pictofixedwidth"').' Visualiser</a>';
             print '  <td>'.$previewlink.' '.$sendlink.$deletelink.'</td>';
             print '</tr>';
         }
