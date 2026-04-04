@@ -3,50 +3,48 @@ require_once dirname(__FILE__) . '/../../../main.inc.php';
 if (!$user->admin) accessforbidden();
 llxHeader('', 'Check PDF Viewer');
 
-// Chercher dans TOUS les fichiers lib la fonction qui génère le lien loupe
-$f = DOL_DOCUMENT_ROOT.'/core/lib/functions2.lib.php';
-$lines = file($f);
-
-// Chercher la fonction showdocuments
-$in_showdoc = false;
-$depth = 0;
-print '<h3>Fonction showdocuments (extrait)</h3>';
-print '<pre style="font-size:10px;background:#f5f5f5;padding:8px;overflow:auto;max-height:600px">';
-foreach ($lines as $n => $line) {
-    if (strpos($line, 'function showdocuments') !== false) {
-        $in_showdoc = true;
-    }
-    if ($in_showdoc) {
-        // Chercher les lignes avec loupe / search / preview / document.php
-        if (stripos($line, 'search') !== false
-         || stripos($line, 'loupe') !== false
-         || stripos($line, 'document.php') !== false
-         || stripos($line, 'preview') !== false
-         || stripos($line, 'pdfjs') !== false
-         || stripos($line, 'iframe') !== false
-         || stripos($line, 'modal') !== false
-         || stripos($line, 'popup') !== false
-         || stripos($line, 'viewimage') !== false
-         || stripos($line, 'apercu') !== false
-         || stripos($line, 'fa-eye') !== false
-         || stripos($line, 'fa-file-pdf') !== false) {
-            print ($n+1).': '.htmlspecialchars($line);
+// Chercher dans TOUS les fichiers PHP du core le mécanisme de preview PDF
+print '<h3>Fichiers PHP contenant "pdfjs" ou "pdf_preview" ou "apercu"</h3>';
+$dirs = array(
+    DOL_DOCUMENT_ROOT.'/core/lib/',
+    DOL_DOCUMENT_ROOT.'/core/class/',
+);
+foreach ($dirs as $dir) {
+    $files = glob($dir.'*.php');
+    foreach ($files as $f) {
+        $c = file_get_contents($f);
+        if (stripos($c, 'pdfjs') !== false
+         || stripos($c, 'pdf_preview') !== false
+         || stripos($c, 'fa-search') !== false) {
+            print '<p><strong>'.basename($f).'</strong></p>';
+            $lines = explode("\n", $c);
+            print '<pre style="font-size:10px">';
+            foreach ($lines as $n => $line) {
+                if (stripos($line, 'pdfjs') !== false
+                 || stripos($line, 'pdf_preview') !== false
+                 || stripos($line, 'fa-search') !== false) {
+                    print ($n+1).': '.htmlspecialchars($line)."\n";
+                }
+            }
+            print '</pre>';
         }
-        // Arrêter après 200 lignes dans la fonction
-        static $cnt = 0; $cnt++;
-        if ($cnt > 300) { print "...(tronqué)...\n"; break; }
     }
 }
-print '</pre>';
 
-// Chercher aussi dans index.php de Dolibarr
-print '<h3>Fichiers JS qui mentionnent pdfviewer</h3>';
-$jsfiles = glob(DOL_DOCUMENT_ROOT.'/core/js/*.js');
-foreach ($jsfiles as $jf) {
-    $c = file_get_contents($jf);
-    if (stripos($c, 'pdf') !== false || stripos($c, 'preview') !== false || stripos($c, 'apercu') !== false) {
-        print '<p>'.basename($jf).'</p>';
-    }
+// Inspecter le HTML source d'une fiche facture directement
+print '<h3>Recherche dans viewimage.php</h3>';
+$vi = DOL_DOCUMENT_ROOT.'/viewimage.php';
+if (file_exists($vi)) {
+    print '<p>Existe</p>';
+    $c = file_get_contents($vi);
+    print '<p>Taille: '.strlen($c).' octets</p>';
+}
+
+// Chercher le JS qui gère le viewer
+print '<h3>JS natif Dolibarr</h3>';
+$jsdir = DOL_DOCUMENT_ROOT.'/core/js/';
+foreach (glob($jsdir.'*.js') as $jf) {
+    print '<p>'.basename($jf).'</p>';
 }
 
 llxFooter();
