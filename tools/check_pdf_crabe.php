@@ -1,18 +1,18 @@
 <?php
 require_once dirname(__FILE__) . '/../../../main.inc.php';
 if (!$user->admin) accessforbidden();
-llxHeader('', 'Check pdf_pagefoot signature');
+llxHeader('', 'Check pdf_pagefoot body');
 
 $f = DOL_DOCUMENT_ROOT.'/core/lib/pdf.lib.php';
 $lines = file($f);
 $in = false; $cnt = 0;
-print '<pre style="font-size:10px;background:#1a2535;color:#c0d0e0;padding:8px;overflow:auto;max-height:300px">';
+print '<pre style="font-size:10px;background:#1a2535;color:#c0d0e0;padding:8px;overflow:auto;max-height:600px">';
 foreach ($lines as $n => $line) {
     if (strpos($line, 'function pdf_pagefoot') !== false) $in = true;
     if ($in) {
         print ($n+1).': '.htmlspecialchars($line);
         $cnt++;
-        if ($cnt > 5) break;
+        if ($cnt > 80) break;
     }
 }
 print '</pre>';
