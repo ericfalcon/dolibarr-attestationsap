@@ -330,7 +330,9 @@ class ActionsAttestationsap
         if (!in_array('thirdpartycomm', $contexts)
             && !in_array('thirdpartynote', $contexts)
             && !in_array('thirdpartycontact', $contexts)
-            && !in_array('thirdparty', $contexts)) {
+            && !in_array('thirdparty', $contexts)
+            && !in_array('thirdpartycard', $contexts)
+            && !in_array('globalcard', $contexts)) {
             return 0;
         }
 

@@ -34,7 +34,7 @@ class modAttestationSap extends DolibarrModules
 
         // --- Activation de parties du module ---
         $this->module_parts = array(
-            'hooks'     => array('invoicecard', 'propalcard', 'pdfgeneration', 'formbuilddoc', 'thirdpartycomm', 'thirdpartynote', 'thirdpartycontact', 'thirdparty'),
+            'hooks'     => array('invoicecard', 'propalcard', 'pdfgeneration', 'formbuilddoc', 'thirdpartycomm', 'thirdpartynote', 'thirdpartycontact', 'thirdparty', 'thirdpartycard', 'globalcard'),
             'models'    => 1,
             'boxes'     => 1, // déclare des widgets tableau de bord
             'docmodels' => array(
