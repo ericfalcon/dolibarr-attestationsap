@@ -24,7 +24,7 @@ class modAttestationSap extends DolibarrModules
         $this->name            = 'AttestationSap'; // MAIN_MODULE_ATTESTATIONSAP
         $this->description     = "Module de gestion des attestations fiscales SAP (Services à la Personne)";
         $this->descriptionlong = "Génération d'attestations fiscales conformément à l'article 199 sexdecies du CGI";
-        $this->version         = '2.1.5';
+        $this->version         = '2.1.6';
         $this->const_name      = 'MAIN_MODULE_' . strtoupper($this->name);
         $this->picto           = 'generic';
 
