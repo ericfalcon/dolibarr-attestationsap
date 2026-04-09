@@ -564,10 +564,10 @@ foreach ($activites_sap as $famille_key => $famille) {
         $label    = $item['label'];
         $needs_ag = $item['agrement'];
         $checked  = !empty($activites_sel[$key]) ? ' checked' : '';
-        // Masquer si agrement requis et type=declaration
-        $hidden   = ($needs_ag && $hab_type === 'declaration') ? ' style="display:none"' : '';
-        $css_ag   = $needs_ag ? ' sap-agrement-only' : '';
-        print '<label class="sap-activite'.$css_ag.'"'.$hidden.' style="display:block;margin:3px 0;cursor:pointer;color:#b8d4ee">';
+        // Masquer via style inline - le JS toggleActivitesAgrement() gère le toggle
+        $css_ag      = $needs_ag ? ' sap-agrement-only' : '';
+        $disp_style  = ($needs_ag && $hab_type === 'declaration') ? 'display:none' : 'display:block';
+        print '<label class="sap-activite'.$css_ag.'" style="'.$disp_style.';margin:3px 0;cursor:pointer;color:#b8d4ee">';
         print '<input type="checkbox" name="ATTESTATIONSAP_ACTIVITES[]" value="'.dol_escape_htmltag($key).'"'.$checked.'> ';
         $ref_legal = isset($refs_legales[$key]) ? $refs_legales[$key] : '';
         $title_attr = $ref_legal ? ' title="'.dol_escape_htmltag($ref_legal).'"' : '';
@@ -809,9 +809,9 @@ echo <<<ENDJS
         document.querySelectorAll("input[name=ATTESTATIONSAP_HABILITATION_TYPE]").forEach(function(r){ if(r.checked) type = r.value; });
         document.querySelectorAll(".sap-agrement-only").forEach(function(el) {
             if (type === "agrement") {
-                el.style.display = "block";
+                el.style.setProperty('display', 'block', 'important');
             } else {
-                el.style.display = "none";
+                el.style.setProperty('display', 'none', 'important');
                 var cb = el.querySelector("input[type=checkbox]");
                 if (cb) cb.checked = false;
             }
