@@ -3,8 +3,6 @@
 // htdocs/custom/attestationsap/core/modules/facture/doc/pdf_facture_sap_v3.modules.php
 
 require_once DOL_DOCUMENT_ROOT.'/core/modules/facture/doc/pdf_crabe.modules.php';
-require_once DOL_DOCUMENT_ROOT.'/core/class/societe.class.php';
-require_once DOL_DOCUMENT_ROOT.'/core/class/societe.class.php';
 
 class pdf_facture_sap_v3 extends pdf_crabe
 {
@@ -216,12 +214,8 @@ class pdf_facture_sap_v3 extends pdf_crabe
         $conf->global->INVOICE_FREE_TEXT                         = '';
         $conf->global->MAIN_GENERATE_DOCUMENTS_SHOW_FOOT_DETAILS = 0;
 
-        // Émetteur vide : line3/line4 (idprof, forme juridique) s'affichent
-        // inconditionnellement dans pdf_pagefoot — on les supprime via un objet vide
-        $emetteur_vide = new Societe($this->db);
-        $emetteur_vide->country_code = $this->emetteur->country_code;
-
-        $result = pdf_pagefoot($pdf, $outputlangs, '', $emetteur_vide,
+        // Passer null comme émetteur pour masquer line3/line4 (idprof inconditionnels)
+        $result = pdf_pagefoot($pdf, $outputlangs, '', null,
             $heightforqrinvoice + $this->marge_basse,
             $this->marge_gauche,
             $this->page_hauteur,
