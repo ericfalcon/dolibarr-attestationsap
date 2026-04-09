@@ -201,5 +201,22 @@ class pdf_facture_sap_v3 extends pdf_crabe
         return $sap_y + $hauteur_cadre + 2;
     }
 
-    // _pagefoot géré par pdf_crabe (AliasNbPages appelé après le dernier _pagefoot)
+    // Override _pagefoot : masquer texte libre et détails entreprise, garder numéro de page
+    protected function _pagefoot(&$pdf, $object, $outputlangs, $hidefreetext = 0, $heightforqrinvoice = 0)
+    {
+        // Forcer hidefreetext=1 pour masquer le texte libre Dolibarr
+        // et showdetails=0 pour masquer les détails entreprise
+        // tout en gardant le numéro de page natif via pdf_pagefoot
+        return pdf_pagefoot($pdf, $outputlangs, '', $this->emetteur,
+            $heightforqrinvoice + $this->marge_basse,
+            $this->marge_gauche,
+            $this->page_hauteur,
+            $object,
+            0,       // showdetails = 0 : pas de détails entreprise
+            1,       // hidefreetext = 1 : pas de texte libre
+            $this->page_largeur,
+            $this->watermark
+        );
+    }
+
 }
