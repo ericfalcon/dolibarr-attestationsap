@@ -173,7 +173,8 @@ class pdf_facture_sap_v3 extends pdf_crabe
         $pdf->SetFont('', 'B', 8);
         $pdf->SetXY($titre_x, $logo_y + 1.5);
         $pdf->SetTextColor(0, 0, 100);
-        $pdf->Cell(0, 4, "MENTIONS OBLIGATOIRES SERVICES À LA PERSONNE", 0, 1, 'L');
+        $titre_width = $sap_width - ($titre_x - $sap_x) - 2;
+        $pdf->Cell($titre_width, 4, "MENTIONS OBLIGATOIRES SERVICES À LA PERSONNE", 0, 1, 'L');
 
         // Mentions
         $mentions_x = $titre_x;
@@ -189,16 +190,16 @@ class pdf_facture_sap_v3 extends pdf_crabe
         $complement      = ($nature_service ? ' - '.$nature_service : '').' - '.$mode_interv.' - Les interventions ont lieu au domicile du client';
 
         $pdf->SetXY($mentions_x, $mentions_y);
-        $pdf->Cell($mentions_width, 3.5, "Déclaration SAP : ".$declaration_sap_value.$complement, 0, 0, 'L');
+        $pdf->MultiCell($mentions_width, 3.5, "Déclaration SAP : ".$declaration_sap_value.$complement, 0, 'L');
 
         $pdf->SetXY($mentions_x, $mentions_y + 4);
-        $pdf->Cell($mentions_width, 3.5, "50% des sommes versées ouvrent droit à crédit d'impôt (art. 199 sexdecies du CGI)", 0, 0, 'L');
+        $pdf->MultiCell($mentions_width, 3.5, "50% des sommes versées ouvrent droit à crédit d'impôt (art. 199 sexdecies du CGI)", 0, 'L');
 
         $pdf->SetXY($mentions_x, $mentions_y + 8);
-        $pdf->Cell($mentions_width, 3.5, "Conservez cette attestation fiscale pour votre déclaration de revenus", 0, 0, 'L');
+        $pdf->MultiCell($mentions_width, 3.5, "Conservez cette attestation fiscale pour votre déclaration de revenus", 0, 'L');
 
         $pdf->SetXY($mentions_x, $mentions_y + 12);
-        $pdf->Cell($mentions_width, 3.5, "TVA non applicable - Article 293 B du CGI", 0, 0, 'L');
+        $pdf->MultiCell($mentions_width, 3.5, "TVA non applicable - Article 293 B du CGI", 0, 'L');
 
         return $sap_y + $hauteur_cadre + 2; // La colonne droite (totaux) est gérée par le parent
     }
