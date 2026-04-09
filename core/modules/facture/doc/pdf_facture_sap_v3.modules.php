@@ -170,11 +170,11 @@ class pdf_facture_sap_v3 extends pdf_crabe
 
         // Titre
         $titre_x = $logo_x + $logo_width + 2;
-        $pdf->SetFont('', 'B', 8);
+        $pdf->SetFont('', 'B', 6.5);
         $pdf->SetXY($titre_x, $logo_y + 1.5);
         $pdf->SetTextColor(0, 0, 100);
         $titre_width = $sap_width - ($titre_x - $sap_x) - 2;
-        $pdf->Cell($titre_width, 4, "MENTIONS OBLIGATOIRES SERVICES À LA PERSONNE", 0, 1, 'L');
+        $pdf->MultiCell($titre_width, 4, "MENTIONS OBLIGATOIRES SERVICES À LA PERSONNE", 0, 'L');
 
         // Mentions
         $mentions_x = $titre_x;
