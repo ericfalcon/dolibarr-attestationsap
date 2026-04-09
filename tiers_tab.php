@@ -97,7 +97,7 @@ if (empty($files)) {
                 $agendaLink = '';
                 // Lien vers l'agenda filtré sur ce tiers
                 $agendaLink = ' <a href="'.DOL_URL_ROOT.'/comm/action/index.php?socid='.$socid.'&search_note=attestation+fiscale" '
-                            . 'title="Voir dans l'agenda" style="font-size:11px">📅</a>';
+                            . 'title="Voir dans l\'agenda" style="font-size:11px">📅</a>';
                 $sentInfo = '<span class="badge badge-status4 badge-status">✅ Envoyée le '.$dt.'</span>'
                           . '<br><small class="opacitymedium">'.dol_escape_htmltag($data['email']).$agendaLink.'</small>';
             }
