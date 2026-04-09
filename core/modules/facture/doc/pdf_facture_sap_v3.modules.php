@@ -204,19 +204,30 @@ class pdf_facture_sap_v3 extends pdf_crabe
     // Override _pagefoot : masquer texte libre et détails entreprise, garder numéro de page
     protected function _pagefoot(&$pdf, $object, $outputlangs, $hidefreetext = 0, $heightforqrinvoice = 0)
     {
-        // Forcer hidefreetext=1 pour masquer le texte libre Dolibarr
-        // et showdetails=0 pour masquer les détails entreprise
-        // tout en gardant le numéro de page natif via pdf_pagefoot
-        return pdf_pagefoot($pdf, $outputlangs, '', $this->emetteur,
+        global $conf;
+
+        // Sauvegarder et neutraliser temporairement
+        $old_free    = getDolGlobalString('INVOICE_FREE_TEXT');
+        $old_details = getDolGlobalInt('MAIN_GENERATE_DOCUMENTS_SHOW_FOOT_DETAILS');
+        $conf->global->INVOICE_FREE_TEXT                         = '';
+        $conf->global->MAIN_GENERATE_DOCUMENTS_SHOW_FOOT_DETAILS = 0;
+
+        $result = pdf_pagefoot($pdf, $outputlangs, '', $this->emetteur,
             $heightforqrinvoice + $this->marge_basse,
             $this->marge_gauche,
             $this->page_hauteur,
             $object,
-            0,       // showdetails = 0 : pas de détails entreprise
-            1,       // hidefreetext = 1 : pas de texte libre
+            0,    // showdetails = 0
+            1,    // hidefreetext = 1
             $this->page_largeur,
             $this->watermark
         );
+
+        // Restaurer
+        $conf->global->INVOICE_FREE_TEXT                         = $old_free;
+        $conf->global->MAIN_GENERATE_DOCUMENTS_SHOW_FOOT_DETAILS = $old_details;
+
+        return $result;
     }
 
 }
