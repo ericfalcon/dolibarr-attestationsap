@@ -3,6 +3,7 @@
 // htdocs/custom/attestationsap/core/modules/facture/doc/pdf_facture_sap_v3.modules.php
 
 require_once DOL_DOCUMENT_ROOT.'/core/modules/facture/doc/pdf_crabe.modules.php';
+require_once DOL_DOCUMENT_ROOT.'/core/class/societe.class.php';
 
 class pdf_facture_sap_v3 extends pdf_crabe
 {
