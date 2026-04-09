@@ -202,9 +202,9 @@ class pdf_devis_sap_v2 extends pdf_azur
         $pdf->MultiCell($sap_width - ($titre_x - $sap_x) - 2, 3, "MENTIONS OBLIGATOIRES\nSERVICES À LA PERSONNE", 0, 'L');
 
         // Mentions
-        $mentions_x = $sap_x + 2;
+        $mentions_x = $titre_x;  // Après le logo
         $mentions_y = $logo_y + 9;
-        $mentions_w = $sap_width - 4;
+        $mentions_w = $sap_width - ($titre_x - $sap_x) - 2;
         $pdf->SetFont('', '', 6.5);
         $pdf->SetTextColor(0, 0, 0);
         $num_sap      = getDolGlobalString('ATTESTATIONSAP_DECL_NUM', !empty($mysoc->idprof8) ? $mysoc->idprof8 : '');
