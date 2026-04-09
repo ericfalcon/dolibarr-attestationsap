@@ -178,11 +178,13 @@ class pdf_facture_sap_v3 extends pdf_crabe
         $pdf->SetFont('', '', 6.5);
         $pdf->SetTextColor(0, 0, 0);
 
-        $declaration_sap_value = empty($this->emetteur->idprof8) ? 'Non définie (Id. prof. 8)' : $this->emetteur->idprof8;
-        $complement = ' - Assistance informatique à domicile mode prestataire - Les interventions ont lieu au domicile du client';
+        $declaration_sap_value = getDolGlobalString('ATTESTATIONSAP_DECL_NUM', empty($this->emetteur->idprof8) ? '' : $this->emetteur->idprof8);
+        $nature_service  = getDolGlobalString('ATTESTATIONSAP_NATURE_SERVICE', 'Services à la personne');
+        $mode_interv     = getDolGlobalString('ATTESTATIONSAP_MODE', 'prestataire') === 'mandataire' ? 'Mode mandataire' : 'Mode prestataire';
+        $complement      = ($nature_service ? ' - '.$nature_service : '').' - '.$mode_interv.' - Les interventions ont lieu au domicile du client';
 
         $pdf->SetXY($mentions_x, $mentions_y);
-        $pdf->Cell($mentions_width, 3.5, "Déclaration SAP : ".$declaration_sap_value . $complement, 0, 0, 'L');
+        $pdf->Cell($mentions_width, 3.5, "Déclaration SAP : ".$declaration_sap_value.$complement, 0, 0, 'L');
 
         $pdf->SetXY($mentions_x, $mentions_y + 4);
         $pdf->Cell($mentions_width, 3.5, "50% des sommes versées ouvrent droit à crédit d'impôt (art. 199 sexdecies du CGI)", 0, 0, 'L');
@@ -225,7 +227,7 @@ class pdf_facture_sap_v3 extends pdf_crabe
             $pdf->SetFont('', 'I', 8);
             $pdf->SetX($this->marge_gauche);
             $pdf->SetTextColor(100, 100, 100);
-            $pdf->MultiCell($this->page_largeur - $this->marge_gauche - $this->marge_droite, 2, $outputlangs->transnoentities("Page").' '.$pdf->PageNo().'/\{nb\}', 0, 'C', 0);
+            $pdf->MultiCell($this->page_largeur - $this->marge_gauche - $this->marge_droite, 2, $outputlangs->transnoentities("Page").' '.$pdf->PageNo().'/'.$pdf->getAliasNbPages(), 0, 'C', 0);
         }
 
         if (!empty($this->watermark)) {
