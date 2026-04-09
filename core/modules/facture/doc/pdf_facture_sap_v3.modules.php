@@ -198,42 +198,5 @@ class pdf_facture_sap_v3 extends pdf_crabe
         return $sap_y + $hauteur_cadre + 2;
     }
 
-    protected function _pagefoot(&$pdf, $object, $outputlangs, $hidefreetext = 0, $heightforqrinvoice = 0)
-    {
-        global $conf;
-        $showdetails = getDolGlobalInt('MAIN_GENERATE_DOCUMENTS_SHOW_FOOT_DETAILS', 0);
-
-        $marge_basse = $this->marge_basse + 8;
-        $line = $this->page_hauteur - $marge_basse;
-
-        // Détails entreprise (condensés)
-        if ($showdetails) {
-            $pdf->SetFont('', '', 6.5);
-            $pdf->SetY($line);
-            $infos = '';
-            if (!empty($this->emetteur->capital)) $infos .= $outputlangs->transnoentities("CapitalOf", price($this->emetteur->capital, 0, $outputlangs, 0, 0, -1, $conf->currency)).' • ';
-            if (!empty($this->emetteur->tva_intra)) $infos .= $outputlangs->transnoentities("VATIntraShort").': '.$this->emetteur->tva_intra.' • ';
-            if (!empty($this->emetteur->idprof1) && $this->emetteur->country_code == 'FR') $infos .= 'SIRET: '.$this->emetteur->idprof1.' • ';
-            if (!empty($this->emetteur->idprof2)) $infos .= ($this->emetteur->country_code == 'FR' ? 'APE: ' : '').$this->emetteur->idprof2;
-            if ($infos) {
-                $pdf->SetX($this->marge_gauche);
-                $pdf->MultiCell($this->page_largeur - $this->marge_gauche - $this->marge_droite, 2, rtrim($infos, ' • '), 0, 'C', 0);
-            }
-        }
-
-        // Numéro de page
-        if (!$hidefreetext) {
-            $pdf->SetY(-8);
-            $pdf->SetFont('', 'I', 8);
-            $pdf->SetX($this->marge_gauche);
-            $pdf->SetTextColor(100, 100, 100);
-            $pdf->MultiCell($this->page_largeur - $this->marge_gauche - $this->marge_droite, 2, $outputlangs->transnoentities("Page").' '.$pdf->PageNo().'/'.$pdf->getAliasNbPages(), 0, 'C', 0);
-        }
-
-        if (!empty($this->watermark)) {
-            pdf_watermark($pdf, $outputlangs, $this->page_hauteur, $this->page_largeur, 'mm', $this->watermark);
-        }
-
-        return $marge_basse;
-    }
+    // _pagefoot géré par pdf_crabe (AliasNbPages appelé après le dernier _pagefoot)
 }
