@@ -1,26 +1,23 @@
 <?php
 require_once dirname(__FILE__) . '/../../../main.inc.php';
 if (!$user->admin) accessforbidden();
-llxHeader('', 'Diagnostic footer');
+llxHeader('', 'Check pdf_pagefoot showdetails=0');
 
-print '<h3>Valeurs de conf</h3>';
-print '<p>MAIN_GENERATE_DOCUMENTS_SHOW_FOOT_DETAILS = <strong>'.getDolGlobalString('MAIN_GENERATE_DOCUMENTS_SHOW_FOOT_DETAILS').'</strong> (int: '.getDolGlobalInt('MAIN_GENERATE_DOCUMENTS_SHOW_FOOT_DETAILS').')</p>';
-print '<p>INVOICE_FREE_TEXT = <strong>'.htmlspecialchars(getDolGlobalString('INVOICE_FREE_TEXT')).'</strong></p>';
-print '<p>MAIN_PDF_FREETEXT_HEIGHT = <strong>'.getDolGlobalInt('MAIN_PDF_FREETEXT_HEIGHT', 5).'</strong></p>';
-
-// Vérifier que notre _pagefoot est bien chargé
-require_once DOL_DOCUMENT_ROOT.'/custom/attestationsap/core/modules/facture/doc/pdf_facture_sap_v3.modules.php';
-$r = new ReflectionClass('pdf_facture_sap_v3');
-$method = $r->getMethod('_pagefoot');
-print '<h3>_pagefoot défini dans</h3>';
-print '<p>'.$method->getDeclaringClass()->getName().' — fichier: '.$method->getFileName().' ligne '.$method->getStartLine().'</p>';
-
-// Lire les 5 premières lignes de la méthode
-$file = file($method->getFileName());
-print '<pre style="font-size:10px;background:#1a2535;color:#c0d0e0;padding:8px">';
-for ($i = $method->getStartLine()-1; $i < min($method->getEndLine(), $method->getStartLine()+15); $i++) {
-    print ($i+1).': '.htmlspecialchars($file[$i]);
+$f = DOL_DOCUMENT_ROOT.'/core/lib/pdf.lib.php';
+$lines = file($f);
+// Lignes 1187 à 1320 (suite de pdf_pagefoot)
+print '<pre style="font-size:10px;background:#1a2535;color:#c0d0e0;padding:8px;overflow:auto;max-height:600px">';
+for ($n = 1186; $n < 1320; $n++) {
+    $line = $lines[$n];
+    $hi = stripos($line, 'profession') !== false
+       || stripos($line, 'idprof') !== false
+       || stripos($line, 'showdetails') !== false
+       || stripos($line, 'line3') !== false
+       || stripos($line, 'line4') !== false
+       || stripos($line, 'NAF') !== false;
+    if ($hi) print '<strong style="color:#7eb8f7">';
+    print ($n+1).': '.htmlspecialchars($line);
+    if ($hi) print '</strong>';
 }
 print '</pre>';
-
 llxFooter(); $db->close();
