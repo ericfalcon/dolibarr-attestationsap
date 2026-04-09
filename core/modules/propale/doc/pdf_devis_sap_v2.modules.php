@@ -148,10 +148,21 @@ class pdf_devis_sap_v2 extends pdf_azur
             $current_y = $pdf->GetY() + 2;
         }
 
+        // RIB en colonne gauche (si VIR)
+        if (empty($object->mode_reglement_code) || $object->mode_reglement_code == 'VIR') {
+            if ($object->fk_account > 0 || getDolGlobalInt('FACTURE_RIB_NUMBER')) {
+                $bankid = ($object->fk_account <= 0 ? getDolGlobalString('FACTURE_RIB_NUMBER') : $object->fk_account);
+                $account = new Account($this->db);
+                $account->fetch($bankid);
+                $posy_after_rib = pdf_bank($pdf, $outputlangs, $left_x, $current_y, $account, 0, $default_font_size);
+                $current_y = $posy_after_rib + 2;
+            }
+        }
+
         // Cadre SAP
         $col_width = $page_width / 2 - 2;
         $sap_x     = $this->marge_gauche;
-        $sap_y     = $current_y + 6;
+        $sap_y     = $current_y + 4;
         $sap_width = $col_width;
         $logo_width = 15;
         $logo_x     = $sap_x + 2;
@@ -196,9 +207,11 @@ class pdf_devis_sap_v2 extends pdf_azur
         $mentions_w = $sap_width - 4;
         $pdf->SetFont('', '', 6.5);
         $pdf->SetTextColor(0, 0, 0);
-        $num_sap = !empty($mysoc->idprof8) ? $mysoc->idprof8 : getDolGlobalString('ATTESTATIONSAP_ID_PRO', 'Non défini');
-        $pdf->SetXY($mentions_x, $mentions_y); $pdf->Cell($mentions_w, 3.5, "Déclaration SAP : ".$num_sap, 0, 2, 'L');
-        $pdf->SetX($mentions_x); $pdf->Cell($mentions_w, 3.5, "Assistance informatique à domicile mode prestataire", 0, 2, 'L');
+        $num_sap      = getDolGlobalString('ATTESTATIONSAP_DECL_NUM', !empty($mysoc->idprof8) ? $mysoc->idprof8 : '');
+        $nature_sap   = getDolGlobalString('ATTESTATIONSAP_NATURE_SERVICE', 'Services à la personne');
+        $mode_sap     = getDolGlobalString('ATTESTATIONSAP_MODE', 'prestataire') === 'mandataire' ? 'Mode mandataire' : 'Mode prestataire';
+        $pdf->SetXY($mentions_x, $mentions_y);
+        $pdf->MultiCell($mentions_w, 3.5, "Déclaration SAP : ".$num_sap.($nature_sap ? ' - '.$nature_sap : '').' - '.$mode_sap, 0, 'L');
         $pdf->SetX($mentions_x); $pdf->Cell($mentions_w, 3.5, "Les interventions ont lieu au domicile du client", 0, 2, 'L');
         $pdf->SetX($mentions_x); $pdf->Cell($mentions_w, 3.5, "50% ouvrent droit à crédit d'impôt (art. 199 sexdecies du CGI)", 0, 2, 'L');
         $pdf->SetX($mentions_x); $pdf->Cell($mentions_w, 3.5, "TVA non applicable - Article 293 B du CGI", 0, 0, 'L');
@@ -210,52 +223,17 @@ class pdf_devis_sap_v2 extends pdf_azur
 
     protected function _pagefoot(&$pdf, $object, $outputlangs, $hidefreetext = 0)
     {
-        global $conf;
-
-        $showdetails = getDolGlobalInt('MAIN_GENERATE_DOCUMENTS_SHOW_FOOT_DETAILS', 0);
-        $marge_basse = $this->marge_basse + 8;
-        $line = $this->page_hauteur - $marge_basse;
-
-        if ($showdetails && !empty($this->emetteur)) {
-            $pdf->SetFont('', '', 6.5);
-            $pdf->SetY($line);
-            $infos = array();
-
-            if (!empty($this->emetteur->capital)) {
-                $infos[] = $outputlangs->transnoentities("CapitalOf", price($this->emetteur->capital, 0, $outputlangs, 0, 0, -1, $conf->currency));
-            }
-            if (!empty($this->emetteur->tva_intra)) {
-                $infos[] = $outputlangs->transnoentities("VATIntraShort").': '.$this->emetteur->tva_intra;
-            }
-            if (!empty($this->emetteur->idprof1) && $this->emetteur->country_code == 'FR') {
-                $infos[] = 'SIRET: '.$this->emetteur->idprof1;
-            }
-            if (!empty($this->emetteur->idprof2)) {
-                $prefix = ($this->emetteur->country_code == 'FR') ? 'APE: ' : '';
-                $infos[] = $prefix.$this->emetteur->idprof2;
-            }
-
-            if (!empty($infos)) {
-                $pdf->SetX($this->marge_gauche);
-                $pdf->MultiCell($this->page_largeur - $this->marge_gauche - $this->marge_droite, 2, implode(' • ', $infos), 0, 'C', 0);
-                $line += 3;
-            }
-        }
-
-        if (!$hidefreetext) {
-            $pdf->SetY(-8);
-            $pdf->SetFont('', 'I', 8);
-            $pdf->SetX($this->marge_gauche);
-            $pdf->SetTextColor(100, 100, 100);
-            $pdf->MultiCell($this->page_largeur - $this->marge_gauche - $this->marge_droite, 2,
-                $outputlangs->transnoentities("Page").' '.$pdf->PageNo().'/\{nb\}', 0, 'C', 0);
-            $pdf->SetTextColor(0, 0, 0);
-        }
-
-        if (!empty($this->watermark)) {
-            pdf_watermark($pdf, $outputlangs, $this->page_hauteur, $this->page_largeur, 'mm', $this->watermark);
-        }
-
-        return $marge_basse;
+        // Déléguer à pdf_pagefoot avec émetteur vide pour masquer idprof/détails
+        // AliasNbPages() est appelé après par pdf_azur → {nb} résolu automatiquement
+        return pdf_pagefoot($pdf, $outputlangs, '', null,
+            $this->marge_basse,
+            $this->marge_gauche,
+            $this->page_hauteur,
+            $object,
+            0,    // showdetails = 0
+            1,    // hidefreetext = 1 (pas de texte libre propale)
+            $this->page_largeur,
+            $this->watermark
+        );
     }
 }
