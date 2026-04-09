@@ -50,13 +50,23 @@ if (empty($outputdir) || strpos($outputdir, DOL_DATA_ROOT) !== 0) {
 }
 
 // Chercher tous les PDFs de ce tiers
-$clean = preg_replace('/[^A-Za-z0-9_-]/', '', strtoupper($soc->name));
+// Même logique que dans index.php (pdf_attestation_sap::write_file)
+$clean = strtoupper(trim(preg_replace('/[^A-Z0-9\-]+/', '-', dol_sanitizeFileName(dol_string_unaccent($soc->name))), '-'));
 $pattern = $outputdir.'/attestation_sap_*-'.$clean.'-ATT*.pdf';
 $files = is_dir($outputdir) ? glob($pattern) : array();
-// Fallback avec dol_string_nospecial
+// Fallback sans unaccent
 if (empty($files)) {
-    $clean2 = preg_replace('/[^A-Za-z0-9_-]/', '', strtoupper(dol_string_nospecial($soc->name)));
+    $clean2 = strtoupper(trim(preg_replace('/[^A-Z0-9\-]+/', '-', dol_sanitizeFileName($soc->name)), '-'));
     $files = is_dir($outputdir) ? glob($outputdir.'/attestation_sap_*-'.$clean2.'-ATT*.pdf') : array();
+}
+// Fallback glob large
+if (empty($files)) {
+    $all = is_dir($outputdir) ? glob($outputdir.'/attestation_sap_*-ATT*.pdf') : array();
+    $socname_up = strtoupper(dol_string_unaccent($soc->name));
+    $files = array_filter($all, function($f) use ($socname_up) {
+        return stripos(basename($f), strtoupper(dol_sanitizeFileName(dol_string_unaccent($socname_up)))) !== false;
+    });
+    $files = array_values($files);
 }
 if (!$files) $files = array();
 rsort($files);
