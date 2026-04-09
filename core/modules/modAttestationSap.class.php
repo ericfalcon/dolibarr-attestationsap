@@ -46,7 +46,7 @@ class modAttestationSap extends DolibarrModules
         // --- Onglet sur la fiche tiers ---
         // Format : 'entity:+tabname:Label:@module:/module/page.php?id=__ID__'
         $this->tabs = array(
-            'thirdparty:+attestationsap:Attestations SAP:@attestationsap:/custom/attestationsap/tiers_tab.php?socid=__ID__',
+            'thirdparty:+attestationsap:Attestations SAP::@attestationsap:/custom/attestationsap/tiers_tab.php?socid=__ID__',
         );
 
         // --- Widgets tableau de bord ---
