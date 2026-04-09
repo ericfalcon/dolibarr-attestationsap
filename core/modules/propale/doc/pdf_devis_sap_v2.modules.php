@@ -212,9 +212,12 @@ class pdf_devis_sap_v2 extends pdf_azur
         $mode_sap     = getDolGlobalString('ATTESTATIONSAP_MODE', 'prestataire') === 'mandataire' ? 'Mode mandataire' : 'Mode prestataire';
         $pdf->SetXY($mentions_x, $mentions_y);
         $pdf->MultiCell($mentions_w, 3.5, "Déclaration SAP : ".$num_sap.($nature_sap ? ' - '.$nature_sap : '').' - '.$mode_sap, 0, 'L');
-        $pdf->SetX($mentions_x); $pdf->Cell($mentions_w, 3.5, "Les interventions ont lieu au domicile du client", 0, 2, 'L');
-        $pdf->SetX($mentions_x); $pdf->Cell($mentions_w, 3.5, "50% ouvrent droit à crédit d'impôt (art. 199 sexdecies du CGI)", 0, 2, 'L');
-        $pdf->SetX($mentions_x); $pdf->Cell($mentions_w, 3.5, "TVA non applicable - Article 293 B du CGI", 0, 0, 'L');
+        $pdf->SetX($mentions_x);
+        $pdf->MultiCell($mentions_w, 3.5, "Les interventions ont lieu au domicile du client", 0, 'L');
+        $pdf->SetX($mentions_x);
+        $pdf->MultiCell($mentions_w, 3.5, "50% ouvrent droit à crédit d'impôt (art. 199 sexdecies du CGI)", 0, 'L');
+        $pdf->SetX($mentions_x);
+        $pdf->MultiCell($mentions_w, 3.5, "TVA non applicable - Article 293 B du CGI", 0, 'L');
         $pdf->SetTextColor(0, 0, 0);
         $pdf->SetDrawColor(0, 0, 0);
 

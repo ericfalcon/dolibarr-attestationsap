@@ -191,14 +191,11 @@ class pdf_facture_sap_v3 extends pdf_crabe
 
         $pdf->SetXY($mentions_x, $mentions_y);
         $pdf->MultiCell($mentions_width, 3.5, "Déclaration SAP : ".$declaration_sap_value.$complement, 0, 'L');
-
-        $pdf->SetXY($mentions_x, $mentions_y + 4);
+        $pdf->SetX($mentions_x);
         $pdf->MultiCell($mentions_width, 3.5, "50% des sommes versées ouvrent droit à crédit d'impôt (art. 199 sexdecies du CGI)", 0, 'L');
-
-        $pdf->SetXY($mentions_x, $mentions_y + 8);
+        $pdf->SetX($mentions_x);
         $pdf->MultiCell($mentions_width, 3.5, "Conservez cette attestation fiscale pour votre déclaration de revenus", 0, 'L');
-
-        $pdf->SetXY($mentions_x, $mentions_y + 12);
+        $pdf->SetX($mentions_x);
         $pdf->MultiCell($mentions_width, 3.5, "TVA non applicable - Article 293 B du CGI", 0, 'L');
 
         return $sap_y + $hauteur_cadre + 2; // La colonne droite (totaux) est gérée par le parent
