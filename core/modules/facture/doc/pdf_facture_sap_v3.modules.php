@@ -128,13 +128,13 @@ class pdf_facture_sap_v3 extends pdf_crabe
             }
         }
 
-        // Cadre SAP en pleine largeur
+        // Cadre SAP en colonne gauche (sous le RIB)
         $sap_x      = $this->marge_gauche;
-        $sap_y      = $current_y + 6;
-        $sap_width  = $page_width;
-        $logo_width = 18;
+        $sap_y      = $current_y + 4;
+        $sap_width  = $page_width / 2 - 2;  // moitié gauche
+        $logo_width = 14;
         $logo_x     = $sap_x + 2;
-        $logo_y     = $sap_y + 1.5;
+        $logo_y     = $sap_y + 2;
 
         // Trouver le logo SAP : priorité à ATTESTATIONSAP_LOGO
         $logo_sap = '';
@@ -154,7 +154,7 @@ class pdf_facture_sap_v3 extends pdf_crabe
         }
 
         // Hauteur du cadre
-        $hauteur_cadre = 24;
+        $hauteur_cadre = 26;
 
         // Encadrer toute la largeur
         $pdf->SetDrawColor(0, 0, 100);
@@ -176,9 +176,9 @@ class pdf_facture_sap_v3 extends pdf_crabe
         // Mentions
         $mentions_x = $titre_x;
         $mentions_y = $sap_y + 7;
-        $mentions_width = $sap_width - ($titre_x - $sap_x) - 2;
+        $mentions_width = $sap_width - ($titre_x - $sap_x) - 3;
 
-        $pdf->SetFont('', '', 6.5);
+        $pdf->SetFont('', '', 5.8);
         $pdf->SetTextColor(0, 0, 0);
 
         $declaration_sap_value = getDolGlobalString('ATTESTATIONSAP_DECL_NUM', empty($this->emetteur->idprof8) ? '' : $this->emetteur->idprof8);
@@ -198,7 +198,7 @@ class pdf_facture_sap_v3 extends pdf_crabe
         $pdf->SetXY($mentions_x, $mentions_y + 12);
         $pdf->Cell($mentions_width, 3.5, "TVA non applicable - Article 293 B du CGI", 0, 0, 'L');
 
-        return $sap_y + $hauteur_cadre + 2;
+        return $sap_y + $hauteur_cadre + 2; // La colonne droite (totaux) est gérée par le parent
     }
 
     // Override _pagefoot : masquer texte libre et détails entreprise, garder numéro de page
