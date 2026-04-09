@@ -162,7 +162,7 @@ class pdf_devis_sap_v2 extends pdf_azur
         // Cadre SAP
         $col_width = $page_width / 2 - 2;
         $sap_x     = $this->marge_gauche;
-        $sap_y     = $current_y + 4;
+        $sap_y     = $current_y + 2;
         $sap_width = $col_width;
         $logo_width = 15;
         $logo_x     = $sap_x + 2;
@@ -186,7 +186,7 @@ class pdf_devis_sap_v2 extends pdf_azur
             elseif (is_readable($logodir.'/logos/logo-sap.png'))  $logo_sap = $logodir.'/logos/logo-sap.png';
         }
 
-        $hauteur_cadre = 34;
+        $hauteur_cadre = 28;
         $pdf->SetDrawColor(0, 0, 100);
         $pdf->SetLineWidth(0.4);
         $pdf->RoundedRect($sap_x, $sap_y, $sap_width, $hauteur_cadre, 2, '1234', 'D');
@@ -203,7 +203,7 @@ class pdf_devis_sap_v2 extends pdf_azur
 
         // Mentions
         $mentions_x = $sap_x + 2;
-        $mentions_y = $logo_y + 11;
+        $mentions_y = $logo_y + 9;
         $mentions_w = $sap_width - 4;
         $pdf->SetFont('', '', 6.5);
         $pdf->SetTextColor(0, 0, 0);
