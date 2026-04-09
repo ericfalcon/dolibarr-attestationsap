@@ -28,18 +28,21 @@ class pdf_facture_sap_v3 extends pdf_crabe
         global $conf;
 
         // Forcer la désactivation de l'adresse de livraison et du texte libre pour ce modèle uniquement
-        $old_shipping = getDolGlobalInt('INVOICE_SHOW_SHIPPING_ADDRESS');
-        $old_free     = getDolGlobalString('INVOICE_FREE_TEXT');
+        $old_shipping    = getDolGlobalInt('INVOICE_SHOW_SHIPPING_ADDRESS');
+        $old_free        = getDolGlobalString('INVOICE_FREE_TEXT');
+        $old_foot_details = getDolGlobalInt('MAIN_GENERATE_DOCUMENTS_SHOW_FOOT_DETAILS');
 
-        $conf->global->INVOICE_SHOW_SHIPPING_ADDRESS = 0;
-        $conf->global->INVOICE_FREE_TEXT             = '';
+        $conf->global->INVOICE_SHOW_SHIPPING_ADDRESS       = 0;
+        $conf->global->INVOICE_FREE_TEXT                    = '';
+        $conf->global->MAIN_GENERATE_DOCUMENTS_SHOW_FOOT_DETAILS = 0;
 
         // Appeler le parent
         $result = parent::write_file($object, $outputlangs, $srctemplatepath, $hidedetails, $hidedesc, $hideref);
 
         // Restaurer immédiatement
         if ($old_shipping !== null) $conf->global->INVOICE_SHOW_SHIPPING_ADDRESS = $old_shipping;
-        $conf->global->INVOICE_FREE_TEXT = $old_free;
+        $conf->global->INVOICE_FREE_TEXT                    = $old_free;
+        $conf->global->MAIN_GENERATE_DOCUMENTS_SHOW_FOOT_DETAILS = $old_foot_details;
 
         return $result;
     }
