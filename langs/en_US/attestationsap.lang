@@ -1,42 +1,93 @@
-# Translation file
+# htdocs/custom/attestationsap/langs/en_US/attestationsap.lang
+# English translations — AttestationSAP v2.1
 
-#
-# Generic
-#
-
-# Module label 'ModuleAttestationSAPName'
 ModuleAttestationSAPName = AttestationSAP
-# Module description 'ModuleAttestationSAPDesc'
-ModuleAttestationSAPDesc = AttestationSAP description
+ModuleAttestationSAPDesc = Personal Services module: quotes, invoices and fiscal attestations
 
-#
-# Admin page
-#
-AttestationSAPSetup = AttestationSAP setup
-Settings = Settings
-AttestationSAPSetupPage = AttestationSAP setup page
-NewSection=New section
-ATTESTATIONSAP_MYPARAM1 = My param 1
-ATTESTATIONSAP_MYPARAM1Tooltip = My param 1 tooltip
-ATTESTATIONSAP_MYPARAM2=My param 2
-ATTESTATIONSAP_MYPARAM2Tooltip=My param 2 tooltip
+AttestationSap = AttestationSAP
+AttestationSapDescription = Personal Services (SAP) module: quotes, invoices and fiscal attestations
 
+# Menus
+Dashboard = Dashboard
+GenerateAttestations = Generate attestations
+ExistingAttestations = Existing attestations
+SapSettings = SAP Settings
+AboutHelp = Help
+NewSapProposal = New SAP quote
+NewSapInvoice = New SAP invoice
 
-#
-# About page
-#
-About = About
-AttestationSAPAbout = About AttestationSAP
-AttestationSAPAboutPage = AttestationSAP about page
+# Titles
+AttestationsFiscalesSAP = SAP Fiscal Attestations
+GenerationAttestations = Fiscal attestation generation
+ConfigModuleAttestationSap = AttestationSAP module configuration
 
-#
-# Sample page
-#
-AttestationSAPArea = Home AttestationSAP
-MyPageName = My page name
+# Generic labels
+Year = Year
+FiscalYear = Fiscal year
+Client = Client
+Hours = Hours
+AmountTTC = Total incl. VAT
+TaxCredit = Tax credit
+Generate = Generate
+Send = Send
+Delete = Delete
+Download = Download
+NotSent = Not sent
+Sent = Sent on
 
-#
-# Sample widget
-#
-MyWidget = My widget
-MyWidgetDescription = My widget description
+# Status
+StatusGenerated = Generated
+StatusSent = Sent
+StatusArchived = Archived
+
+# Configuration
+HabilitationType = SAP authorization type
+Declaration = Prior declaration (NOVA)
+Agrement = Prefectural authorization
+DeclarationNum = SAP declaration number
+NatureService = Service type
+ModeIntervention = Intervention mode
+ModePrestataire = Provider mode
+ModeMandataire = Agent mode
+IntervenantLabel = Intervener(s)
+SignataireName = Signatory name
+SapCategory = SAP product category
+SapKeywords = SAP keywords (fallback)
+FactureModels = SAP invoice templates
+ShowCreditImpot = Show 50% tax credit
+ShowTvaExoneree = VAT not applicable mention
+EmailSubject = Email subject
+EmailBody = Email body
+LogoSap = SAP logo
+
+# Legal mentions
+MentionCGI199 = Pursuant to article 199 sexdecies of the French Tax Code
+Mention293B = VAT not applicable - Article 293 B of the French Tax Code
+MentionCreditImpot50 = 50% of amounts paid entitle to tax credit
+MentionConserver = Keep this document for your tax return
+MentionDomicile = Services were provided at the beneficiary's home
+MentionIntervenant = Intervener who provided services at the beneficiary's home
+
+# Messages
+SettingsSaved = Settings saved successfully.
+SettingsError = Error saving settings.
+LogoUploaded = Logo uploaded successfully.
+LogoDeleted = SAP logo deleted.
+AttestationGenerated = Attestation generated successfully.
+AttestationGenerationError = Error generating attestation.
+NoInvoicesFound = No SAP invoices found for year %s with configured templates.
+NoSapLines = Invoices found but no SAP lines detected. Check your settings.
+DeclarationNumRequired = SAP declaration number is required.
+AgrementNumRequired = SAP authorization number is required.
+SignaireRequired = Signatory name is required.
+MissingEmail = Client has no email address configured.
+IntervenantNotConfigured = Warning: Intervener not configured — Set it in SAP Settings
+
+BoxAttestationSAP = SAP Widget (quotes, invoices, attestations)
+LastSapProposals = Last %s SAP quotes
+LastSapInvoices = Last %s SAP invoices
+NoSapProposal = No SAP quote
+NoSapInvoice = No SAP invoice
+
+# SAP Activities
+ActivitesSAP = SAP activities performed
