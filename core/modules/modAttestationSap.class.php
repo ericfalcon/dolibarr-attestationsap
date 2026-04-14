@@ -17,7 +17,7 @@ class modAttestationSap extends DolibarrModules
         $this->db = $db;
 
         // --- Identité du module ---
-        $this->numero          = 500100;  // ID interne (unique)
+        $this->numero          = 193063;  // ID Dolistore officiel
         $this->rights_class    = 'attestationsap';
         $this->family          = 'financial';
         $this->module_position = '90';
