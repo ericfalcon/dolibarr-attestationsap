@@ -1,19 +1,31 @@
-
 <?php
+
 // htdocs/custom/attestationsap/index.php
+
 // Complet : Générer (lot + suivi), Attestations existantes (filtres), Tableau de bord (devis/factures/attestations),
-// et journalisation Agenda (apparait dans “10 derniers événements” du tiers).
+
+// et journalisation Agenda (apparait dans "10 derniers événements" du tiers).
 
 $res = 0;
+
 if (!$res && !empty($_SERVER["CONTEXT_DOCUMENT_ROOT"])) $res = @include $_SERVER["CONTEXT_DOCUMENT_ROOT"]."/main.inc.php";
+
 $tmp = empty($_SERVER['SCRIPT_FILENAME']) ? '' : $_SERVER['SCRIPT_FILENAME']; $tmp2 = realpath(__FILE__); $i = strlen($tmp) - 1; $j = strlen($tmp2) - 1;
+
 while ($i > 0 && $j > 0 && isset($tmp[$i]) && isset($tmp2[$j]) && $tmp[$i] == $tmp2[$j]) { $i--; $j--; }
+
 if (!$res && $i > 0 && file_exists(substr($tmp, 0, ($i + 1))."/main.inc.php")) $res = @include substr($tmp, 0, ($i + 1))."/main.inc.php";
+
 if (!$res && $i > 0 && file_exists(dirname(substr($tmp, 0, ($i + 1)))."/main.inc.php")) $res = @include dirname(substr($tmp, 0, ($i + 1)))."/main.inc.php";
+
 if (!$res && file_exists("../main.inc.php")) $res = @include "../main.inc.php";
+
 if (!$res && file_exists("../../main.inc.php")) $res = @include "../../main.inc.php";
+
 if (!$res && file_exists("../../../main.inc.php")) $res = @include "../../../main.inc.php";
+
 if (!$res) die("Include of main fails");
+
 require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/societe/class/societe.class.php';
@@ -48,16 +60,17 @@ $attPdfClass = 'pdf_attestation_sap';
 if (file_exists($attPdf)) require_once $attPdf;
 
 /* ===================== Métadonnées envoi (.sent.json) ===================== */
+
 function att_sent_meta_path($attDir, $bn) { return rtrim($attDir, '/').'/'.$bn.'.sent.json'; }
 
 function att_is_sent($attDir, $bn) {
     $meta = att_sent_meta_path($attDir, $bn);
     if (is_file($meta) && is_readable($meta)) {
-        $raw = @file_get_contents($meta);
+        $raw  = @file_get_contents($meta);
         $info = @json_decode($raw, true);
         if (is_array($info)) {
             $info['sent'] = true;
-            if (empty($info['date_ts'])) $info['date_ts'] = @filemtime($meta);
+            if (empty($info['date_ts']))  $info['date_ts']  = @filemtime($meta);
             if (empty($info['date_txt']) && !empty($info['date_ts'])) $info['date_txt'] = dol_print_date($info['date_ts'], 'dayhour');
             return $info;
         } else {
@@ -81,14 +94,50 @@ function att_mark_sent($attDir, $bn, $socid, $email, $year, $user) {
 
 function att_delete_with_meta($attDir, $bn) {
     $full = rtrim($attDir,'/').'/'.$bn;
-    $ok1 = true; $ok2 = true;
+    $ok1  = true; $ok2 = true;
     if (is_file($full)) $ok1 = @unlink($full);
     $meta = att_sent_meta_path($attDir, $bn);
     if (is_file($meta)) $ok2 = @unlink($meta);
     return ($ok1 && $ok2);
 }
 
+/* ===================== Helpers email : template configurable ===================== */
+
+/**
+ * Retourne le sujet email depuis la config (Section 9) ou une valeur par défaut.
+ * Remplace {YEAR} par l'année.
+ */
+function sap_get_email_subject($year) {
+    $tpl = getDolGlobalString('ATTESTATIONSAP_EMAIL_SUBJECT', '');
+    if (!empty($tpl)) {
+        return str_replace('{YEAR}', (int)$year, $tpl);
+    }
+    return 'Attestation fiscale SAP '.(int)$year;
+}
+
+/**
+ * Retourne le corps email depuis la config (Section 9) ou un texte par défaut.
+ * Remplace {YEAR}, {CLIENT}, {NOM_SOCIETE}.
+ */
+function sap_get_email_body($year, $clientName = '') {
+    $tpl = getDolGlobalString('ATTESTATIONSAP_EMAIL_BODY', '');
+    if (!empty($tpl)) {
+        return str_replace(
+            array('{YEAR}', '{CLIENT}', '{NOM_SOCIETE}'),
+            array((int)$year, $clientName, getDolGlobalString('MAIN_INFO_SOCIETE_NOM')),
+            $tpl
+        );
+    }
+    // Texte par défaut
+    $nom = getDolGlobalString('MAIN_INFO_SOCIETE_NOM');
+    return "Bonjour".(!empty($clientName) ? " " . $clientName : "").",\n\n"
+         . "Veuillez trouver ci-joint votre attestation fiscale pour l'année ".(int)$year.".\n\n"
+         . "Cette attestation est à conserver avec votre déclaration de revenus.\n\n"
+         . "Cordialement,\n".$nom;
+}
+
 /* ===================== Année fiscale ===================== */
+
 $yearParam = GETPOST('year','int');
 if (!empty($yearParam)) {
     $year = (int) $yearParam;
@@ -101,12 +150,13 @@ if (!empty($yearParam)) {
     }
 }
 
-$url_propal  = DOL_URL_ROOT.'/comm/propal/card.php?action=create&sap_mode=1&model=devis_sap_v2&modelpdf=devis_sap_v2&doctemplate=';
-$url_facture = DOL_URL_ROOT.'/compta/facture/card.php?action=create&sap_mode=1&model=facture_sap_v3&modelpdf=facture_sap_v3&doctemplate=';
+$url_propal   = DOL_URL_ROOT.'/comm/propal/card.php?action=create&sap_mode=1&model=devis_sap_v2&modelpdf=devis_sap_v2&doctemplate=';
+$url_facture  = DOL_URL_ROOT.'/compta/facture/card.php?action=create&sap_mode=1&model=facture_sap_v3&modelpdf=facture_sap_v3&doctemplate=';
 
 /* ===================== Sélection des factures (modèles STRICTS) ===================== */
+
 function sap_parse_models($rawCsv) {
-    $out = array();
+    $out   = array();
     $parts = preg_split('/[,;]+/', (string)$rawCsv);
     for ($i=0; $i<count($parts); $i++) {
         $m = trim($parts[$i]);
@@ -120,7 +170,7 @@ function sap_parse_models($rawCsv) {
 function sap_build_model_where($db, $models) {
     $parts = array();
     for ($i=0; $i<count($models); $i++) {
-        $m = $db->escape($models[$i]);
+        $m       = $db->escape($models[$i]);
         $parts[] = "(f.model_pdf = '".$m."' OR f.model_pdf LIKE '".$m."%')";
     }
     return $parts ? '('.implode(' OR ', $parts).')' : '';
@@ -129,7 +179,6 @@ function sap_build_model_where($db, $models) {
 /** Factures candidates année $year (option socid) — STRICT sur modèles cochés */
 function sap_find_factures_for_year($db, $year, $socid = 0) {
     global $conf;
-
     $out = array();
     if ($year < 1900) return $out;
 
@@ -140,8 +189,8 @@ function sap_find_factures_for_year($db, $year, $socid = 0) {
 
     $rawList = getDolGlobalString('ATTESTATIONSAP_FACTURE_MODEL_LIST','');
     if ($rawList === '') $rawList = getDolGlobalString('ATTESTATIONSAP_FACTURE_MODEL_NAME','facture_sap_v3'); // compat
-    $models = sap_parse_models($rawList);
-    $wModel = sap_build_model_where($db, $models);
+    $models  = sap_parse_models($rawList);
+    $wModel  = sap_build_model_where($db, $models);
     if ($wModel === '') return $out;
 
     $wSoc = ($socid > 0) ? " AND f.fk_soc = ".((int)$socid) : "";
@@ -149,11 +198,11 @@ function sap_find_factures_for_year($db, $year, $socid = 0) {
     $sql = "SELECT f.rowid, f.ref, f.fk_soc, f.datef, f.date_valid, f.total_ttc, f.model_pdf
             FROM ".MAIN_DB_PREFIX."facture f
             WHERE f.entity = ".((int)$conf->entity)."
-              AND f.type = 0
-              AND f.fk_statut = 2
-              AND COALESCE(f.datef, f.date_valid) BETWEEN $ds AND $de
-              AND $wModel
-              $wSoc
+            AND f.type = 0
+            AND f.fk_statut = 2
+            AND COALESCE(f.datef, f.date_valid) BETWEEN $ds AND $de
+            AND $wModel
+            $wSoc
             ORDER BY COALESCE(f.datef, f.date_valid) ASC";
 
     $res = $db->query($sql);
@@ -171,6 +220,7 @@ function sap_find_factures_for_year($db, $year, $socid = 0) {
 }
 
 /* ============== Repérage lignes SAP & regroupement par client ============== */
+
 function sap_is_line_sap($db, $ln, $sap_cat_id, $needles) {
     // Option D : si catégorie produit SAP configurée → critère OBLIGATOIRE
     if ($sap_cat_id > 0) {
@@ -196,8 +246,7 @@ function sap_is_line_sap($db, $ln, $sap_cat_id, $needles) {
 }
 
 function sap_is_client_sap($db, $socid, $client_cat_id) {
-    // Si catégorie tiers SAP configurée → vérifier que le client en fait partie
-    if ($client_cat_id <= 0) return true; // pas de filtre
+    if ($client_cat_id <= 0) return true;
     $q = "SELECT 1 FROM ".MAIN_DB_PREFIX."categorie_societe WHERE fk_soc=".(int)$socid." AND fk_categorie=".(int)$client_cat_id." LIMIT 1";
     $r = $db->query($q);
     return ($r && $db->fetch_object($r)) ? true : false;
@@ -205,14 +254,14 @@ function sap_is_client_sap($db, $socid, $client_cat_id) {
 
 function sap_group_clients_from_invoices($db, $invoices, $sap_cat_id, $services_fallback, $client_cat_id = 0) {
     $needles = array();
-    $lines = preg_split('/\r?\n/', (string)$services_fallback);
+    $lines   = preg_split('/\r?\n/', (string)$services_fallback);
     for ($i=0; $i<count($lines); $i++) {
         $s = trim(dol_string_unaccent($lines[$i]));
         if ($s !== '') $needles[] = dol_strtolower($s);
     }
 
     $byClient = array();
-    $names = array();
+    $names    = array();
 
     if (!empty($invoices)) {
         $socids = array();
@@ -225,7 +274,7 @@ function sap_group_clients_from_invoices($db, $invoices, $sap_cat_id, $services_
     }
 
     for ($i=0; $i<count($invoices); $i++) {
-        $f = $invoices[$i];
+        $f     = $invoices[$i];
         $socid = (int)$f->fk_soc;
         if (!isset($byClient[$socid])) {
             $byClient[$socid] = array(
@@ -259,12 +308,14 @@ function sap_group_clients_from_invoices($db, $invoices, $sap_cat_id, $services_
 }
 
 /* ===================== UI : Header + actions ===================== */
+
 llxHeader('', 'Attestations fiscales SAP');
+
 print '<style>
 .actions-bar{ display:flex; flex-wrap:wrap; align-items:center; gap:10px; justify-content:flex-start; margin:12px 0 14px 0; }
 .actions-bar .cta, .actions-bar .cta-secondary, .button, .butAction, .butActionDelete{
-  font-size:14px; font-weight:600; line-height:1.15; padding:10px 16px; border-radius:8px;
-  text-decoration:none; display:inline-flex; align-items:center; gap:8px; box-shadow:0 1px 2px rgba(0,0,0,.06);
+    font-size:14px; font-weight:600; line-height:1.15; padding:10px 16px; border-radius:8px;
+    text-decoration:none; display:inline-flex; align-items:center; gap:8px; box-shadow:0 1px 2px rgba(0,0,0,.06);
 }
 .info{ padding:10px 12px; border-radius:6px; margin:8px 0 18px 0; background:#f9f9ff; }
 .badge-sent{background:#e6ffed;color:#136c2e;border:1px solid #a3d9a5;padding:2px 6px;border-radius:12px;font-size:12px}
@@ -277,41 +328,34 @@ print '<style>
 print '<div class="actions-bar">';
 print '  <a class="cta butAction" href="'.htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES).'?tab=dashboard">TABLEAU DE BORD</a>';
 print '  <a class="cta butAction" href="'.htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES).'?tab=generate&year='.(int)$year.'">GÉNÉRER LES ATTESTATIONS</a>';
-
-// Mode sombre géré via ihm.php (Configuration > Affichage > Style CSS)
 print '  <a class="cta-secondary button" href="'.htmlspecialchars($url_propal, ENT_QUOTES).'">NOUVEAU DEVIS SAP</a>';
 print '  <a class="cta-secondary button" href="'.htmlspecialchars($url_facture, ENT_QUOTES).'">NOUVELLE FACTURE SAP</a>';
 print '</div>';
 
-print '<div class="info"><strong>Rappel :</strong> seules les factures émises avec le(s) modèle(s) configuré(s) (ex. <code>facture_sap_v3</code>) sont prises en compte. Ne coche pas <code>crabe</code> si tu veux exclure les entreprises.</div>';
+print '<div class="info"><strong>Rappel :</strong> seules les factures émises avec le(s) modèle(s) configuré(s) (ex. <code>facture_sap_v3</code>) sont prises en compte.</div>';
 
 /* ===================== ACTIONS : email / suppression ===================== */
 
 // Journaliser un envoi dans Agenda
 function sap_log_send_event($db, $socid, $bn, $year, $user) {
     global $conf;
-    if (empty($conf->agenda->enabled)) return; // Agenda désactivé
+    if (empty($conf->agenda->enabled)) return;
     $socid = (int)$socid; if ($socid <= 0) return;
-
     $ac = new ActionComm($db);
-    $ac->type_code    = 'AC_EMAIL';
-    $ac->label        = 'Attestation fiscale SAP '.$year.' envoyée';
-    $ac->note_private = 'Fichier : '.$bn."
-".'Envoyé depuis le module AttestationSAP.';
-    $ac->datep        = dol_now();
-    $ac->datef        = $ac->datep;
-    $ac->durationp    = 0;
-    $ac->fk_soc       = $socid;
+    $ac->type_code        = 'AC_EMAIL';
+    $ac->label            = 'Attestation fiscale SAP '.$year.' envoyée';
+    $ac->note_private     = 'Fichier : '.$bn."\n".'Envoyé depuis le module AttestationSAP.';
+    $ac->datep            = dol_now();
+    $ac->datef            = $ac->datep;
+    $ac->durationp        = 0;
+    $ac->fk_soc           = $socid;
     $ac->socpeopleassigned = array();
-    $ac->authorid     = $user->id;
-    $ac->userownerid  = $user->id;
-    $ac->percentage   = 100;
-    // Lier à la société pour apparaître dans les événements du tiers
-    $ac->fk_element   = $socid;
-    $ac->elementtype  = 'societe';
-
-    $res = $ac->create($user);
-    // pas de setEventMessages ici pour éviter le bruit, c'est une aide silencieuse.
+    $ac->authorid         = $user->id;
+    $ac->userownerid      = $user->id;
+    $ac->percentage       = 100;
+    $ac->fk_element       = $socid;
+    $ac->elementtype      = 'societe';
+    $ac->create($user);
 }
 
 // Régénération unitaire
@@ -322,16 +366,16 @@ if ($action === 'generate_one') {
         require_once DOL_DOCUMENT_ROOT.'/societe/class/societe.class.php';
         $soc = new Societe($db);
         if ($soc->fetch($socid) > 0) {
-            $sap_cat_id    = (int)getDolGlobalString('ATTESTATIONSAP_CATEGORY_ID', 0);
-            $client_cat_id = (int)getDolGlobalString('ATTESTATIONSAP_CLIENT_CAT_ID', 0);
-            $services_fb   = getDolGlobalString('ATTESTATIONSAP_SERVICES', '');
-            $all_invoices  = sap_find_factures_for_year($db, $year, $socid);
-            $byClient      = sap_group_clients_from_invoices($db, $all_invoices, $sap_cat_id, $services_fb, $client_cat_id);
+            $sap_cat_id   = (int)getDolGlobalString('ATTESTATIONSAP_CATEGORY_ID', 0);
+            $client_cat_id= (int)getDolGlobalString('ATTESTATIONSAP_CLIENT_CAT_ID', 0);
+            $services_fb  = getDolGlobalString('ATTESTATIONSAP_SERVICES', '');
+            $all_invoices = sap_find_factures_for_year($db, $year, $socid);
+            $byClient     = sap_group_clients_from_invoices($db, $all_invoices, $sap_cat_id, $services_fb, $client_cat_id);
             if (!empty($byClient[$socid])) {
                 $sum  = $byClient[$socid];
                 $path = pdf_attestation_sap::write_file($soc, $sum['total_ttc'], $sum['hours'], $year, $sum['invoices']);
                 if ($path) setEventMessages('Attestation régénérée : '.basename($path), null, 'mesgs');
-                else setEventMessages('Erreur lors de la régénération.', null, 'errors');
+                else       setEventMessages('Erreur lors de la régénération.', null, 'errors');
             } else {
                 setEventMessages('Aucune facture SAP payée trouvée pour ce client en '.$year.'.', null, 'warnings');
             }
@@ -341,14 +385,16 @@ if ($action === 'generate_one') {
     exit;
 }
 
-// Envoi unitaire
+// -----------------------------------------------------------------------
+// CORRECTION BUG 1 : envoi unitaire — utilisation du template configuré
+// CORRECTION BUG 2 : msgishtml = 0 → évite les pièces jointes corrompues
+// -----------------------------------------------------------------------
 if ($action === 'sendmail') {
     $socid = GETPOST('socid','int');
     $fileb = GETPOST('file','alpha');
     if ($socid > 0 && !empty($fileb) && $year > 0) {
         $file = $attDir.'/'.$fileb;
-        $soc = new Societe($db);
-
+        $soc  = new Societe($db);
         if (!file_exists($file)) {
             setEventMessages('Le fichier PDF n\'existe pas ('.$fileb.').', null, 'errors');
         } elseif ($soc->fetch($socid) <= 0) {
@@ -356,14 +402,17 @@ if ($action === 'sendmail') {
         } elseif (empty($soc->email)) {
             setEventMessages('Le client n\'a pas d\'adresse email configurée.', null, 'warnings');
         } else {
-            $subject = 'Attestation fiscale SAP '.$year;
+            // BUG 1 CORRIGÉ : lecture du template Section 9
+            $subject = sap_get_email_subject($year);
+            $message = sap_get_email_body($year, $soc->name);
+
             $from = getDolGlobalString('MAIN_INFO_SOCIETE_MAIL');
             if (empty($from)) $from = 'noreply@'.(isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost');
-            $message = "Bonjour,\n\nVeuillez trouver ci-joint votre attestation fiscale pour l'année ".$year.".\n\n"
-                     . "Cette attestation est à conserver avec votre déclaration de revenus.\n\n"
-                     . "Cordialement,\n".getDolGlobalString('MAIN_INFO_SOCIETE_NOM');
 
             $mail = new CMailFile($subject, $soc->email, $from, $message, array($file));
+            // BUG 2 CORRIGÉ : forcer text/plain pour éviter ATT00001.TXT sur Outlook
+            $mail->msgishtml = 0;
+
             if ($mail->sendfile()) {
                 att_mark_sent($attDir, $fileb, $socid, $soc->email, $year, $user);
                 sap_log_send_event($db, $socid, $fileb, $year, $user);
@@ -377,7 +426,9 @@ if ($action === 'sendmail') {
     }
 }
 
-// Envoi / suppression en lot
+// -----------------------------------------------------------------------
+// CORRECTION BUG 1 + BUG 2 : envoi en lot
+// -----------------------------------------------------------------------
 if ($action === 'sendmail_bulk') {
     $token = GETPOST('token','alpha');
     if (empty($token) || $token !== $_SESSION['newtoken']) accessforbidden();
@@ -396,19 +447,16 @@ if ($action === 'sendmail_bulk') {
 
     if (empty($items)) {
         setEventMessages('Aucun élément sélectionné.', null, 'warnings');
-    } else if ($doDelete) {
+    } elseif ($doDelete) {
         if (empty($user->admin)) accessforbidden();
-
         $deleted = 0; $skipped = 0;
         for ($i=0; $i<count($items); $i++) {
-            $it = $items[$i];
+            $it    = $items[$i];
             $parts = explode('|', $it, 2);
             $fileb = (count($parts) === 2) ? $parts[1] : $parts[0];
-
             $ok = preg_match('/^attestation_sap_(\d{4})\-([A-Z0-9\-]+)\-ATT(\d+)\.pdf$/i', $fileb)
-               || preg_match('/^attestation_sap_(\d+)_\d{4}\.pdf$/i', $fileb);
+                || preg_match('/^attestation_sap_(\d+)_\d{4}\.pdf$/i', $fileb);
             if (!$ok) { $skipped++; continue; }
-
             if (att_delete_with_meta($attDir, $fileb)) $deleted++; else $skipped++;
         }
         $msg = 'Suppression en lot : '.$deleted.' fichier(s) supprimé(s), '.$skipped.' ignoré(s).';
@@ -416,39 +464,44 @@ if ($action === 'sendmail_bulk') {
     } else {
         $from = getDolGlobalString('MAIN_INFO_SOCIETE_MAIL');
         if (empty($from)) $from = 'noreply@'.(isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost');
-        $subject = 'Attestation fiscale SAP '.$year;
+
+        // BUG 1 CORRIGÉ : sujet depuis le template (sans le client encore, résolu par boucle)
+        $subjectTpl = getDolGlobalString('ATTESTATIONSAP_EMAIL_SUBJECT', '');
+        $bodyTpl    = getDolGlobalString('ATTESTATIONSAP_EMAIL_BODY', '');
 
         $ok = 0; $ko = 0; $skip = 0;
-
         for ($i=0; $i<count($items); $i++) {
-            $it = $items[$i];
+            $it    = $items[$i];
             $parts = explode('|', $it, 2);
             if (count($parts) !== 2) { $skip++; continue; }
             $socid = (int) $parts[0];
             $fileb = $parts[1];
             if ($socid <= 0 || empty($fileb)) { $skip++; continue; }
-
-            $file = $attDir.'/'.$fileb;
+            $file  = $attDir.'/'.$fileb;
             if (!file_exists($file)) { $ko++; continue; }
 
             $soc = new Societe($db);
             if ($soc->fetch($socid) <= 0 || empty($soc->email)) { $skip++; continue; }
 
-            $message = "Bonjour,\n\nVeuillez trouver ci-joint votre attestation fiscale pour l'année ".$year.".\n\n"
-                     . "Cette attestation est à conserver avec votre déclaration de revenus.\n\n"
-                     . "Cordialement,\n".getDolGlobalString('MAIN_INFO_SOCIETE_NOM');
+            // BUG 1 CORRIGÉ : sujet et corps depuis le template configuré, avec {CLIENT} résolu
+            $subject = sap_get_email_subject($year);
+            $message = sap_get_email_body($year, $soc->name);
 
             $mail = new CMailFile($subject, $soc->email, $from, $message, array($file));
-            if ($mail->sendfile()) { 
+            // BUG 2 CORRIGÉ : forcer text/plain pour éviter ATT00001.TXT sur Outlook
+            $mail->msgishtml = 0;
+
+            if ($mail->sendfile()) {
                 att_mark_sent($attDir, $fileb, $socid, $soc->email, $year, $user);
                 sap_log_send_event($db, $socid, $fileb, $year, $user);
-                $ok++; 
-            } else $ko++;
+                $ok++;
+            } else {
+                $ko++;
+            }
         }
-
         $summary = 'Envoi en lot terminé : '.$ok.' succès, '.$ko.' échecs, '.$skip.' ignorés.';
         if ($ko > 0) setEventMessages($summary, null, 'warnings');
-        else setEventMessages($summary, null, 'mesgs');
+        else         setEventMessages($summary, null, 'mesgs');
     }
 }
 
@@ -457,10 +510,9 @@ if ($action === 'delete') {
     if (empty($user->admin)) accessforbidden();
     $token = GETPOST('token','alpha');
     if (empty($token) || $token !== $_SESSION['newtoken']) accessforbidden();
-
     $fileb = GETPOST('file', 'alpha');
     $ok = preg_match('/^attestation_sap_(\d{4})\-([A-Z0-9\-]+)\-ATT(\d+)\.pdf$/i', $fileb)
-       || preg_match('/^attestation_sap_(\d+)_\d{4}\.pdf$/i', $fileb);
+        || preg_match('/^attestation_sap_(\d+)_\d{4}\.pdf$/i', $fileb);
     if (!$ok) {
         setEventMessages('Nom de fichier non autorisé.', null, 'errors');
     } else {
@@ -470,6 +522,7 @@ if ($action === 'delete') {
 }
 
 /* ===================== Onglet : Générer ===================== */
+
 if ($tab === 'generate') {
     global $db;
 
@@ -482,15 +535,15 @@ if ($tab === 'generate') {
     $warnings = array();
     if (empty($num_sap_check)) {
         $warnings[] = '⚠ <strong>Numéro de déclaration SAP manquant</strong> — '
-                    . '<a href="'.dol_buildpath('/custom/attestationsap/setup.php', 1).'">Configurer → Section 1</a>';
+            . '<a href="'.dol_buildpath('/custom/attestationsap/setup.php', 1).'">Configurer → Section 1</a>';
     }
     if ($sap_cat_check === 0) {
         $warnings[] = '⚠ <strong>Catégorie produit SAP non configurée</strong> — les lignes de factures ne seront pas reconnues comme SAP. '
-                    . '<a href="'.dol_buildpath('/custom/attestationsap/setup.php', 1).'">Configurer → Section 5</a>';
+            . '<a href="'.dol_buildpath('/custom/attestationsap/setup.php', 1).'">Configurer → Section 5</a>';
     }
     if ($client_cat_check === 0) {
         $warnings[] = '⚠ <strong>Catégorie tiers SAP non configurée</strong> — tous les clients seront inclus sans filtre. '
-                    . '<a href="'.dol_buildpath('/custom/attestationsap/setup.php', 1).'">Configurer → Section 5</a>';
+            . '<a href="'.dol_buildpath('/custom/attestationsap/setup.php', 1).'">Configurer → Section 5</a>';
     }
     if (!empty($warnings)) {
         print '<div style="background:#fff3cd;border-left:4px solid #ffc107;padding:12px 16px;border-radius:4px;margin-bottom:16px">';
@@ -517,9 +570,7 @@ if ($tab === 'generate') {
     print '</form><br>';
 
     if ($action === 'generate' && $year) {
-
         print load_fiche_titre('Résultats de la génération ('.$year.')', '', 'title_generic');
-
         $invoices = sap_find_factures_for_year($db, $year, 0);
 
         if ($debug) {
@@ -528,7 +579,7 @@ if ($tab === 'generate') {
             for ($i=0; $i<min(10,count($invoices)); $i++) {
                 $t = $invoices[$i];
                 $d = $db->jdate($t->datef ?: $t->date_valid);
-                print " - ".$t->ref." | model_pdf=".$t->model_pdf." | socid=".$t->fk_soc." | date=".($d?dol_print_date($d,'day'):'-')."\n";
+                print "  - ".$t->ref." | model_pdf=".$t->model_pdf." | socid=".$t->fk_soc." | date=".($d?dol_print_date($d,'day'):'-')."\n";
             }
             print "</pre>";
         }
@@ -539,10 +590,10 @@ if ($tab === 'generate') {
         if (empty($invoices)) {
             print '<div class="opacitymedium">Aucune facture SAP trouvée pour l\'année '.$year.' avec le(s) modèle(s) configuré(s).</div>';
         } else {
-            $sap_cat_id       = (int) getDolGlobalString('ATTESTATIONSAP_CATEGORY_ID', 0);
-            $client_cat_id    = (int) getDolGlobalString('ATTESTATIONSAP_CLIENT_CAT_ID', 0);
-            $services_fallback= getDolGlobalString('ATTESTATIONSAP_SERVICES', '');
-            $byClient         = sap_group_clients_from_invoices($db, $invoices, $sap_cat_id, $services_fallback, $client_cat_id);
+            $sap_cat_id      = (int) getDolGlobalString('ATTESTATIONSAP_CATEGORY_ID', 0);
+            $client_cat_id   = (int) getDolGlobalString('ATTESTATIONSAP_CLIENT_CAT_ID', 0);
+            $services_fallback = getDolGlobalString('ATTESTATIONSAP_SERVICES', '');
+            $byClient = sap_group_clients_from_invoices($db, $invoices, $sap_cat_id, $services_fallback, $client_cat_id);
 
             if (empty($byClient)) {
                 print '<div class="opacitymedium">Des factures ont été trouvées, mais aucune ligne n\'est reconnue SAP (catégorie/mots‑clés). Vérifiez vos paramètres.</div>';
@@ -550,7 +601,6 @@ if ($tab === 'generate') {
                 print '<form id="formGen" method="POST" action="'.htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES).'?tab=generate&year='.(int)$year.'">';
                 print '<input type="hidden" name="action" value="sendmail_bulk">';
                 print '<input type="hidden" name="token" value="'.newToken().'">';
-
                 print '<div class="bulk-toolbar">';
                 print '  <button type="button" class="button" onclick="toggleAllByClass(\'bulkgen\', true)">Sélectionner tout</button>';
                 print '  <button type="button" class="button" onclick="toggleAllByClass(\'bulkgen\', false)">Tout désélectionner</button>';
@@ -580,18 +630,19 @@ if ($tab === 'generate') {
                     }
 
                     $nb_gen_err++;
-                    $checkbox = '<span class="opacitymedium" title="Email manquant">—</span>';
-                    $download = 'N/A';
-                    $statusPdf = '✖ Erreur de génération';
+                    $checkbox   = '<span class="opacitymedium" title="Email manquant">—</span>';
+                    $download   = 'N/A';
+                    $statusPdf  = '✖ Erreur de génération';
                     $statusSend = '<span class="badge-not">Non envoyée</span>';
-                    $actions = 'N/A';
+                    $actions    = 'N/A';
 
-                    if ($generatedPath && file_exists($generatedPath)) { $nb_gen_ok++;
+                    if ($generatedPath && file_exists($generatedPath)) {
+                        $nb_gen_ok++;
                         $filesize = filesize($generatedPath);
-                        $bn = basename($generatedPath);
-                        $dlUrl = DOL_URL_ROOT.'/document.php?modulepart=attestationsap&file='.urlencode($bn);
-
+                        $bn       = basename($generatedPath);
+                        $dlUrl    = DOL_URL_ROOT.'/document.php?modulepart=attestationsap&file='.urlencode($bn);
                         $statusPdf = '✔ Généré ('.number_format($filesize / 1024, 1, ',', ' ').' Ko)';
+
                         $previewData = getAdvancedPreviewUrl('attestationsap', $bn, 1, '');
                         if (!empty($previewData['url'])) {
                             $download = '<a class="button '.$previewData['css'].'" href="'.dol_escape_htmltag($previewData['url']).'" mime="'.dol_escape_htmltag($previewData['mime']).'" target="'.$previewData['target'].'" title="'.$langs->trans('Preview').'">'.img_picto('', 'search-plus', 'class="pictofixedwidth"').' Visualiser</a>';
@@ -601,7 +652,7 @@ if ($tab === 'generate') {
 
                         $sentInfo = att_is_sent($attDir, $bn);
                         if ($sentInfo) {
-                            $who = !empty($sentInfo['email']) ? $sentInfo['email'] : '';
+                            $who  = !empty($sentInfo['email'])    ? $sentInfo['email']    : '';
                             $when = !empty($sentInfo['date_txt']) ? $sentInfo['date_txt'] : '';
                             $statusSend = '<span class="badge-sent">Envoyée'.($when?' le '.$when:'').($who?' à '.$who:'').'</span>';
                         }
@@ -629,188 +680,190 @@ if ($tab === 'generate') {
                 }
 
                 print '</table>';
+
                 // Résumé génération
                 $msg_style = $nb_gen_err === 0
                     ? 'background:#0d2a1a;border-left:4px solid #4caf50'
                     : 'background:#2a1a0d;border-left:4px solid #ffc107';
                 print '<div style="'.$msg_style.';padding:10px 14px;border-radius:4px;margin:8px 0">';
-                if ($nb_gen_ok > 0)  print '✅ <strong>'.$nb_gen_ok.' attestation'.($nb_gen_ok>1?'s':'').' générée'.($nb_gen_ok>1?'s':'').'</strong> avec succès. ';
+                if ($nb_gen_ok  > 0) print '✅ <strong>'.$nb_gen_ok.' attestation'.($nb_gen_ok>1?'s':'').' générée'.($nb_gen_ok>1?'s':'').'</strong> avec succès. ';
                 if ($nb_gen_err > 0) print '⚠ <strong style="color:#e67e22">'.$nb_gen_err.' erreur'.($nb_gen_err>1?'s':'').'</strong>.';
                 print '</div>';
+
                 print '</form><br>';
             }
         }
     }
+}
 
-    // === ATTESTATIONS EXISTANTES (ANNÉE XXXX) — avec filtres & lot ===
-    print load_fiche_titre('ATTESTATIONS EXISTANTES (ANNÉE '.(int)$year.')', '', 'title_generic');
+// === ATTESTATIONS EXISTANTES (ANNÉE XXXX) — avec filtres & lot ===
 
-    $filter_exist_sent = GETPOST('filter_exist_sent','alpha'); // '', 'sent', 'unsent'
-    print '<form method="GET" action="'.htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES).'" class="nocellnopadd">';
-    print '<input type="hidden" name="tab" value="generate">';
-    print '<input type="hidden" name="year" value="'.(int)$year.'">';
-    print '<div class="filterbar">';
-    print '  <div>';
-    print '    <label for="filter_exist_sent"><strong>Filtrer :</strong></label> ';
-    print '    <select id="filter_exist_sent" name="filter_exist_sent" class="flat">';
-    $opts = array(''=>'Toutes','sent'=>'Déjà envoyées','unsent'=>'Non envoyées');
-    foreach ($opts as $k=>$lab) {
-        $sel = ($filter_exist_sent===$k)?' selected':'';
-        print '      <option value="'.dol_escape_htmltag($k).'"'.$sel.'>'.dol_escape_htmltag($lab).'</option>';
-    }
-    print '    </select> ';
-    print '    <button type="submit" class="button">Appliquer</button>';
-    print '  </div>';
-    print '  <div class="opacitymedium">Astuce : filtrez pour cibler les relances non envoyées.</div>';
-    print '</div>';
-    print '</form>';
+print load_fiche_titre('ATTESTATIONS EXISTANTES (ANNÉE '.(int)$year.')', '', 'title_generic');
 
-    $rows = array();
+$filter_exist_sent = GETPOST('filter_exist_sent','alpha');
 
-    // Nouveau motif
-    $patternNew = rtrim($attDir, '/').'/attestation_sap_'.((int)$year).'-*-ATT*.pdf';
-    $filesNew = glob($patternNew); if (!$filesNew) $filesNew = array();
-    for ($i=0; $i<count($filesNew); $i++) {
-        $full = $filesNew[$i]; if (!is_file($full)) continue;
-        $bn = basename($full);
-        if (preg_match('/^attestation_sap_(\d{4})\-([A-Z0-9\-]+)\-ATT(\d+)\.pdf$/i', $bn, $m)) {
-            $pretty = str_replace('-', ' ', $m[2]);
-            $socid = 0; $email = '';
-            $sql = "SELECT rowid, email FROM ".MAIN_DB_PREFIX."societe WHERE UPPER(nom)='".$db->escape(strtoupper($pretty))."' LIMIT 1";
-            $res = $db->query($sql);
-            if ($res && $o = $db->fetch_object($res)) { $socid = (int)$o->rowid; $email = (string)$o->email; }
+print '<form method="GET" action="'.htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES).'" class="nocellnopadd">';
+print '<input type="hidden" name="tab" value="generate">';
+print '<input type="hidden" name="year" value="'.(int)$year.'">';
+print '<div class="filterbar">';
+print '  <div>';
+print '    <label for="filter_exist_sent"><strong>Filtrer :</strong></label> ';
+print '    <select id="filter_exist_sent" name="filter_exist_sent" class="flat">';
+$opts = array(''=>'Toutes','sent'=>'Déjà envoyées','unsent'=>'Non envoyées');
+foreach ($opts as $k=>$lab) {
+    $sel = ($filter_exist_sent===$k)?' selected':'';
+    print '      <option value="'.dol_escape_htmltag($k).'"'.$sel.'>'.dol_escape_htmltag($lab).'</option>';
+}
+print '    </select> ';
+print '    <button type="submit" class="button">Appliquer</button>';
+print '  </div>';
+print '  <div class="opacitymedium">Astuce : filtrez pour cibler les relances non envoyées.</div>';
+print '</div>';
+print '</form>';
 
-            $rows[] = array(
-                'basename' => $bn,
-                'fullpath' => $full,
-                'client'   => $pretty,
-                'size'     => @filesize($full),
-                'date'     => @filemtime($full),
-                'socid'    => $socid,
-                'email'    => $email
-            );
-        }
-    }
+$rows = array();
 
-    // Ancien motif
-    $patternOld = rtrim($attDir, '/').'/attestation_sap_*_'.((int)$year).'.pdf';
-    $filesOld = glob($patternOld); if (!$filesOld) $filesOld = array();
-    for ($i=0; $i<count($filesOld); $i++) {
-        $full = $filesOld[$i]; if (!is_file($full)) continue;
-        $bn = basename($full);
-        if (preg_match('/^attestation_sap_(\d+)_'.((int)$year).'\.pdf$/i', $bn, $m)) {
-            $socidF = (int)$m[1];
-            $soc = new Societe($db);
-            $clientLabel = 'Client #'.$socidF; $email = '';
-            if ($soc->fetch($socidF) > 0) { $clientLabel = $soc->name; $email = $soc->email; }
-
-            $rows[] = array(
-                'basename' => $bn,
-                'fullpath' => $full,
-                'client'   => $clientLabel,
-                'size'     => @filesize($full),
-                'date'     => @filemtime($full),
-                'socid'    => $socidF,
-                'email'    => $email
-            );
-        }
-    }
-
-    if (!empty($filter_exist_sent)) {
-        $tmp = array();
-        for ($i=0; $i<count($rows); $i++) {
-            $r = $rows[$i];
-            $sent = att_is_sent($attDir, $r['basename']) ? true : false;
-            if ($filter_exist_sent === 'sent' && $sent) $tmp[] = $r;
-            if ($filter_exist_sent === 'unsent' && !$sent) $tmp[] = $r;
-            if ($filter_exist_sent === '') $tmp[] = $r;
-        }
-        $rows = $tmp;
-    }
-
-    if (empty($rows)) {
-        print '<div class="opacitymedium">Aucune attestation trouvée pour '.(int)$year.'.</div>';
-    } else {
-        usort($rows, function($a,$b){ $da=isset($a['date'])?$a['date']:0; $dbb=isset($b['date'])?$b['date']:0; return ($dbb<$da)?-1:(($dbb>$da)?1:0); });
-
-        print '<form id="formExist" method="POST" action="'.htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES).'?tab=generate&year='.(int)$year.'">';
-        print '<input type="hidden" name="action" value="sendmail_bulk">';
-        print '<input type="hidden" name="token" value="'.newToken().'">';
-
-        print '<div class="bulk-toolbar">';
-        print '  <button type="button" class="button" onclick="toggleAllByClass(\'bulkexist\', true)">Sélectionner tout</button>';
-        print '  <button type="button" class="button" onclick="toggleAllByClass(\'bulkexist\', false)">Tout désélectionner</button>';
-        print '  <button type="submit" name="do_send_bulk" value="1" class="butAction">Envoyer la sélection</button>';
-        if (!empty($user->admin)) {
-            print '  <button type="submit" name="do_delete_bulk" value="1" class="butActionDelete" onclick="return confirm(\'Supprimer tous les fichiers sélectionnés ?\')">Supprimer la sélection</button>';
-        }
-        print '</div>';
-
-        print '<table class="noborder centpercent">';
-        print '<tr class="liste_titre"><th class="checkbox-col"><input type="checkbox" onclick="checkAllInClass(this, \'bulkexist\')"></th><th>Client</th><th>Fichier</th><th>Taille (Ko)</th><th>Créé le</th><th>Statut envoi</th><th>Actions</th></tr>';
-
-        for ($i=0; $i<count($rows); $i++) {
-            $r = $rows[$i];
-            $bn = $r['basename'];
-            $dlUrl = DOL_URL_ROOT.'/document.php?modulepart=attestationsap&file='.urlencode($bn);
-            $sizeKo = ($r['size'] ? number_format($r['size'] / 1024, 1, ',', ' ').' Ko' : '-');
-
-            if (!empty($r['socid']) && !empty($r['email'])) {
-                $checkbox = '<input type="checkbox" class="bulkexist" name="bulk_items[]" value="'.$r['socid'].'|'.htmlspecialchars($bn, ENT_QUOTES).'">';
-                $sendlink = '<a class="butAction" href="'.htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES).'?tab=generate&year='.$year.'&action=sendmail&socid='.$r['socid'].'&file='.urlencode($bn).'&token='.newToken().'">Envoyer</a>';
-            } else {
-                $checkbox = '<span class="opacitymedium">—</span>';
-                $sendlink = '<span class="opacitymedium">Impossible d\'envoyer</span>';
-            }
-
-            $sentInfo = att_is_sent($attDir, $bn);
-            $statusSend = '<span class="badge-not">Non envoyée</span>';
-            if ($sentInfo) {
-                $who = !empty($sentInfo['email']) ? $sentInfo['email'] : '';
-                $when = !empty($sentInfo['date_txt']) ? $sentInfo['date_txt'] : '';
-                $statusSend = '<span class="badge-sent">Envoyée'.($when?' le '.$when:'').($who?' à '.$who:'').'</span>';
-            }
-
-            $deletelink = '';
-            if (!empty($user->admin)) {
-                $deletelink = ' <a class="butActionDelete" href="'.htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES).'?tab=generate&year='.$year.'&action=delete&file='.urlencode($bn).'&token='.newToken().'" onclick="return confirm(\'Supprimer cette attestation ?\')">Supprimer</a>';
-            }
-
-            print '<tr class="oddeven">';
-            print '  <td class="checkbox-col">'.$checkbox.'</td>';
-            print '  <td>'.dol_escape_htmltag($r['client']).'</td>';
-            print '  <td>'.dol_escape_htmltag($bn).'</td>';
-            print '  <td>'.$sizeKo.'</td>';
-            print '  <td>'.($r['date'] ? dol_print_date($r['date'],'dayhour') : '-').'</td>';
-            print '  <td>'.$statusSend.'</td>';
-            $previewData2 = getAdvancedPreviewUrl('attestationsap', $bn, 1, '');
-            if (!empty($previewData2['url'])) {
-                $previewlink = '<a class="button '.$previewData2['css'].'" href="'.dol_escape_htmltag($previewData2['url']).'" mime="'.dol_escape_htmltag($previewData2['mime']).'" target="'.$previewData2['target'].'" title="'.$langs->trans('Preview').'">'.img_picto('', 'search-plus', 'class="pictofixedwidth"').' Visualiser</a>';
-            } else {
-                $previewlink = '<a class="button" href="'.DOL_URL_ROOT.'/document.php?modulepart=attestationsap&attachment=0&file='.urlencode($bn).'" target="_blank">'.img_picto('', 'search-plus', 'class="pictofixedwidth"').' Visualiser</a>';
-            }
-            print '  <td>'.$previewlink.' '.$sendlink.$deletelink.'</td>';
-            print '</tr>';
-        }
-
-        print '</table><br>';
-        print '</form><br>';
-    }
-
-    if ($debug) {
-        $rawList = getDolGlobalString('ATTESTATIONSAP_FACTURE_MODEL_LIST','');
-        if ($rawList === '') $rawList = getDolGlobalString('ATTESTATIONSAP_FACTURE_MODEL_NAME','(legacy) facture_sap_v3');
-        print '<pre class="opacitymedium">';
-        print "DEBUG:\n";
-        print "attDir = ".$attDir." (exists=". (file_exists($attDir)?'yes':'no') .")\n";
-        print "attPdf = ".$attPdf." (exists=". (file_exists($attPdf)?'yes':'no') .")\n";
-        print "year = ".$year."\n";
-        print "models(list) = ".$rawList."\n";
-        print "</pre>";
+// Nouveau motif
+$patternNew = rtrim($attDir, '/').'/attestation_sap_'.((int)$year).'-*-ATT*.pdf';
+$filesNew   = glob($patternNew); if (!$filesNew) $filesNew = array();
+for ($i=0; $i<count($filesNew); $i++) {
+    $full = $filesNew[$i]; if (!is_file($full)) continue;
+    $bn   = basename($full);
+    if (preg_match('/^attestation_sap_(\d{4})\-([A-Z0-9\-]+)\-ATT(\d+)\.pdf$/i', $bn, $m)) {
+        $pretty = str_replace('-', ' ', $m[2]);
+        $socid  = 0; $email = '';
+        $sql = "SELECT rowid, email FROM ".MAIN_DB_PREFIX."societe WHERE UPPER(nom)='".$db->escape(strtoupper($pretty))."' LIMIT 1";
+        $res = $db->query($sql);
+        if ($res && $o = $db->fetch_object($res)) { $socid = (int)$o->rowid; $email = (string)$o->email; }
+        $rows[] = array(
+            'basename' => $bn,
+            'fullpath' => $full,
+            'client'   => $pretty,
+            'size'     => @filesize($full),
+            'date'     => @filemtime($full),
+            'socid'    => $socid,
+            'email'    => $email
+        );
     }
 }
 
+// Ancien motif
+$patternOld = rtrim($attDir, '/').'/attestation_sap_*_'.((int)$year).'.pdf';
+$filesOld   = glob($patternOld); if (!$filesOld) $filesOld = array();
+for ($i=0; $i<count($filesOld); $i++) {
+    $full = $filesOld[$i]; if (!is_file($full)) continue;
+    $bn   = basename($full);
+    if (preg_match('/^attestation_sap_(\d+)_'.((int)$year).'\.pdf$/i', $bn, $m)) {
+        $socidF = (int)$m[1];
+        $soc = new Societe($db);
+        $clientLabel = 'Client #'.$socidF; $email = '';
+        if ($soc->fetch($socidF) > 0) { $clientLabel = $soc->name; $email = $soc->email; }
+        $rows[] = array(
+            'basename' => $bn,
+            'fullpath' => $full,
+            'client'   => $clientLabel,
+            'size'     => @filesize($full),
+            'date'     => @filemtime($full),
+            'socid'    => $socidF,
+            'email'    => $email
+        );
+    }
+}
+
+if (!empty($filter_exist_sent)) {
+    $tmp = array();
+    for ($i=0; $i<count($rows); $i++) {
+        $r    = $rows[$i];
+        $sent = att_is_sent($attDir, $r['basename']) ? true : false;
+        if ($filter_exist_sent === 'sent'   && $sent)  $tmp[] = $r;
+        if ($filter_exist_sent === 'unsent' && !$sent) $tmp[] = $r;
+        if ($filter_exist_sent === '')                  $tmp[] = $r;
+    }
+    $rows = $tmp;
+}
+
+if (empty($rows)) {
+    print '<div class="opacitymedium">Aucune attestation trouvée pour '.(int)$year.'.</div>';
+} else {
+    usort($rows, function($a,$b){ $da=isset($a['date'])?$a['date']:0; $dbb=isset($b['date'])?$b['date']:0; return ($dbb<$da)?-1:(($dbb>$da)?1:0); });
+
+    print '<form id="formExist" method="POST" action="'.htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES).'?tab=generate&year='.(int)$year.'">';
+    print '<input type="hidden" name="action" value="sendmail_bulk">';
+    print '<input type="hidden" name="token" value="'.newToken().'">';
+    print '<div class="bulk-toolbar">';
+    print '  <button type="button" class="button" onclick="toggleAllByClass(\'bulkexist\', true)">Sélectionner tout</button>';
+    print '  <button type="button" class="button" onclick="toggleAllByClass(\'bulkexist\', false)">Tout désélectionner</button>';
+    print '  <button type="submit" name="do_send_bulk" value="1" class="butAction">Envoyer la sélection</button>';
+    if (!empty($user->admin)) {
+        print '  <button type="submit" name="do_delete_bulk" value="1" class="butActionDelete" onclick="return confirm(\'Supprimer tous les fichiers sélectionnés ?\')">Supprimer la sélection</button>';
+    }
+    print '</div>';
+
+    print '<table class="noborder centpercent">';
+    print '<tr class="liste_titre"><th class="checkbox-col"><input type="checkbox" onclick="checkAllInClass(this, \'bulkexist\')"></th><th>Client</th><th>Fichier</th><th>Taille (Ko)</th><th>Créé le</th><th>Statut envoi</th><th>Actions</th></tr>';
+
+    for ($i=0; $i<count($rows); $i++) {
+        $r    = $rows[$i];
+        $bn   = $r['basename'];
+        $sizeKo = ($r['size'] ? number_format($r['size'] / 1024, 1, ',', ' ').' Ko' : '-');
+
+        if (!empty($r['socid']) && !empty($r['email'])) {
+            $checkbox = '<input type="checkbox" class="bulkexist" name="bulk_items[]" value="'.$r['socid'].'|'.htmlspecialchars($bn, ENT_QUOTES).'">';
+            $sendlink = '<a class="butAction" href="'.htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES).'?tab=generate&year='.$year.'&action=sendmail&socid='.$r['socid'].'&file='.urlencode($bn).'&token='.newToken().'">Envoyer</a>';
+        } else {
+            $checkbox = '<span class="opacitymedium">—</span>';
+            $sendlink = '<span class="opacitymedium">Impossible d\'envoyer</span>';
+        }
+
+        $sentInfo   = att_is_sent($attDir, $bn);
+        $statusSend = '<span class="badge-not">Non envoyée</span>';
+        if ($sentInfo) {
+            $who  = !empty($sentInfo['email'])    ? $sentInfo['email']    : '';
+            $when = !empty($sentInfo['date_txt']) ? $sentInfo['date_txt'] : '';
+            $statusSend = '<span class="badge-sent">Envoyée'.($when?' le '.$when:'').($who?' à '.$who:'').'</span>';
+        }
+
+        $deletelink = '';
+        if (!empty($user->admin)) {
+            $deletelink = ' <a class="butActionDelete" href="'.htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES).'?tab=generate&year='.$year.'&action=delete&file='.urlencode($bn).'&token='.newToken().'" onclick="return confirm(\'Supprimer cette attestation ?\')">Supprimer</a>';
+        }
+
+        $previewData2 = getAdvancedPreviewUrl('attestationsap', $bn, 1, '');
+        if (!empty($previewData2['url'])) {
+            $previewlink = '<a class="button '.$previewData2['css'].'" href="'.dol_escape_htmltag($previewData2['url']).'" mime="'.dol_escape_htmltag($previewData2['mime']).'" target="'.$previewData2['target'].'" title="'.$langs->trans('Preview').'">'.img_picto('', 'search-plus', 'class="pictofixedwidth"').' Visualiser</a>';
+        } else {
+            $previewlink = '<a class="button" href="'.DOL_URL_ROOT.'/document.php?modulepart=attestationsap&attachment=0&file='.urlencode($bn).'" target="_blank">'.img_picto('', 'search-plus', 'class="pictofixedwidth"').' Visualiser</a>';
+        }
+
+        print '<tr class="oddeven">';
+        print '  <td class="checkbox-col">'.$checkbox.'</td>';
+        print '  <td>'.dol_escape_htmltag($r['client']).'</td>';
+        print '  <td>'.dol_escape_htmltag($bn).'</td>';
+        print '  <td>'.$sizeKo.'</td>';
+        print '  <td>'.($r['date'] ? dol_print_date($r['date'],'dayhour') : '-').'</td>';
+        print '  <td>'.$statusSend.'</td>';
+        print '  <td>'.$previewlink.' '.$sendlink.$deletelink.'</td>';
+        print '</tr>';
+    }
+
+    print '</table><br>';
+    print '</form><br>';
+}
+
+if ($debug) {
+    $rawList = getDolGlobalString('ATTESTATIONSAP_FACTURE_MODEL_LIST','');
+    if ($rawList === '') $rawList = getDolGlobalString('ATTESTATIONSAP_FACTURE_MODEL_NAME','(legacy) facture_sap_v3');
+    print '<pre class="opacitymedium">';
+    print "DEBUG:\n";
+    print "attDir = ".$attDir." (exists=". (file_exists($attDir)?'yes':'no') .")\n";
+    print "attPdf = ".$attPdf." (exists=". (file_exists($attPdf)?'yes':'no') .")\n";
+    print "year = ".$year."\n";
+    print "models(list) = ".$rawList."\n";
+    print "</pre>";
+}
+
 /* ===================== Onglet : Tableau de bord ===================== */
+
 if ($tab === 'dashboard') {
     global $db, $conf;
 
@@ -841,13 +894,13 @@ if ($tab === 'dashboard') {
         print '<div class="opacitymedium">Aucun devis SAP récent trouvé.</div>';
     }
 
-    // Factures SAP récentes (modèles cochés)
+    // Factures SAP récentes
     $rawList = getDolGlobalString('ATTESTATIONSAP_FACTURE_MODEL_LIST','');
     if ($rawList === '') $rawList = getDolGlobalString('ATTESTATIONSAP_FACTURE_MODEL_NAME','facture_sap_v3');
-    $models = sap_parse_models($rawList);
-    $parts = array();
+    $models  = sap_parse_models($rawList);
+    $parts   = array();
     for ($i=0; $i<count($models); $i++) $parts[] = "(f.model_pdf = '".$db->escape($models[$i])."' OR f.model_pdf LIKE '".$db->escape($models[$i])."%')";
-    $wModel = $parts ? ' AND ('.implode(' OR ', $parts).')' : '';
+    $wModel  = $parts ? ' AND ('.implode(' OR ', $parts).')' : '';
 
     print load_fiche_titre('FACTURES SAP RÉCENTES', '', 'title_generic');
     $sql = "SELECT f.rowid, f.ref, f.total_ttc, COALESCE(f.datef, f.date_valid) AS dref, s.nom as client, f.model_pdf
@@ -876,46 +929,48 @@ if ($tab === 'dashboard') {
         print '<div class="opacitymedium">Aucune facture récente trouvée pour le(s) modèle(s) sélectionné(s).</div>';
     }
 
-    // *** NOUVEAU : Attestations existantes (année courante) + envoi ***
+    // Attestations existantes (année courante)
     print load_fiche_titre('ATTESTATIONS EXISTANTES (ANNÉE '.(int)$year.')', '', 'title_generic');
     $recent = array();
     $gl = glob(rtrim($attDir,'/').'/attestation_sap_'.((int)$year).'-*-ATT*.pdf'); if (!$gl) $gl=array();
     for ($i=0; $i<count($gl); $i++) {
         $full = $gl[$i]; if (!is_file($full)) continue;
-        $bn = basename($full);
+        $bn   = basename($full);
         $client = '';
         if (preg_match('/^attestation_sap_(\d{4})\-([A-Z0-9\-]+)\-ATT(\d+)\.pdf$/i',$bn,$m)) $client=str_replace('-',' ',$m[2]);
         $recent[] = array(
-            'basename'=>$bn,
-            'client'=>$client,
-            'date'=>@filemtime($full),
-            'size'=>@filesize($full)
+            'basename' => $bn,
+            'client'   => $client,
+            'date'     => @filemtime($full),
+            'size'     => @filesize($full)
         );
     }
+
     if (empty($recent)) {
         print '<div class="opacitymedium">Aucune attestation trouvée pour '.(int)$year.'.</div>';
     } else {
         usort($recent,function($a,$b){ $da=$a['date']?:0; $dbb=$b['date']?:0; return ($dbb<$da)?-1:(($dbb>$da)?1:0); });
         $recent = array_slice($recent, 0, 10);
+
         print '<table class="noborder centpercent">';
         print '<tr class="liste_titre"><th>Client</th><th>Fichier</th><th>Taille (Ko)</th><th>Créé le</th><th>Statut envoi</th><th>Actions</th></tr>';
         for ($i=0; $i<count($recent); $i++) {
-            $r = $recent[$i];
-            $bn = $r['basename'];
-            $dlUrl = DOL_URL_ROOT.'/document.php?modulepart=attestationsap&file='.urlencode($bn);
+            $r    = $recent[$i];
+            $bn   = $r['basename'];
+            $dlUrl  = DOL_URL_ROOT.'/document.php?modulepart=attestationsap&file='.urlencode($bn);
             $sizeKo = ($r['size'] ? number_format($r['size'] / 1024, 1, ',', ' ').' Ko' : '-');
 
-            // Tentative d’association au tiers
+            // Association tiers
             $socid=0; $email='';
             if (!empty($r['client'])) {
                 $sql="SELECT rowid,email FROM ".MAIN_DB_PREFIX."societe WHERE UPPER(nom)='".$db->escape(strtoupper($r['client']))."' LIMIT 1";
                 $res=$db->query($sql); if($res && $o=$db->fetch_object($res)){ $socid=(int)$o->rowid; $email=(string)$o->email; }
             }
 
-            $sentInfo = att_is_sent($attDir, $bn);
+            $sentInfo   = att_is_sent($attDir, $bn);
             $statusSend = '<span class="badge-not">Non envoyée</span>';
             if ($sentInfo) {
-                $who = !empty($sentInfo['email']) ? $sentInfo['email'] : '';
+                $who  = !empty($sentInfo['email'])    ? $sentInfo['email']    : '';
                 $when = !empty($sentInfo['date_txt']) ? $sentInfo['date_txt'] : '';
                 $statusSend = '<span class="badge-sent">Envoyée'.($when?' le '.$when:'').($who?' à '.$who:'').'</span>';
             }
@@ -941,15 +996,14 @@ if ($tab === 'dashboard') {
 llxFooter();
 $db->close();
 ?>
+
 <script>
-// Coche/décoche toutes les cases d'une classe selon l'état d'une case maître
 function checkAllInClass(master, cls) {
-  var boxes = document.querySelectorAll('.' + cls);
-  for (var i = 0; i < boxes.length; i++) boxes[i].checked = master.checked;
+    var boxes = document.querySelectorAll('.' + cls);
+    for (var i = 0; i < boxes.length; i++) boxes[i].checked = master.checked;
 }
-// Sélectionner tout / rien par classe (boutons)
 function toggleAllByClass(cls, all) {
-  var boxes = document.querySelectorAll('.' + cls);
-  for (var i = 0; i < boxes.length; i++) boxes[i].checked = !!all;
+    var boxes = document.querySelectorAll('.' + cls);
+    for (var i = 0; i < boxes.length; i++) boxes[i].checked = !!all;
 }
 </script>
